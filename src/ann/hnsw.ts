@@ -1,7 +1,7 @@
 import { CoreStore, getByIndex, getIndex } from "../core/store";
 import { HNSWParams, Metric, SearchHit } from "../types";
 import { createReader, createWriter } from "../util/bin";
-import { dotAt, l2negAt } from "../util/math";
+import { getScoreAtFn } from "../util/similarity";
 import { pushSortedDesc } from "../util/topk";
 import { MaxHeap } from "../util/heap";
 
@@ -65,7 +65,8 @@ export function hnsw_ensureCapacity(h: HNSWState, capacity: number) {
 function hnsw_score<TMeta>(h: HNSWState, store: CoreStore<TMeta>, idx: number, q: Float32Array): number {
   const dim = store.dim;
   const base = idx * dim;
-  return h.metric === "cosine" ? dotAt(store.data, base, q, dim) : l2negAt(store.data, base, q, dim);
+  const scoreAt = getScoreAtFn(h.metric);
+  return scoreAt(store.data, base, q, dim);
 }
 
 function hnsw_sampleLevel(h: HNSWState): number {

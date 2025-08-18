@@ -1,13 +1,13 @@
 import { createVectorLite, get, getMeta, search } from "./vectorlite";
-import { encodeWal, applyWal } from "./wal";
+import { encodeWal, applyWal, type WalRecord } from "./wal";
 
 test("WAL encode/apply upsert/remove works", () => {
   const db = createVectorLite<{ tag?: string }>({ dim: 2 });
-  const recs = [
+  const recs: WalRecord[] = [
     { type: "upsert", id: 42, vector: new Float32Array([1, 0]), meta: { tag: "x" } },
     { type: "setMeta", id: 42, meta: { tag: "y" } },
-  ] as const;
-  const wal = encodeWal(recs as any);
+  ];
+  const wal = encodeWal(recs);
   applyWal(db, wal);
   const r1 = get(db, 42);
   expect(r1?.meta).toEqual({ tag: "y" });

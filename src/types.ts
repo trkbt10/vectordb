@@ -3,7 +3,7 @@
  * - 'cosine': vectors are normalized internally, score in [-1,1]
  * - 'l2': score is negative squared distance (higher is closer)
  */
-export type Metric = "cosine" | "l2";
+export type Metric = "cosine" | "l2" | "dot";
 
 /** Options for VectorLite construction. */
 export type VectorLiteInit = {

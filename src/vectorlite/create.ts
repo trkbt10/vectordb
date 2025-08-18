@@ -14,9 +14,14 @@ import type { VectorLiteState } from './state'
 export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
   const dim = opts.dim
   const metric: Metric = opts.metric ?? 'cosine'
-  const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024)
   const strategy = (opts.strategy ?? 'bruteforce')
+  if (metric !== 'cosine' && metric !== 'l2' && metric !== 'dot') {
+    throw new Error(`Unsupported metric: ${String(metric)}. Use 'cosine' | 'l2' | 'dot'.`)
+  }
+  if (strategy !== 'bruteforce' && strategy !== 'hnsw') {
+    throw new Error(`Unsupported strategy: ${String(strategy)}. Use 'bruteforce' | 'hnsw'.`)
+  }
+  const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024)
   const ann = strategy === 'hnsw' ? createHNSWState(opts.hnsw ?? {}, metric, store._capacity) : createBruteforceState(metric)
   return { dim, metric, store, strategy, ann }
 }
-

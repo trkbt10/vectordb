@@ -11,6 +11,13 @@ import type { VectorLiteState } from './state'
 import { hnsw_serialize, hnsw_deserialize } from '../ann/hnsw'
 import { bf_serialize } from '../ann/bruteforce'
 import { restoreFromDeserialized } from '../core/store'
+import { isHnswVL, isBfVL } from '../util/guards'
+
+function serializeAnnStrategy<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
+  if (isHnswVL(vl)) return hnsw_serialize(vl.ann, vl.store)
+  if (isBfVL(vl)) return bf_serialize(vl.ann)
+  throw new Error(`Unsupported strategy in serialize: ${String(vl.strategy)}`)
+}
 
 const MAGIC = 0x564c4954 // 'VLIT'
 const VERSION_V1 = 1
@@ -36,7 +43,7 @@ export function serialize<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
   const idsBytes = new Uint8Array(new Uint32Array(metaObj.ids).buffer)
   const vecView = vl.store.data.subarray(0, vl.store._count * vl.dim)
   const vecBytes = new Uint8Array(vecView.buffer, vecView.byteOffset, vecView.byteLength)
-  const stratSeg = vl.strategy === 'hnsw' ? hnsw_serialize(vl.ann as any, vl.store) : bf_serialize(vl.ann as any)
+  const stratSeg = serializeAnnStrategy(vl)
   const w = createWriter()
   w.pushBytes(new Uint8Array(header))
   w.pushU32(metaBytes.length); w.pushBytes(metaBytes)
@@ -86,6 +93,6 @@ export function deserializeVectorLite<TMeta = unknown>(buf: ArrayBuffer): Vector
   inst.store.ids.set(ids); inst.store.data.set(data)
   for (let i = 0; i < count; i++) { inst.store.metas[i] = metaObj.metas[i] ?? null }
   restoreFromDeserialized(inst.store, count)
-  if (strategyCode === 1) { hnsw_deserialize(inst.ann as any, inst.store, stratBuf) }
+  if (isHnswVL(inst)) { hnsw_deserialize(inst.ann, inst.store, stratBuf) }
   return inst
 }

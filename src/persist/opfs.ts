@@ -57,15 +57,14 @@ export async function loadWalFromOPFS(fileName = 'vectordb.vlite.wal'): Promise<
   const nav: unknown = (globalThis as { navigator?: unknown }).navigator
   if (!hasOPFSNavigator(nav)) throw new Error('OPFS not available in this environment')
   const root = await nav.storage.getDirectory()
-  let fh: FileHandle | null = null
   try {
-    fh = await root.getFileHandle(fileName, { create: false })
+    const fh = await root.getFileHandle(fileName, { create: false })
+    const file = await fh.getFile()
+    const buf = await file.arrayBuffer()
+    return new Uint8Array(buf)
   } catch {
     return new Uint8Array()
   }
-  const file = await fh.getFile()
-  const buf = await file.arrayBuffer()
-  return new Uint8Array(buf)
 }
 
 /** Create a FileIO backed by OPFS. 'path' is treated as a file name. */

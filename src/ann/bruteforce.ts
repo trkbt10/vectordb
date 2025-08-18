@@ -1,7 +1,7 @@
 import { CoreStore } from "../core/store";
 import { Metric, SearchHit } from "../types";
 import { pushTopK } from "../util/topk";
-import { dotAt, l2negAt } from "../util/math";
+import { getScoreAtFn } from "../util/similarity";
 
 export type BruteforceState = { type: "bruteforce"; metric: Metric };
 
@@ -30,6 +30,7 @@ export function bf_search<TMeta>(
   }
   const out: SearchHit<TMeta>[] = [];
   const data = store.data;
+  const scoreAt = getScoreAtFn(bf.metric);
   for (let i = 0; i < store._count; i++) {
     const id = store.ids[i];
     const meta = store.metas[i];
@@ -37,7 +38,7 @@ export function bf_search<TMeta>(
       continue;
     }
     const base = i * dim;
-    const s = bf.metric === "cosine" ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim);
+    const s = scoreAt(data, base, q, dim);
     // adapt to Scored.s naming for util: map score->s when pushing
     pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
   }

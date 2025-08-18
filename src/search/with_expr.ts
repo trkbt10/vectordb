@@ -3,7 +3,7 @@ import type { SearchHit } from '../types'
 import { normalizeQuery } from '../core/store'
 import { compilePredicate, preselectCandidates, type FilterExpr } from '../filter/expr'
 import type { AttrIndex } from '../attr/index'
-import { dotAt, l2negAt } from '../util/math'
+import { getScoreAtFn } from '../util/similarity'
 import { pushTopK } from '../util/topk'
 import { createBitMask, maskSet } from '../util/bitset'
 import { hnsw_search, HNSWState } from '../ann/hnsw'
@@ -45,6 +45,7 @@ export function searchWithExpr<TMeta>(
     if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`)
     const out: SearchHit<TMeta>[] = []
     const data = vl.store.data
+    const scoreAt = getScoreAtFn(vl.metric)
     for (const id of candidates) {
       const at = vl.store.pos.get(id)
       if (at === undefined) continue
@@ -52,7 +53,7 @@ export function searchWithExpr<TMeta>(
       const attrs = idx ? idx.getAttrs(id) : null
       if (!pred(id, meta, attrs)) continue
       const base = at * dim
-      const s = vl.metric === 'cosine' ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim)
+      const s = scoreAt(data, base, q, dim)
       pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
     }
     return out
@@ -95,6 +96,7 @@ export function searchWithExpr<TMeta>(
     if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`)
     const out: SearchHit<TMeta>[] = []
     const data = vl.store.data
+    const scoreAt = getScoreAtFn(vl.metric)
     for (const id of candidates) {
       const at = vl.store.pos.get(id)
       if (at === undefined) continue
@@ -102,7 +104,7 @@ export function searchWithExpr<TMeta>(
       const attrs = idx ? idx.getAttrs(id) : null
       if (!pred(id, meta, attrs)) continue
       const base = at * dim
-      const s = vl.metric === 'cosine' ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim)
+      const s = scoreAt(data, base, q, dim)
       pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
     }
     return out
@@ -122,12 +124,13 @@ export function searchWithExpr<TMeta>(
   if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`)
   const out: SearchHit<TMeta>[] = []
   const data = vl.store.data
+  const scoreAt = getScoreAtFn(vl.metric)
   for (let i = 0; i < vl.store._count; i++) {
     const id = vl.store.ids[i]
     const meta = vl.store.metas[i]
     if (!filter(id, meta)) continue
     const base = i * dim
-    const s = vl.metric === 'cosine' ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim)
+    const s = scoreAt(data, base, q, dim)
     pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
   }
   return out

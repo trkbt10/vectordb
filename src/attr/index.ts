@@ -126,7 +126,8 @@ export function createAttrIndex(strategy: 'basic' | 'bitmap' = 'basic'): AttrInd
       return createBitmapIndex()
     case 'basic':
     default:
-      return createBasicIndex()
+      if (strategy === 'basic') return createBasicIndex()
+      throw new Error(`Unsupported attribute index strategy: ${String(strategy)}. Use 'basic' | 'bitmap'.`)
   }
 }
 
