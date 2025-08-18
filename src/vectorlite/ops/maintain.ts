@@ -1,0 +1,137 @@
+/**
+ * Maintain/compact/rebuild operations.
+ *
+ * Why: Isolate maintenance workflows (compaction, rebuild, capacity tuning)
+ * behind explicit, operator-invoked functions to avoid hidden mutations.
+ */
+import type { VectorLiteState } from "../state";
+import type { HNSWParams, IVFParams } from "../../types";
+import { isHnswVL, isIvfVL } from "../../util/guards";
+import { hnsw_add, hnsw_ensureCapacity, createHNSWState } from "../../ann/hnsw";
+import { ivf_add, ivf_reassignLists, ivf_trainCentroids, createIVFState } from "../../ann/ivf";
+import { createStore, getByIndex as storeGetByIndex, addOrUpdate, resizeCapacity, shrinkToFit } from "../../core/store";
+
+export function hnswCompactAndRebuild<TMeta>(vl: VectorLiteState<TMeta>): number {
+  if (!isHnswVL(vl)) return 0;
+  const h = vl.ann;
+  const n = vl.store._count;
+  if (n === 0) return 0;
+  let alive = 0;
+  for (let i = 0; i < n; i++) {
+    if (!h.tombstone[i]) alive++;
+  }
+  if (alive === n) return 0;
+  const newStore = createStore<TMeta>(vl.dim, vl.metric, alive || 1);
+  const newH = createHNSWState(
+    {
+      M: h.M,
+      efConstruction: h.efConstruction,
+      efSearch: h.efSearch,
+      levelMult: h.levelMult,
+      allowReplaceDeleted: h.allowReplaceDeleted,
+      seed: 42,
+    },
+    vl.metric,
+    alive || 1
+  );
+  for (let i = 0; i < n; i++) {
+    if (h.tombstone[i]) continue;
+    const { id, vector, meta } = storeGetByIndex(vl.store, i);
+    addOrUpdate(newStore, id, vector, meta, { upsert: false });
+  }
+  for (let i = 0; i < newStore._count; i++) hnsw_add(newH, newStore, newStore.ids[i]);
+  vl.store = newStore;
+  vl.ann = newH;
+  return n - alive;
+}
+
+export function compactStore<TMeta>(
+  vl: VectorLiteState<TMeta>,
+  opts?: { shrink?: boolean; tombstoneRatio?: number; capacity?: number }
+): { shrunk: boolean; rebuilt: number } {
+  let rebuilt = 0;
+  const ratio = opts?.tombstoneRatio;
+  if (isHnswVL(vl) && typeof ratio === "number") {
+    const h = vl.ann;
+    const n = vl.store._count;
+    let dead = 0;
+    for (let i = 0; i < n; i++) if (h.tombstone[i] === 1) dead++;
+    if (n > 0 && dead / n > ratio) rebuilt = hnswCompactAndRebuild(vl);
+  }
+  let shrunk = false;
+  if (typeof opts?.capacity === "number") {
+    resizeCapacity(vl.store, opts.capacity);
+    shrunk = true;
+  } else if (opts?.shrink) {
+    shrinkToFit(vl.store);
+    shrunk = true;
+  }
+  return { shrunk, rebuilt };
+}
+
+export function rebuildIndex<TMeta>(
+  vl: VectorLiteState<TMeta>,
+  opts: { strategy: "hnsw" | "ivf"; params?: HNSWParams | IVFParams; ids?: number[] }
+): number {
+  const ids = opts.ids && opts.ids.length ? Array.from(opts.ids) : null;
+  if (opts.strategy === "hnsw") {
+    const old = isHnswVL(vl) ? vl.ann : null;
+    const p =
+      (opts.params as HNSWParams | undefined) ??
+      (old
+        ? {
+            M: old.M,
+            efConstruction: old.efConstruction,
+            efSearch: old.efSearch,
+            levelMult: old.levelMult,
+            allowReplaceDeleted: old.allowReplaceDeleted,
+            seed: 42,
+          }
+        : { M: 16, efConstruction: 200, efSearch: 50 });
+    const newH = createHNSWState(p, vl.metric, vl.store._count || 1);
+    vl.strategy = "hnsw";
+    vl.ann = newH;
+    if (isHnswVL(vl)) {
+      if (!ids) {
+        for (let i = 0; i < vl.store._count; i++) hnsw_add(vl.ann, vl.store, vl.store.ids[i]);
+      } else {
+        for (const id of ids) hnsw_add(vl.ann, vl.store, id);
+      }
+    }
+    return ids ? ids.length : vl.store._count;
+  }
+  // IVF
+  const dim = vl.dim;
+  const old = isIvfVL(vl) ? vl.ann : null;
+  const nextParams =
+    (opts.params as IVFParams | undefined) ??
+    (old ? { nlist: old.nlist, nprobe: old.nprobe } : { nlist: 64, nprobe: 8 });
+  const needRecreate = !old || (typeof nextParams.nlist === "number" && nextParams.nlist !== old.nlist);
+  if (needRecreate) {
+    const newI = createIVFState(nextParams, vl.metric, dim);
+    vl.strategy = "ivf";
+    vl.ann = newI;
+  } else if (old && typeof nextParams.nprobe === "number") {
+    old.nprobe = Math.max(1, Math.min(old.nlist, nextParams.nprobe));
+  }
+  if (isIvfVL(vl)) {
+    const trained = ivf_trainCentroids(vl.ann, vl.store);
+    if (!ids) {
+      ivf_reassignLists(vl.ann, vl.store);
+      return trained.updated;
+    }
+    for (const id of ids) {
+      const at = vl.store.pos.get(id);
+      if (at === undefined) continue;
+      const li = vl.ann.idToList.get(id);
+      if (li !== undefined) {
+        const arr = vl.ann.lists[li];
+        const pos = arr.indexOf(id);
+        if (pos >= 0) arr.splice(pos, 1);
+      }
+      ivf_add(vl.ann, vl.store, id);
+    }
+    return ids.length;
+  }
+  return 0;
+}

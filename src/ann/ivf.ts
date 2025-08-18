@@ -237,7 +237,7 @@ export function ivf_evaluate<TMeta>(ivf: IVFState, store: CoreStore<TMeta>, quer
   return { recall: sumRecall / n, latency: sumLatency / n }
 }
 
-function nearestCentroid(h: IVFState, store: CoreStore<any>, vec: Float32Array): number {
+function nearestCentroid<TMeta>(h: IVFState, store: CoreStore<TMeta>, vec: Float32Array): number {
   const dim = store.dim
   const scoreAt = getScoreAtFn(h.metric)
   let best = -1

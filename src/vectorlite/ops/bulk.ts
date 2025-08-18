@@ -1,0 +1,44 @@
+/**
+ * Bulk ops: upsertMany/removeMany.
+ *
+ * Why: Provide efficient batched mutation paths with clear error aggregation
+ * semantics, reducing call overhead and centralizing result reporting.
+ */
+import type { VectorLiteState } from '../state'
+import type { UpsertOptions } from '../../types'
+import { add, remove } from './core'
+
+export function upsertMany<TMeta>(vl: VectorLiteState<TMeta>, rows: { id: number; vector: Float32Array; meta?: TMeta | null }[], opts?: UpsertOptions & { mode?: 'best_effort' | 'all_or_nothing' }) {
+  const res: { ok: number; failed: number; duplicates: number[]; errors: { id: number; reason: string }[] } = { ok: 0, failed: 0, duplicates: [], errors: [] }
+  const mode = opts?.mode ?? 'best_effort'
+  try {
+    for (const r of rows) {
+      try { add(vl, r.id, r.vector, r.meta ?? null, { upsert: true }); res.ok++ }
+      catch (e: unknown) {
+        res.failed++
+        let reason = ''
+        if (typeof e === 'object' && e !== null && 'message' in e) {
+          const msg = (e as { message?: unknown }).message
+          reason = typeof msg === 'string' ? msg : String(msg)
+        } else {
+          reason = String(e)
+        }
+        res.errors.push({ id: r.id, reason })
+      }
+    }
+    if (mode === 'all_or_nothing' && res.failed > 0) {
+      throw new Error(`upsertMany failed for ${res.failed}/${rows.length}`)
+    }
+  } catch (_e) {}
+  return res
+}
+
+export function removeMany<TMeta>(vl: VectorLiteState<TMeta>, ids: number[], opts?: { ignoreMissing?: boolean }) {
+  const res = { ok: 0, missing: [] as number[] }
+  for (const id of ids) {
+    const ok = remove(vl, id)
+    if (ok) res.ok++
+    else if (!opts?.ignoreMissing) res.missing.push(id)
+  }
+  return res
+}

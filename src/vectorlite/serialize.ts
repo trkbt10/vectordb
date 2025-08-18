@@ -56,27 +56,30 @@ export function serialize<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
 }
 
 // Snapshot helpers (non-breaking wrappers)
-export function serializeFull<TMeta>(vl: VectorLiteState<TMeta>, opts?: { hasher?: (u8: Uint8Array) => Promise<string> | string }): Promise<{ data: ArrayBuffer; checksum?: string }> | { data: ArrayBuffer; checksum?: string } {
+type Hasher = (u8: Uint8Array) => Promise<string> | string
+function isPromise<T>(x: unknown): x is Promise<T> { return !!x && typeof (x as { then?: unknown }).then === 'function' }
+
+export function serializeFull<TMeta>(vl: VectorLiteState<TMeta>, opts?: { hasher?: Hasher }): Promise<{ data: ArrayBuffer; checksum?: string }> | { data: ArrayBuffer; checksum?: string } {
   const data = serialize(vl)
   const u8 = new Uint8Array(data)
   if (!opts?.hasher) return { data }
   const res = opts.hasher(u8)
-  if (res && typeof (res as any).then === 'function') {
-    return (res as Promise<string>).then(cs => ({ data, checksum: cs }))
+  if (isPromise<string>(res)) {
+    return res.then(cs => ({ data, checksum: cs }))
   }
-  return { data, checksum: res as string }
+  return { data, checksum: res }
 }
 
 import { applyWal } from '../wal'
 
-export function serializeDelta<TMeta>(_vl: VectorLiteState<TMeta>, walBytes: Uint8Array, opts?: { hasher?: (u8: Uint8Array) => Promise<string> | string }): Promise<{ data: Uint8Array; checksum?: string }> | { data: Uint8Array; checksum?: string } {
+export function serializeDelta<TMeta>(_vl: VectorLiteState<TMeta>, walBytes: Uint8Array, opts?: { hasher?: Hasher }): Promise<{ data: Uint8Array; checksum?: string }> | { data: Uint8Array; checksum?: string } {
   const data = walBytes
   if (!opts?.hasher) return { data }
   const res = opts.hasher(data)
-  if (res && typeof (res as any).then === 'function') {
-    return (res as Promise<string>).then(cs => ({ data, checksum: cs }))
+  if (isPromise<string>(res)) {
+    return res.then(cs => ({ data, checksum: cs }))
   }
-  return { data, checksum: res as string }
+  return { data, checksum: res }
 }
 
 export function mergeSnapshotWithDelta<TMeta>(base: ArrayBuffer, walBytes: Uint8Array): ArrayBuffer {
