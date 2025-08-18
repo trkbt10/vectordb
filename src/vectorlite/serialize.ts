@@ -55,6 +55,36 @@ export function serialize<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
   return w.concat().buffer as ArrayBuffer
 }
 
+// Snapshot helpers (non-breaking wrappers)
+export function serializeFull<TMeta>(vl: VectorLiteState<TMeta>, opts?: { hasher?: (u8: Uint8Array) => Promise<string> | string }): Promise<{ data: ArrayBuffer; checksum?: string }> | { data: ArrayBuffer; checksum?: string } {
+  const data = serialize(vl)
+  const u8 = new Uint8Array(data)
+  if (!opts?.hasher) return { data }
+  const res = opts.hasher(u8)
+  if (res && typeof (res as any).then === 'function') {
+    return (res as Promise<string>).then(cs => ({ data, checksum: cs }))
+  }
+  return { data, checksum: res as string }
+}
+
+import { applyWal } from '../wal'
+
+export function serializeDelta<TMeta>(_vl: VectorLiteState<TMeta>, walBytes: Uint8Array, opts?: { hasher?: (u8: Uint8Array) => Promise<string> | string }): Promise<{ data: Uint8Array; checksum?: string }> | { data: Uint8Array; checksum?: string } {
+  const data = walBytes
+  if (!opts?.hasher) return { data }
+  const res = opts.hasher(data)
+  if (res && typeof (res as any).then === 'function') {
+    return (res as Promise<string>).then(cs => ({ data, checksum: cs }))
+  }
+  return { data, checksum: res as string }
+}
+
+export function mergeSnapshotWithDelta<TMeta>(base: ArrayBuffer, walBytes: Uint8Array): ArrayBuffer {
+  const inst = deserializeVectorLite<TMeta>(base)
+  applyWal(inst, walBytes)
+  return serialize(inst)
+}
+
 export function deserializeVectorLite<TMeta = unknown>(buf: ArrayBuffer): VectorLiteState<TMeta> {
   const dv = new DataView(buf)
   const magic = dv.getUint32(0, true)

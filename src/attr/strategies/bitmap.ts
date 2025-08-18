@@ -4,7 +4,8 @@
  * - Numeric range is not supported (returns null).
  * - Implemented as pure functions over a container injected by the factory.
  */
-import type { AttrIndex, Attrs, AttrValue } from '../index'
+import type { AttrIndex, Attrs } from '../index'
+export type AttrValue = string | number | boolean | (string | number)[] | null
 import type { Range, Scalar } from '../../filter/expr'
 
 export type BitmapAttrContainer = {
@@ -76,4 +77,3 @@ export function createBitmapIndex(): AttrIndex {
     range: (key, r) => bitmap_range(c, key, r),
   }
 }
-

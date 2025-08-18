@@ -2,6 +2,7 @@ import type { VectorLiteState } from '../vectorlite/state'
 import type { SearchHit } from '../types'
 import { normalizeQuery } from '../core/store'
 import { compilePredicate, preselectCandidates, type FilterExpr } from '../filter/expr'
+import type { AttrIndexReader, Scalar, Range } from '../filter/expr'
 import type { AttrIndex } from '../attr/index'
 import { getScoreAtFn } from '../util/similarity'
 import { pushTopK } from '../util/topk'
@@ -32,10 +33,10 @@ export function searchWithExpr<TMeta>(
   const q = normalizeQuery(vl.metric, query)
   const pred = compilePredicate(expr)
   const idx = opts.index ?? null
-  const idxReader = idx ? {
-    eq: (key: string, value: any) => idx.eq(key, value),
+  const idxReader: AttrIndexReader | null = idx ? {
+    eq: (key: string, value: Scalar) => idx.eq(key, value),
     exists: (key: string) => idx.exists(key),
-    range: (key: string, r: any) => idx.range(key, r),
+    range: (key: string, r: Range) => idx.range(key, r),
   } : null
   const candidates = preselectCandidates(expr, idxReader)
 

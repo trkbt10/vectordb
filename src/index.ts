@@ -1,34 +1,13 @@
 /**
- * VectorLite public entry point.
+ * VectorLite public entry point (minimal).
  *
- * Why: Provide a single, documented surface for applications. Internals are
- * split into focused submodules (create/ops/serialize), but consumers can
- * import from here without worrying about internal layout.
+ * Purpose: Expose only initialization and core types so applications import
+ * operational APIs explicitly via subpaths. This keeps the entry side-effect
+ * free and environment-agnostic, aiding tree-shaking.
  */
 
-export type { VectorLiteState } from './vectorlite/state'
-export type { VectorLiteOptions, HNSWParams, Metric } from './types'
+export type { VectorLiteState } from "./vectorlite/state";
+export type { VectorLiteOptions, HNSWParams, Metric } from "./types";
 
-export { createVectorLite } from './vectorlite/create'
-export {
-  size,
-  has,
-  add,
-  addMany,
-  getOne,
-  get,
-  getMeta,
-  setMeta,
-  remove,
-  search,
-  hnswCompactAndRebuild,
-  buildWithStrategy,
-  buildHNSWFromStore,
-  buildIVFFromStore,
-} from './vectorlite/ops'
-export { serialize, deserializeVectorLite } from './vectorlite/serialize'
-export { searchWithExpr } from './search/with_expr'
-export * from './wal'
-export * from './persist/node'
-export * from './persist/memory'
-export * from './persist/opfs'
+export { createVectorLite } from "./vectorlite/create";
+export { deserializeVectorLite } from "./vectorlite/serialize";

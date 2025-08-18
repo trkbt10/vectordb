@@ -1,4 +1,16 @@
-import { CoreStore } from '../core/store'
+/**
+ * Inverted File (IVF) index and retraining utilities.
+ *
+ * Why: Provide a pluggable ANN strategy that supports centroid-based routing
+ * and explicit, operator-controlled retraining (no auto-apply). Exposes
+ * k-means training, list reassignment, and a simple recall/latency evaluator.
+ *
+ * Notes:
+ * - We do not mutate nlist dynamically in training; training uses the current
+ *   state's `nlist`. For different `k`, rebuild with a new state.
+ * - For cosine/dot metrics we normalize centroids after recomputation.
+ */
+import { CoreStore, getIndex } from '../core/store'
 import { Metric, SearchHit } from '../types'
 import { getScoreAtFn } from '../util/similarity'
 
@@ -31,6 +43,198 @@ export function createIVFState(params: IVFParams, metric: Metric, dim: number): 
     lists: new Array(nlist).fill(0).map(() => []),
     idToList: new Map<number, number>(),
   }
+}
+
+export type KMeansOptions = {
+  iters?: number
+  seed?: number
+}
+
+function createRng(seed: number): () => number {
+  let s = (seed >>> 0) || 1
+  return () => {
+    // xorshift32
+    let x = s
+    x ^= x << 13
+    x ^= x >>> 17
+    x ^= x << 5
+    s = x >>> 0
+    return (s & 0xffffffff) / 0x100000000
+  }
+}
+
+function normalizeVec(v: Float32Array): void {
+  let ss = 0
+  for (let i = 0; i < v.length; i++) ss += v[i] * v[i]
+  const n = Math.sqrt(ss) || 1
+  for (let i = 0; i < v.length; i++) v[i] = v[i] / n
+}
+
+function argmax(scores: Float32Array): number {
+  let bi = 0
+  let bv = -Infinity
+  for (let i = 0; i < scores.length; i++) {
+    const v = scores[i]
+    if (v > bv) { bv = v; bi = i }
+  }
+  return bi
+}
+
+/** Train IVF centroids via k-means using current store data. */
+export function ivf_trainCentroids<TMeta>(ivf: IVFState, store: CoreStore<TMeta>, opts: KMeansOptions = {}): { updated: number } {
+  const n = store._count
+  const dim = store.dim
+  const k = ivf.nlist
+  if (n === 0 || k === 0) return { updated: 0 }
+  const rng = createRng((opts.seed ?? 42) >>> 0)
+  // Initialize with k distinct random ids (or fewer if n<k)
+  const chosen = new Set<number>()
+  while (chosen.size < Math.min(k, n)) {
+    const pick = Math.floor(rng() * n)
+    chosen.add(pick)
+  }
+  const cents = new Float32Array(k * dim)
+  let ci = 0
+  for (const idx of chosen) {
+    const base = idx * dim
+    for (let d = 0; d < dim; d++) cents[ci * dim + d] = store.data[base + d]
+    if (ivf.metric !== 'l2') normalizeVec(cents.subarray(ci * dim, (ci + 1) * dim))
+    ci++
+    if (ci >= k) break
+  }
+  // If picked less than k (n<k), duplicate heads
+  for (; ci < k; ci++) {
+    const from = ci % Math.max(1, chosen.size)
+    const base = from * dim
+    for (let d = 0; d < dim; d++) cents[ci * dim + d] = cents[base + d]
+  }
+  // Iterative refinement
+  const iters = Math.max(1, opts.iters ?? 10)
+  const scoreAt = getScoreAtFn(ivf.metric)
+  const assign = new Uint32Array(n)
+  const scores = new Float32Array(k)
+  const sums = new Float64Array(k * dim)
+  const counts = new Uint32Array(k)
+  for (let it = 0; it < iters; it++) {
+    // reset accumulators
+    for (let j = 0; j < sums.length; j++) sums[j] = 0
+    for (let j = 0; j < counts.length; j++) counts[j] = 0
+    // assign
+    for (let i = 0; i < n; i++) {
+      const base = i * dim
+      for (let c = 0; c < k; c++) {
+        const off = c * dim
+        // scoreAt expects a contiguous vector in data and query; we adapt by computing score vs centroid
+        // Implement scoreAt(data, base, q, dim) -> we create a temporary score using dot/L2 via inline loop
+        let s = 0
+        if (ivf.metric === 'l2') {
+          // negative L2
+          let acc = 0
+          for (let d = 0; d < dim; d++) { const diff = store.data[base + d] - cents[off + d]; acc += diff * diff }
+          s = -acc
+        } else if (ivf.metric === 'dot' || ivf.metric === 'cosine') {
+          let acc = 0
+          for (let d = 0; d < dim; d++) acc += store.data[base + d] * cents[off + d]
+          s = acc
+        }
+        scores[c] = s
+      }
+      const best = argmax(scores)
+      assign[i] = best >>> 0
+      counts[best]++
+      const soff = best * dim
+      for (let d = 0; d < dim; d++) sums[soff + d] += store.data[base + d]
+    }
+    // recompute centroids
+    for (let c = 0; c < k; c++) {
+      const cnt = counts[c]
+      const off = c * dim
+      if (cnt === 0) continue // keep previous
+      for (let d = 0; d < dim; d++) cents[off + d] = sums[off + d] / cnt
+      if (ivf.metric !== 'l2') normalizeVec(cents.subarray(off, off + dim))
+    }
+  }
+  // write back
+  ivf.centroids.set(cents)
+  ivf.centroidCount = k
+  return { updated: k }
+}
+
+/** Reassign all ids into IVF posting lists based on current centroids. */
+export function ivf_reassignLists<TMeta>(ivf: IVFState, store: CoreStore<TMeta>): { moved: number } {
+  const n = store._count
+  const dim = store.dim
+  const k = ivf.nlist
+  // clear
+  ivf.idToList.clear()
+  for (let i = 0; i < ivf.lists.length; i++) ivf.lists[i] = []
+  if (n === 0 || k === 0 || ivf.centroidCount === 0) return { moved: 0 }
+  const scores = new Float32Array(k)
+  for (let i = 0; i < n; i++) {
+    const base = i * dim
+    for (let c = 0; c < k; c++) {
+      const off = c * dim
+      let s = 0
+      if (ivf.metric === 'l2') {
+        let acc = 0
+        for (let d = 0; d < dim; d++) { const diff = store.data[base + d] - ivf.centroids[off + d]; acc += diff * diff }
+        s = -acc
+      } else {
+        let acc = 0
+        for (let d = 0; d < dim; d++) acc += store.data[base + d] * ivf.centroids[off + d]
+        s = acc
+      }
+      scores[c] = s
+    }
+    const best = argmax(scores)
+    const id = store.ids[i]
+    ivf.idToList.set(id, best)
+    ivf.lists[best]!.push(id)
+  }
+  return { moved: n }
+}
+
+/** Evaluate IVF by comparing with bruteforce top-k; returns average recall and latency. */
+export function ivf_evaluate<TMeta>(ivf: IVFState, store: CoreStore<TMeta>, queries: Float32Array[], k: number): { recall: number; latency: number } {
+  const dim = store.dim
+  const bfTopK = (q: Float32Array, kk: number): number[] => {
+    const out: { id: number; score: number }[] = []
+    for (let i = 0; i < store._count; i++) {
+      const id = store.ids[i]
+      const base = i * dim
+      let s = 0
+      if (ivf.metric === 'l2') {
+        let acc = 0
+        for (let d = 0; d < dim; d++) { const diff = store.data[base + d] - q[d]; acc += diff * diff }
+        s = -acc
+      } else {
+        let acc = 0
+        for (let d = 0; d < dim; d++) acc += store.data[base + d] * q[d]
+        s = acc
+      }
+      // insert sorted desc
+      let pos = out.length
+      for (let j = 0; j < out.length; j++) { if (s > out[j]!.score) { pos = j; break } }
+      out.splice(pos, 0, { id, score: s })
+      if (out.length > kk) out.length = kk
+    }
+    return out.map(x => x.id)
+  }
+  let sumRecall = 0
+  let sumLatency = 0
+  for (const q of queries) {
+    const t0 = Date.now()
+    // use existing search path for ivf
+    const hits = ivf_search(ivf, store, q, k)
+    const dt = Date.now() - t0
+    sumLatency += dt
+    const truth = new Set(bfTopK(q, k))
+    let inter = 0
+    for (const h of hits) { if (truth.has(h.id)) inter++ }
+    sumRecall += inter / Math.max(1, k)
+  }
+  const n = Math.max(1, queries.length)
+  return { recall: sumRecall / n, latency: sumLatency / n }
 }
 
 function nearestCentroid(h: IVFState, store: CoreStore<any>, vec: Float32Array): number {
@@ -160,4 +364,3 @@ export function ivf_deserialize(h: IVFState, store: CoreStore<unknown>, buf: Arr
     h.centroids = fixed
   }
 }
-

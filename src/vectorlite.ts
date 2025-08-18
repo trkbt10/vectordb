@@ -20,9 +20,13 @@ import {
   remove as _remove,
   search as _search,
   hnswCompactAndRebuild as _hnswCompactAndRebuild,
+  trainIvfCentroids as _trainIvfCentroids,
+  reassignIvfLists as _reassignIvfLists,
+  evaluateIvf as _evaluateIvf,
 } from './vectorlite/ops'
 import { serialize as _serialize, deserializeVectorLite as _deserializeVectorLite } from './vectorlite/serialize'
 import { searchWithExpr as _searchWithExpr } from './search/with_expr'
+import { registerRules as _registerRules, clearRules as _clearRules, evaluateRules as _evaluateRules } from './maintain/rules'
 
 export type VectorLiteState<TMeta> = _VectorLiteState<TMeta>
 
@@ -51,6 +55,12 @@ export const remove = _remove
 export const search = _search
 /** Compact and rebuild HNSW graph removing tombstones. */
 export const hnswCompactAndRebuild = _hnswCompactAndRebuild
+/** IVF: Train centroids from current data. */
+export const trainIvfCentroids = _trainIvfCentroids
+/** IVF: Reassign posting lists using trained centroids. */
+export const reassignIvfLists = _reassignIvfLists
+/** IVF: Evaluate recall/latency against bruteforce. */
+export const evaluateIvf = _evaluateIvf
 
 /** Serialize a VectorLite state (binary v2). */
 export const serialize = _serialize
@@ -59,3 +69,9 @@ export const deserializeVectorLite = _deserializeVectorLite
 
 /** Expression-based search with optional attribute index integration. */
 export const searchWithExpr = _searchWithExpr
+/** Register rule-based alerts (global registry). */
+export const registerRules = _registerRules
+/** Clear all registered rules. */
+export const clearRules = _clearRules
+/** Evaluate registered rules and return alerts. */
+export const evaluateRules = _evaluateRules

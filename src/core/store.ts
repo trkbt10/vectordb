@@ -156,6 +156,37 @@ export function restoreFromDeserialized<T>(s: CoreStore<T>, count: number) {
   }
   s._count = count
 }
+
+/** Shrink backing arrays to exactly fit current count. */
+export function shrinkToFit<T>(s: CoreStore<T>): void {
+  const n = s._count
+  const ids2 = new Uint32Array(Math.max(1, n))
+  ids2.set(s.ids.subarray(0, n))
+  const data2 = new Float32Array(Math.max(1, n) * s.dim)
+  data2.set(s.data.subarray(0, n * s.dim))
+  const metas2 = new Array(Math.max(1, n)).fill(null) as (T | null)[]
+  for (let i = 0; i < n; i++) metas2[i] = s.metas[i]
+  s.ids = ids2
+  s.data = data2
+  s.metas = metas2
+  s._capacity = Math.max(1, n)
+}
+
+/** Shrink or grow to target capacity >= count. */
+export function resizeCapacity<T>(s: CoreStore<T>, capacity: number): void {
+  const cap = Math.max(s._count, Math.max(1, capacity | 0))
+  if (cap === s._capacity) return
+  const ids2 = new Uint32Array(cap)
+  ids2.set(s.ids.subarray(0, s._count))
+  const data2 = new Float32Array(cap * s.dim)
+  data2.set(s.data.subarray(0, s._count * s.dim))
+  const metas2 = new Array(cap).fill(null) as (T | null)[]
+  for (let i = 0; i < s._count; i++) metas2[i] = s.metas[i]
+  s.ids = ids2
+  s.data = data2
+  s.metas = metas2
+  s._capacity = cap
+}
 /**
  * CoreStore: contiguous vector storage + id mapping.
  *
