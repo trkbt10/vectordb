@@ -3,7 +3,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
-import { add, remove, compactStore, rebuildIndex } from '../vectorlite/ops'
+import { add, remove } from '../vectorlite/ops/core'
+import { compactStore, rebuildIndex } from '../vectorlite/ops/maintain'
 
 describe('compact/rebuild', () => {
   it('shrinks store capacity and rebuilds HNSW when tombstones exceed ratio', () => {
@@ -26,4 +27,3 @@ describe('compact/rebuild', () => {
     expect(changed).toBeGreaterThan(0)
   })
 })
-

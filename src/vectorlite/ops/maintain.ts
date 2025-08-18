@@ -74,64 +74,44 @@ export function rebuildIndex<TMeta>(
   opts: { strategy: "hnsw" | "ivf"; params?: HNSWParams | IVFParams; ids?: number[] }
 ): number {
   const ids = opts.ids && opts.ids.length ? Array.from(opts.ids) : null;
-  if (opts.strategy === "hnsw") {
-    const old = isHnswVL(vl) ? vl.ann : null;
-    const p =
-      (opts.params as HNSWParams | undefined) ??
-      (old
-        ? {
-            M: old.M,
-            efConstruction: old.efConstruction,
-            efSearch: old.efSearch,
-            levelMult: old.levelMult,
-            allowReplaceDeleted: old.allowReplaceDeleted,
-            seed: 42,
-          }
-        : { M: 16, efConstruction: 200, efSearch: 50 });
-    const newH = createHNSWState(p, vl.metric, vl.store._count || 1);
-    vl.strategy = "hnsw";
-    vl.ann = newH;
-    if (isHnswVL(vl)) {
-      if (!ids) {
-        for (let i = 0; i < vl.store._count; i++) hnsw_add(vl.ann, vl.store, vl.store.ids[i]);
-      } else {
-        for (const id of ids) hnsw_add(vl.ann, vl.store, id);
-      }
-    }
-    return ids ? ids.length : vl.store._count;
+  if (opts.strategy === 'hnsw') return rebuildHnsw(vl, opts.params as HNSWParams | undefined, ids)
+  return rebuildIvf(vl, opts.params as IVFParams | undefined, ids)
+}
+
+function rebuildHnsw<TMeta>(vl: VectorLiteState<TMeta>, params: HNSWParams | undefined, ids: number[] | null): number {
+  const old = isHnswVL(vl) ? vl.ann : null;
+  const p: HNSWParams = params ?? (old ? {
+    M: old.M,
+    efConstruction: old.efConstruction,
+    efSearch: old.efSearch,
+    levelMult: old.levelMult,
+    allowReplaceDeleted: old.allowReplaceDeleted,
+    seed: 42,
+  } : { M: 16, efConstruction: 200, efSearch: 50 });
+  const newH = createHNSWState(p, vl.metric, vl.store._count || 1);
+  vl.strategy = 'hnsw';
+  vl.ann = newH;
+  if (isHnswVL(vl)) {
+    if (!ids) { for (let i = 0; i < vl.store._count; i++) hnsw_add(vl.ann, vl.store, vl.store.ids[i]); }
+    else { for (const id of ids) hnsw_add(vl.ann, vl.store, id); }
   }
-  // IVF
-  const dim = vl.dim;
+  return ids ? ids.length : vl.store._count;
+}
+
+function rebuildIvf<TMeta>(vl: VectorLiteState<TMeta>, params: IVFParams | undefined, ids: number[] | null): number {
   const old = isIvfVL(vl) ? vl.ann : null;
-  const nextParams =
-    (opts.params as IVFParams | undefined) ??
-    (old ? { nlist: old.nlist, nprobe: old.nprobe } : { nlist: 64, nprobe: 8 });
-  const needRecreate = !old || (typeof nextParams.nlist === "number" && nextParams.nlist !== old.nlist);
-  if (needRecreate) {
-    const newI = createIVFState(nextParams, vl.metric, dim);
-    vl.strategy = "ivf";
-    vl.ann = newI;
-  } else if (old && typeof nextParams.nprobe === "number") {
-    old.nprobe = Math.max(1, Math.min(old.nlist, nextParams.nprobe));
+  const next: IVFParams = params ?? (old ? { nlist: old.nlist, nprobe: old.nprobe } : { nlist: 64, nprobe: 8 });
+  const needRecreate = !old || (typeof next.nlist === 'number' && next.nlist !== old.nlist);
+  if (needRecreate) { const newI = createIVFState(next, vl.metric, vl.dim); vl.strategy = 'ivf'; vl.ann = newI }
+  else if (old && typeof next.nprobe === 'number') { old.nprobe = Math.max(1, Math.min(old.nlist, next.nprobe)) }
+  if (!isIvfVL(vl)) return 0
+  const trained = ivf_trainCentroids(vl.ann, vl.store)
+  if (!ids) { ivf_reassignLists(vl.ann, vl.store); return trained.updated }
+  for (const id of ids) {
+    const at = vl.store.pos.get(id); if (at === undefined) continue
+    const li = vl.ann.idToList.get(id)
+    if (li !== undefined) { const arr = vl.ann.lists[li]; const pos = arr.indexOf(id); if (pos >= 0) arr.splice(pos, 1) }
+    ivf_add(vl.ann, vl.store, id)
   }
-  if (isIvfVL(vl)) {
-    const trained = ivf_trainCentroids(vl.ann, vl.store);
-    if (!ids) {
-      ivf_reassignLists(vl.ann, vl.store);
-      return trained.updated;
-    }
-    for (const id of ids) {
-      const at = vl.store.pos.get(id);
-      if (at === undefined) continue;
-      const li = vl.ann.idToList.get(id);
-      if (li !== undefined) {
-        const arr = vl.ann.lists[li];
-        const pos = arr.indexOf(id);
-        if (pos >= 0) arr.splice(pos, 1);
-      }
-      ivf_add(vl.ann, vl.store, id);
-    }
-    return ids.length;
-  }
-  return 0;
+  return ids.length
 }

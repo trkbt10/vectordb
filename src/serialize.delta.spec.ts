@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from './vectorlite/create'
-import { add, getOne } from './vectorlite/ops'
+import { add, getOne } from './vectorlite/ops/core'
 import { serializeFull, serializeDelta, mergeSnapshotWithDelta, deserializeVectorLite } from './vectorlite/serialize'
 import { encodeWal } from './wal'
 
@@ -30,4 +30,3 @@ describe('serialize: full + delta + merge', () => {
     expect(r3 && r3.meta && r3.meta.lang).toBe('fr')
   })
 })
-

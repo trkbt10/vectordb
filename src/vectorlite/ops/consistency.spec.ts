@@ -7,6 +7,7 @@ import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../create'
 import { add } from './core'
 import { checkConsistency, repairConsistency } from './consistency'
+import { isIvfVL } from '../../util/guards'
 
 describe('ops.consistency', () => {
   it('detects missingInIndex for IVF and can repair', () => {
@@ -14,7 +15,7 @@ describe('ops.consistency', () => {
     add(vl, 1, new Float32Array([1,0]), null)
     add(vl, 2, new Float32Array([0.9,0]), null)
     // simulate drift
-    if (vl.strategy === 'ivf') {
+    if (isIvfVL(vl)) {
       vl.ann.idToList.clear()
       for (const lst of vl.ann.lists) lst.splice(0, lst.length)
     }

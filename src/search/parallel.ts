@@ -1,4 +1,4 @@
-import { search } from '../vectorlite/ops'
+import { search } from '../vectorlite/ops/core'
 import { searchWithExpr } from './with_expr'
 import type { VectorLiteState } from '../vectorlite/state'
 import type { FilterExpr } from '../filter/expr'

@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
-import { add, remove } from '../vectorlite/ops'
+import { add, remove } from '../vectorlite/ops/core'
 import { registerRules, clearRules, evaluateRules, ruleLargeDatasetBF, ruleHnswLowDegree, ruleHnswTombstone } from './rules'
 
 describe('rules engine', () => {
@@ -27,4 +27,3 @@ describe('rules engine', () => {
     expect(alerts.some(a => a.code === 'hnsw.tombstone-high')).toBe(true)
   })
 })
-

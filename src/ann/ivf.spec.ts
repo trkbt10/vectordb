@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
-import { add, search, buildIVFFromStore } from '../vectorlite/ops'
+import { add, search, buildIVFFromStore } from '../vectorlite/ops/core'
 
 describe('IVF basic behavior', () => {
   it('returns similar results to BF on clustered data', () => {

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../create'
 import { add, remove } from './core'
-import { hnswCompactAndRebuild } from './maintain'
+import { hnswCompactAndRebuild, rebuildIndex } from './maintain'
 
 describe('ops.maintain', () => {
   it('hnswCompactAndRebuild compacts when tombstones exist', () => {
@@ -13,4 +13,14 @@ describe('ops.maintain', () => {
     const removed = hnswCompactAndRebuild(vl)
     expect(removed).toBeGreaterThan(0)
   })
+  it('rebuildIndex switches to hnsw and ivf with params', () => {
+    const bf = createVectorLite({ dim: 2, metric: 'cosine', strategy: 'bruteforce' })
+    add(bf, 1, new Float32Array([1,0]), null)
+    add(bf, 2, new Float32Array([0,1]), null)
+    const changedH = rebuildIndex(bf as any, { strategy: 'hnsw', params: { M: 6, efSearch: 24 } })
+    expect(changedH).toBeGreaterThan(0)
+    const changedI = rebuildIndex(bf as any, { strategy: 'ivf', params: { nlist: 8, nprobe: 4 } })
+    expect(changedI).toBeGreaterThan(0)
+  })
+
 })

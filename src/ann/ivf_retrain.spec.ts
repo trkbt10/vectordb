@@ -8,8 +8,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
-import { add } from '../vectorlite/ops'
-import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from '../vectorlite/ops'
+import { add } from '../vectorlite/ops/core'
+import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from '../vectorlite/ops/ivf'
 
 describe('IVF retrain/evaluate', () => {
   it('trains, reassigns, and evaluates with good recall', () => {

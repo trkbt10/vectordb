@@ -3,8 +3,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
-import { add } from '../vectorlite/ops'
-import { buildHNSWFromStore, tuneHnsw } from '../vectorlite/ops'
+import { add, buildHNSWFromStore } from '../vectorlite/ops/core'
+import { tuneHnsw } from '../vectorlite/ops/tune'
 
 describe('tuneHnsw', () => {
   it('produces results and recall within [0,1]', () => {
@@ -26,4 +26,3 @@ describe('tuneHnsw', () => {
     }
   })
 })
-

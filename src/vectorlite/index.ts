@@ -20,21 +20,14 @@ export {
   setMeta,
   remove,
   search,
-  hnswCompactAndRebuild,
   buildHNSWFromStore,
   buildIVFFromStore,
-  upsertMany,
-  removeMany,
-  stats,
-  diagnose,
-  checkConsistency,
-  repairConsistency,
-  trainIvfCentroids,
-  reassignIvfLists,
-  evaluateIvf,
-  compactStore,
-  rebuildIndex,
-  tuneHnsw,
-} from './ops'
+} from './ops/core'
+export { hnswCompactAndRebuild, compactStore, rebuildIndex } from './ops/maintain'
+export { upsertMany, removeMany } from './ops/bulk'
+export { stats, diagnose } from './ops/stats'
+export { checkConsistency, repairConsistency } from './ops/consistency'
+export { trainIvfCentroids, reassignIvfLists, evaluateIvf } from './ops/ivf'
+export { tuneHnsw } from './ops/tune'
 
 export { searchWithExpr } from '../search/with_expr'
