@@ -5,8 +5,8 @@
  * are enforced by the type system (exhaustive switches) and propagate safely.
  */
 import type { Metric } from "../types";
-import type { VectorLiteState } from "./state";
-import { createEnumCodec, type EnumCodec } from "../util/enum_codec";
+import type { VectorLiteState } from "../types";
+import { createEnumCodec } from "../util/enum_codec";
 
 export const MAGIC = 0x564c4954; // 'VLIT'
 export const VERSION = 1;

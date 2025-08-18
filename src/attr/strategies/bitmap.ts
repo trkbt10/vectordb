@@ -6,7 +6,7 @@
  */
 import type { AttrIndex, Attrs } from '../index'
 export type AttrValue = string | number | boolean | (string | number)[] | null
-import type { Range, Scalar } from '../../filter/expr'
+import type { Scalar } from '../../filter/expr'
 
 export type BitmapAttrContainer = {
   data: Map<number, Attrs>
@@ -84,7 +84,7 @@ export function bitmap_exists(c: BitmapAttrContainer, key: string): Set<number> 
 /**
  *
  */
-export function bitmap_range(_c: BitmapAttrContainer, _key: string, _r: Range): Set<number> | null { return null }
+export function bitmap_range(): Set<number> | null { return null }
 
 /**
  *

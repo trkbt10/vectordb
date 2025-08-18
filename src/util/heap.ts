@@ -35,7 +35,8 @@ export class MaxHeap<T extends ScoreItem> {
     const a = this.a
     const n = a.length
     while (true) {
-      let l = i * 2 + 1, r = l + 1, m = i
+      const l = i * 2 + 1, r = l + 1
+      let m = i
       if (l < n && a[l].s > a[m].s) m = l
       if (r < n && a[r].s > a[m].s) m = r
       if (m === i) break

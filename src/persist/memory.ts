@@ -1,8 +1,17 @@
 /**
- * In-memory FileIO implementation for tests and demos.
- *
- * Why: Provide a zero-dependency, side-effect-free FileIO for unit tests and
- * simple scenarios without touching the filesystem.
+ * @file In-memory file system implementation for testing and development
+ * 
+ * This module provides a fully in-memory implementation of the FileIO interface,
+ * enabling VectorLite to run without any file system dependencies. Features:
+ * - Complete FileIO compatibility for seamless testing
+ * - Isolated storage that doesn't affect the real file system
+ * - Support for pre-populating files for test scenarios
+ * - Atomic write simulation for testing transactional behavior
+ * 
+ * Primarily used for unit tests, browser demos, and development environments
+ * where file system access is unavailable or undesirable. The implementation
+ * maintains the same semantics as real file operations, including proper
+ * error handling for missing files.
  */
 import type { FileIO } from './types'
 import { toUint8 } from './types'

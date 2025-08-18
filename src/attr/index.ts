@@ -121,19 +121,6 @@ export function basic_range(c: BasicAttrContainer, key: string, r: Range): Set<n
   if (lo<0) lo=0; if (ro>arr.length) ro=arr.length; if (lo>ro) return new Set(); const out = new Set<number>(); for (let i=lo;i<ro;i++) out.add(arr[i].id); return out
 }
 
-function createBasic(): AttrIndex {
-  const c = createBasicContainer()
-  return {
-    strategy: 'basic',
-    setAttrs: (id, attrs) => basic_setAttrs(c, id, attrs),
-    getAttrs: (id) => basic_getAttrs(c, id),
-    removeId: (id) => basic_removeId(c, id),
-    eq: (key, value) => basic_eq(c, key, value),
-    exists: (key) => basic_exists(c, key),
-    range: (key, r) => basic_range(c, key, r),
-  }
-}
-
 import { createBasicIndex } from './strategies/basic'
 import { createBitmapIndex } from './strategies/bitmap'
 

@@ -4,9 +4,9 @@
  * Why: Provide a single import path for day-to-day usage while keeping
  * internal modules decoupled for clarity and testability.
  */
-export type { VectorLiteState } from './state'
+export type { VectorLiteState } from '../types'
 
-export { createVectorLite } from './create'
+export { createVectorLiteState } from './create'
 export { serialize, deserializeVectorLite } from './serialize'
 
 export {

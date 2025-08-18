@@ -1,9 +1,16 @@
 /**
- * Enum codec helper for string unions.
- *
- * Why: Provide a single, type-safe way to map discriminated string unions to
- * numeric codes for binary formats, with duplicate-code validation and
- * exhaustive typing via Record<K, number>.
+ * @file Type-safe enum codec for binary serialization
+ * 
+ * This module provides a bidirectional mapping system between TypeScript string
+ * literal types and numeric codes for efficient binary serialization. Features:
+ * - Type-safe encoding/decoding of string enums to numeric values
+ * - Compile-time exhaustiveness checking via TypeScript's type system
+ * - Runtime validation to prevent duplicate code assignments
+ * - Consistent error handling for invalid codes
+ * 
+ * Used throughout the system to serialize discriminated unions (like Metric and
+ * Strategy types) in a way that's both space-efficient and maintains type safety
+ * during deserialization.
  */
 
 export type EnumCodec<K extends string> = {

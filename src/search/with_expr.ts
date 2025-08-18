@@ -1,4 +1,19 @@
-import type { VectorLiteState } from '../vectorlite/state'
+/**
+ * @file Advanced vector search with filter expression support
+ * 
+ * This module implements sophisticated vector search functionality that combines
+ * similarity search with complex filtering capabilities. Key features include:
+ * - Integration of filter expressions with vector similarity search
+ * - Support for attribute-based pre-filtering using indexes
+ * - HNSW-specific optimizations (hard/soft filtering modes, bridge budgets)
+ * - Fallback to brute-force search for complex filter scenarios
+ * 
+ * The module bridges the gap between pure vector similarity search and traditional
+ * database queries, allowing users to find vectors that are both similar and match
+ * specific criteria (metadata, attributes, ID ranges, etc.).
+ */
+
+import type { VectorLiteState } from '../types'
 import type { SearchHit } from '../types'
 import { normalizeQuery } from '../core/store'
 import { compilePredicate, preselectCandidates, type FilterExpr } from '../filter/expr'
@@ -8,7 +23,6 @@ import { getScoreAtFn } from '../util/similarity'
 import { pushTopK } from '../util/topk'
 import { createBitMask, maskSet } from '../util/bitset'
 import { hnsw_search, HNSWState } from '../ann/hnsw'
-import { BruteforceState } from '../ann/bruteforce'
 
 export type SearchWithExprOptions = {
   k?: number

@@ -1,6 +1,19 @@
-import { search } from '../vectorlite/ops/core'
+/**
+ * @file Parallel search execution with sharding strategies
+ * 
+ * This module enables distributed vector search across multiple shards for improved
+ * performance and scalability. It provides:
+ * - Sharding strategies (range-based and hash-based) to partition vector IDs
+ * - Parallel search execution across shards with result aggregation
+ * - Support for filtering and expression-based queries across all shards
+ * 
+ * The parallel search system allows large vector databases to be split into smaller
+ * chunks that can be searched concurrently, reducing latency and enabling horizontal
+ * scaling of search operations.
+ */
+
 import { searchWithExpr } from './with_expr'
-import type { VectorLiteState } from '../vectorlite/state'
+import type { VectorLiteState } from '../types'
 import type { FilterExpr } from '../filter/expr'
 import type { SearchHit } from '../types'
 

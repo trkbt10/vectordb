@@ -1,9 +1,17 @@
 /**
- * Filter-expression engine (subset, unnamed here).
- *
- * Why: Express attribute/meta constraints declaratively and compile them to a
- * predicate that can be used uniformly across strategies. When an attribute
- * index is present, we can also preselect candidate ids to reduce scoring work.
+ * @file Filter expression compilation and evaluation engine
+ * 
+ * This module provides a declarative filter expression system for vector search queries.
+ * It compiles filter expressions into efficient predicates that can filter search results
+ * based on metadata and attributes. The system supports:
+ * - Scalar comparisons (eq, neq, in, nin)
+ * - Range queries (gt, gte, lt, lte)
+ * - Boolean operations (and, or, not)
+ * - ID-based filtering
+ * - Integration with attribute indexes for optimized pre-filtering
+ * 
+ * The compiled predicates work uniformly across all ANN strategies (bruteforce, HNSW, IVF),
+ * allowing consistent filtering behavior regardless of the underlying search algorithm.
  */
 
 export type Scalar = string | number | boolean
@@ -37,21 +45,19 @@ export type BoolExpr = {
 export type HasIdOnly = { has_id: HasId }
 export type FilterExpr = LeafExpr | BoolExpr | HasIdOnly | (HasIdOnly & BoolExpr)
 
-export type MetaLike = any
-export type AttrsLike = Record<string, any> | null | undefined
+export type MetaLike = unknown
+export type AttrsLike = Record<string, unknown> | null | undefined
 
 export type CompiledPredicate = (id: number, meta: MetaLike, attrs?: AttrsLike) => boolean
 
-function isObject(v: unknown): v is Record<string, unknown> { return v !== null && typeof v === 'object' }
-
-function getByPath(obj: any, path: string | undefined): any {
+function getByPath(obj: unknown, path: string | undefined): unknown {
   if (!path) return undefined
   if (obj == null) return undefined
   const parts = path.split('.')
-  let cur: any = obj
+  let cur = obj as Record<string, unknown>
   for (const p of parts) {
     if (cur == null) return undefined
-    cur = cur[p as keyof typeof cur]
+    cur = cur[p] as Record<string, unknown>
   }
   return cur
 }
@@ -115,7 +121,8 @@ function compileLeaf(l: LeafExpr): (id: number, meta: MetaLike, attrs?: AttrsLik
 export function compilePredicate(expr: FilterExpr): CompiledPredicate {
   if ('has_id' in expr) {
     const set = new Set(expr.has_id.values.map(v => v >>> 0))
-    const { has_id, ...rest } = expr as HasIdOnly & Partial<BoolExpr>
+    const exprWithId = expr as HasIdOnly & Partial<BoolExpr>
+    const rest = Object.fromEntries(Object.entries(exprWithId).filter(([k]) => k !== 'has_id'))
     const hasRest = Object.keys(rest).length > 0
     if (!hasRest) {
       return (id) => set.has(id >>> 0)

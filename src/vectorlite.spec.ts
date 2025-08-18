@@ -1,8 +1,8 @@
-import { createVectorLite, deserializeVectorLite, add, search, serialize } from "./vectorlite";
+import { createVectorLiteState, deserializeVectorLite, add, search, serialize } from "./vectorlite";
 import type { SearchHit } from './types'
 
 test("VectorLite bruteforce: adds, searches, roundtrips", () => {
-  const db = createVectorLite<{ tag: string }>({ dim: 3, metric: "cosine" });
+  const db = createVectorLiteState<{ tag: string }>({ dim: 3, metric: "cosine" });
   add(db, 1, new Float32Array([1, 0, 0]), { tag: "A" });
   add(db, 2, new Float32Array([0.9, 0, 0]), { tag: "B" });
   const hits = search(db, new Float32Array([0.95, 0, 0]), { k: 2 });

@@ -4,7 +4,7 @@
  */
 
 import {
-  createVectorLite,
+  createVectorLiteState,
   deserializeVectorLite,
   add,
   search,
@@ -17,7 +17,7 @@ import { computeNumSeeds } from "./hnsw";
 
 test("VectorLite HNSW: searches and roundtrips", () => {
   const dim = 4;
-  const db = createVectorLite<{ tag: string }>({
+  const db = createVectorLiteState<{ tag: string }>({
     dim,
     strategy: "hnsw",
     hnsw: { M: 8, efConstruction: 32, efSearch: 16, seed: 123 },
@@ -37,7 +37,7 @@ test("VectorLite HNSW: searches and roundtrips", () => {
 
 test("HNSW remove + compact rebuild drops tombstones", () => {
   const dim = 3;
-  const db = createVectorLite<{ tag?: string }>({
+  const db = createVectorLiteState<{ tag?: string }>({
     dim,
     strategy: "hnsw",
     hnsw: { M: 8, efConstruction: 32, efSearch: 16, seed: 7 },

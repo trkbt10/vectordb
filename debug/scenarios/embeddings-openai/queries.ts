@@ -15,6 +15,3 @@ export const QUERIES: QueryDef[] = [
   { q: 'アルゼンチンの話', desc: 'tags contains peru/amazon/inca (OR)', expr: { should: [{ key: 'tags', match: 'peru' }, { key: 'tags', match: 'amazon' }, { key: 'tags', match: 'inca' }], should_min: 1 } },
   { q: 'イギリスの話', desc: 'tags contains uk', expr: { must: [{ key: 'tags', match: 'uk' }] } },
 ]
-/**
- * @file Query seeds for OpenAI embeddings debug scenario.
- */

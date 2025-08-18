@@ -4,10 +4,10 @@
  * Why: Isolate maintenance workflows (compaction, rebuild, capacity tuning)
  * behind explicit, operator-invoked functions to avoid hidden mutations.
  */
-import type { VectorLiteState } from "../state";
+import type { VectorLiteState } from "../../types";
 import type { HNSWParams, IVFParams } from "../../types";
 import { isHnswVL, isIvfVL } from "../../util/guards";
-import { hnsw_add, hnsw_ensureCapacity, createHNSWState } from "../../ann/hnsw";
+import { hnsw_add, createHNSWState } from "../../ann/hnsw";
 import { ivf_add, ivf_reassignLists, ivf_trainCentroids, createIVFState } from "../../ann/ivf";
 import { createStore, getByIndex as storeGetByIndex, addOrUpdate, resizeCapacity, shrinkToFit } from "../../core/store";
 

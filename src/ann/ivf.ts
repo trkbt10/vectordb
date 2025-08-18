@@ -14,7 +14,7 @@
  *   state's `nlist`. For different `k`, rebuild with a new state.
  * - For cosine/dot metrics we normalize centroids after recomputation.
  */
-import { CoreStore, getIndex } from "../core/store";
+import { CoreStore } from "../core/store";
 import { Metric, SearchHit } from "../types";
 import { getScoreAtFn } from "../util/similarity";
 
@@ -124,7 +124,6 @@ export function ivf_trainCentroids<TMeta>(
   }
   // Iterative refinement
   const iters = Math.max(1, opts.iters ?? 10);
-  const scoreAt = getScoreAtFn(ivf.metric);
   const assign = new Uint32Array(n);
   const scores = new Float32Array(k);
   const sums = new Float64Array(k * dim);
@@ -315,7 +314,7 @@ export function ivf_add<TMeta>(h: IVFState, store: CoreStore<TMeta>, id: number)
 /**
  *
  */
-export function ivf_remove<TMeta>(h: IVFState, _store: CoreStore<TMeta>, id: number): void {
+export function ivf_remove(h: IVFState, id: number): void {
   const uid = id >>> 0;
   const li = h.idToList.get(uid);
   if (li === undefined) return;

@@ -3,6 +3,5 @@
  */
 
 // Barrel for types and runners so that DOCS.tsx can import types
-export type { Doc } from './common'
-export { runBruteforce, runHNSW } from './common'
- */
+export type { Doc } from "./common";
+export { runBruteforce, runHNSW } from "./common";

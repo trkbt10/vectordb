@@ -1,3 +1,18 @@
+/**
+ * @file File I/O abstraction layer for persistence operations
+ * 
+ * This module defines the interface for file system operations across different
+ * environments (Node.js, browser with OPFS, in-memory). It provides:
+ * - A unified FileIO interface for read/write operations
+ * - Support for atomic writes to ensure data integrity
+ * - Append operations for write-ahead logging (WAL)
+ * - Type conversions between ArrayBuffer and Uint8Array
+ * 
+ * The abstraction allows VectorLite to work seamlessly across environments
+ * while maintaining consistent persistence semantics and enabling features
+ * like crash recovery and transactional guarantees.
+ */
+
 export type FileIO = {
   read(path: string): Promise<Uint8Array>
   write(path: string, data: Uint8Array | ArrayBuffer): Promise<void>

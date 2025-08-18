@@ -1,10 +1,26 @@
 /**
- * Rule-based Alerts
- *
- * Why: Provide high-level operational suggestions as alerts without mutating
- * state. Operators can register rules and evaluate them explicitly.
+ * @file Rule-based monitoring and alerting system for VectorLite operations
+ * 
+ * This module provides a flexible framework for monitoring VectorLite instances
+ * and generating operational alerts based on configurable rules. Key features:
+ * 
+ * - Performance monitoring: Detect when bruteforce search becomes inefficient
+ *   for large datasets and suggest switching to HNSW or IVF
+ * - Index health checks: Monitor HNSW graph connectivity (average degree) and
+ *   IVF cluster balance to ensure optimal search performance
+ * - Maintenance alerts: Identify when HNSW tombstone ratios indicate need for
+ *   compaction or when IVF centroids should be retrained
+ * - Extensible rule system: Register custom rules to monitor application-specific
+ *   metrics and generate alerts based on your requirements
+ * 
+ * The rule system operates in a read-only manner, analyzing VectorLite state
+ * without making modifications. This allows safe monitoring in production
+ * environments where operators can review alerts and decide on actions.
+ * 
+ * Used by applications that need proactive monitoring of vector database health
+ * and performance, enabling preventive maintenance before issues impact users.
  */
-import type { VectorLiteState } from '../vectorlite/state'
+import type { VectorLiteState } from '../types'
 import type { Metric } from '../types'
 import { isHnswVL, isIvfVL } from '../util/guards'
 
@@ -125,4 +141,3 @@ export function ruleHnswTombstone<TMeta>(ratio = 0.3): Rule<TMeta> {
     return null
   }
 }
-

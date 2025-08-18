@@ -6,8 +6,8 @@
  */
 import { createReader, createWriter } from "../util/bin";
 import type { Metric } from "../types";
-import { createVectorLite } from "./create";
-import type { VectorLiteState } from "./state";
+import { createVectorLiteState } from "./create";
+import type { VectorLiteState } from "../types";
 import { hnsw_serialize, hnsw_deserialize } from "../ann/hnsw";
 import { bf_serialize } from "../ann/bruteforce";
 import { ivf_serialize, ivf_deserialize } from "../ann/ivf";
@@ -135,7 +135,7 @@ export function deserializeVectorLite<TMeta = unknown>(buf: ArrayBuffer): Vector
   const stratU8 = r.readBytes(stratLen);
   const stratBuf = stratU8.slice().buffer as ArrayBuffer;
 
-  const inst = createVectorLite<TMeta>({ dim, metric, capacity: count, strategy: decodeStrategy(strategyCode) });
+  const inst = createVectorLiteState<TMeta>({ dim, metric, capacity: count, strategy: decodeStrategy(strategyCode) });
   inst.store.ids.set(ids);
   inst.store.data.set(data);
   for (let i = 0; i < count; i++) {

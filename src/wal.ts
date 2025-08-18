@@ -1,6 +1,6 @@
 import { add, remove, setMeta } from './vectorlite/ops/core'
 import type { AttrIndex, Attrs } from './attr/index'
-import type { VectorLiteState } from './vectorlite/state'
+import type { VectorLiteState } from './types'
 
 // Simple WAL format (little-endian)
 // Header: 'VLWA' (4 bytes), version u32 (1)

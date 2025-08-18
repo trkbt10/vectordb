@@ -1,4 +1,20 @@
 /**
+ * @file Core type definitions for the VectorLite system
+ * 
+ * This module defines the fundamental types and interfaces used throughout the
+ * VectorLite vector database. It includes:
+ * - Metric types for similarity/distance calculations
+ * - Configuration options for database initialization
+ * - Search parameters and result types
+ * - HNSW (Hierarchical Navigable Small World) graph parameters
+ * - IVF (Inverted File) index parameters
+ * - Common interfaces for vector operations
+ * 
+ * These types form the public API contract for VectorLite, ensuring type safety
+ * and consistency across all modules.
+ */
+
+/**
  * Distance/Similarity Metric.
  * - 'cosine': vectors are normalized internally, score in [-1,1]
  * - 'l2': score is negative squared distance (higher is closer)
@@ -53,4 +69,22 @@ export type HNSWParams = {
 export type IVFParams = {
   nlist?: number;
   nprobe?: number;
+}
+
+// ---------------------------------------------------------------------------
+// VectorLite state types (moved from src/vectorlite/state.ts)
+
+import type { CoreStore } from './core/store'
+import type { BruteforceState } from './ann/bruteforce'
+import type { HNSWState } from './ann/hnsw'
+import type { IVFState } from './ann/ivf'
+
+export type VectorLiteAnn = BruteforceState | HNSWState | IVFState
+
+export type VectorLiteState<TMeta> = {
+  dim: number
+  metric: Metric
+  store: CoreStore<TMeta>
+  strategy: 'bruteforce' | 'hnsw' | 'ivf'
+  ann: VectorLiteAnn
 }

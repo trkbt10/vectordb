@@ -2,14 +2,14 @@
  * HNSW tuning spec
  */
 import { describe, it, expect } from 'vitest'
-import { createVectorLite } from '../vectorlite/create'
+import { createVectorLiteState } from '../vectorlite/create'
 import { add, buildHNSWFromStore } from '../vectorlite/ops/core'
 import { tuneHnsw } from '../vectorlite/ops/tune'
 
 describe('tuneHnsw', () => {
   it('produces results and recall within [0,1]', () => {
     const dim = 4
-    const bf = createVectorLite({ dim, metric: 'cosine', strategy: 'bruteforce' })
+    const bf = createVectorLiteState({ dim, metric: 'cosine', strategy: 'bruteforce' })
     const base1 = new Float32Array([1,0,0,0])
     const base2 = new Float32Array([0,1,0,0])
     function jit(b: Float32Array) { const v = new Float32Array(dim); for (let i=0;i<dim;i++) v[i]=b[i]+(Math.random()*2-1)*0.05; return v }

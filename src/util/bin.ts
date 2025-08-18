@@ -1,4 +1,27 @@
-/** Utilities for simple binary IO (little-endian) */
+/**
+ * @file Binary I/O utilities for VectorLite serialization
+ * 
+ * This module provides low-level binary reading and writing capabilities used
+ * throughout VectorLite for efficient data serialization. Key features:
+ * 
+ * - Little-endian format: Consistent byte ordering across platforms for
+ *   interoperability between different architectures
+ * - Streaming readers/writers: Memory-efficient processing of large vector
+ *   databases without loading entire buffers into memory
+ * - Type-safe primitives: Read/write methods for common data types (u32, i32, bytes)
+ *   with proper TypeScript typing
+ * - Zero dependencies: Pure JavaScript implementation using native ArrayBuffer
+ *   and DataView APIs for maximum compatibility
+ * 
+ * Used internally by VectorLite's persistence layer to serialize:
+ * - Vector data and metadata
+ * - Index structures (HNSW graphs, IVF clusters)
+ * - Write-Ahead Log (WAL) entries
+ * - Snapshot files
+ * 
+ * The simple, explicit API makes the serialization format transparent and
+ * debuggable, while maintaining high performance for large-scale vector operations.
+ */
 
 export type BinReader = {
   readU32(): number;
@@ -12,6 +35,7 @@ export type BinReader = {
  */
 export function createReader(buf: ArrayBufferLike): BinReader {
   const dv = new DataView(buf);
+  // eslint-disable-next-line -- off is used to track the current read position
   let off = 0;
   function readU32(): number {
     const v = dv.getUint32(off, true);
@@ -74,9 +98,3 @@ export function createWriter(): BinWriter {
   }
   return { pushU32, pushI32, pushBytes, concat };
 }
-/**
- * Binary reader/writer utilities over Uint8Array buffers.
- *
- * Why: Keep serialization code small and explicit, with no external deps,
- * while supporting cross-environment ArrayBuffer handling.
- */

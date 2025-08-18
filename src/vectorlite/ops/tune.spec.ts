@@ -4,16 +4,16 @@
  * Why: Verify suggestions are returned and recall values are bounded.
  */
 import { describe, it, expect } from 'vitest'
-import { createVectorLite } from '../create'
+import { createVectorLiteState } from '../create'
 import { add } from './core'
 import { tuneHnsw } from './tune'
 
 describe('ops.tune', () => {
   it('returns suggestions with bounded recall', () => {
-    const bf = createVectorLite({ dim: 3, metric: 'cosine', strategy: 'bruteforce' })
+    const bf = createVectorLiteState({ dim: 3, metric: 'cosine', strategy: 'bruteforce' })
     for (let i=0;i<50;i++) add(bf, i+1, new Float32Array([1,0,0]), null)
     for (let i=0;i<50;i++) add(bf, 100+i, new Float32Array([0,1,0]), null)
-    const h = createVectorLite({ dim: 3, metric: 'cosine', strategy: 'hnsw', hnsw: { M: 8, efConstruction: 32, efSearch: 16 } })
+    const h = createVectorLiteState({ dim: 3, metric: 'cosine', strategy: 'hnsw', hnsw: { M: 8, efConstruction: 32, efSearch: 16 } })
     // copy data
     for (let i=0;i<bf.store._count;i++) add(h, bf.store.ids[i], bf.store.data.subarray(i*3, i*3+3), bf.store.metas[i])
     const qs = [new Float32Array([1,0,0]), new Float32Array([0,1,0])]

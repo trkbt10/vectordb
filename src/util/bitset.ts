@@ -1,8 +1,15 @@
 /**
- * Tiny bitset using Uint8Array as boolean mask (0/1).
- *
- * Why: HNSW exploration needs fast inclusion checks for candidate masks
- * without performing id->index lookups on every step.
+ * @file Efficient bit mask implementation for fast set operations
+ * 
+ * This module provides a lightweight bit mask (bitset) implementation using Uint8Array
+ * for memory-efficient boolean flags. It's specifically designed for:
+ * - HNSW graph exploration where fast candidate inclusion checks are critical
+ * - Pre-filtering operations where we need to mark valid/invalid indices
+ * - Avoiding expensive ID-to-index lookups during search operations
+ * 
+ * The implementation trades perfect space efficiency for simplicity and speed,
+ * using one byte per flag instead of packing bits, which eliminates bit manipulation
+ * overhead and provides better cache locality for sparse access patterns.
  */
 
 export type BitMask = Uint8Array

@@ -9,20 +9,18 @@ import {
   addOrUpdate,
   ensure as storeEnsure,
   get as storeGet,
-  getByIndex as storeGetByIndex,
   has as storeHas,
   normalizeQuery,
   removeById,
   size as storeSize,
   updateMeta as storeUpdateMeta,
-  createStore,
 } from "../../core/store";
-import type { VectorLiteState } from "../state";
-import { bf_add, bf_remove, bf_search } from "../../ann/bruteforce";
-import { hnsw_add, hnsw_remove, hnsw_search, hnsw_ensureCapacity, createHNSWState } from "../../ann/hnsw";
+import type { VectorLiteState } from "../../types";
+import { bf_add, bf_search } from "../../ann/bruteforce";
+import { hnsw_add, hnsw_remove, hnsw_search, hnsw_ensureCapacity } from "../../ann/hnsw";
 import { ivf_add, ivf_remove, ivf_search } from "../../ann/ivf";
 import { isHnswVL, isIvfVL, isBfVL } from "../../util/guards";
-import { createVectorLite } from "../create";
+import { createVectorLiteState } from "../create";
 
 /**
  *
@@ -139,7 +137,7 @@ export function buildWithStrategy<TMeta>(
     hnsw: params?.hnsw,
     ivf: params?.ivf,
   };
-  const out = createVectorLite<TMeta>(opts);
+  const out = createVectorLiteState<TMeta>(opts);
   // IVF: leave centroid seeding to maintain module (rebuildIndex) or training step
   for (let i = 0; i < vl.store._count; i++) {
     const id = vl.store.ids[i];

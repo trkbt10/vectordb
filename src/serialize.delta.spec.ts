@@ -2,14 +2,14 @@
  * Snapshot delta/checksum spec
  */
 import { describe, it, expect } from 'vitest'
-import { createVectorLite } from './vectorlite/create'
+import { createVectorLiteState } from './vectorlite/create'
 import { add, getOne } from './vectorlite/ops/core'
 import { serializeFull, serializeDelta, mergeSnapshotWithDelta, deserializeVectorLite } from './vectorlite/serialize'
 import { encodeWal } from './wal'
 
 describe('serialize: full + delta + merge', () => {
   it('merges WAL delta over base snapshot', async () => {
-    const vl = createVectorLite<{ lang?: string | null }>({ dim: 3, metric: 'cosine', strategy: 'bruteforce' })
+    const vl = createVectorLiteState<{ lang?: string | null }>({ dim: 3, metric: 'cosine', strategy: 'bruteforce' })
     add(vl, 1, new Float32Array([1, 0, 0]), { lang: 'ja' })
     add(vl, 2, new Float32Array([0, 1, 0]), { lang: 'en' })
     const full = await serializeFull(vl)

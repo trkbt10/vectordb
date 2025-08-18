@@ -1,8 +1,21 @@
 /**
- * Browser OPFS (Origin Private File System) helpers.
- *
- * Why: Support durable snapshot/WAL operations in browsers using OPFS, while
- * keeping the FileIO interface consistent across environments.
+ * @file Browser Origin Private File System (OPFS) persistence adapter for VectorLite
+ * 
+ * This module provides file I/O operations for browser environments using the
+ * modern OPFS API, enabling VectorLite to persist data in web applications. It offers:
+ * 
+ * - Browser-native persistence: Store vector databases directly in the browser's
+ *   private file system for durability across sessions
+ * - Snapshot and WAL support: Full feature parity with Node.js persistence,
+ *   including atomic writes and append operations
+ * - Type-safe OPFS wrapper: Handles the untyped OPFS API with proper TypeScript
+ *   guards and error handling
+ * - Fallback strategies: Gracefully handles browsers that don't support certain
+ *   OPFS features (e.g., keepExistingData for appends)
+ * 
+ * This adapter enables VectorLite to work as a fully persistent vector database
+ * in browser environments, making it suitable for offline-first applications,
+ * PWAs, and client-side ML applications that need durable vector storage.
  */
 import type { FileIO } from './types'
 import { toUint8 } from './types'

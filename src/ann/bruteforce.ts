@@ -20,14 +20,14 @@ export function createBruteforceState(metric: Metric): BruteforceState {
 /**
  *
  */
-export function bf_add<TMeta>(_bf: BruteforceState, _store: CoreStore<TMeta>, _id: number): void {
+export function bf_add(): void {
   // no-op
 }
 
 /**
  *
  */
-export function bf_remove<TMeta>(_bf: BruteforceState, _store: CoreStore<TMeta>, _id: number): void {
+export function bf_remove(): void {
   // no-op
 }
 
@@ -65,13 +65,10 @@ export function bf_search<TMeta>(
 /**
  *
  */
-export function bf_serialize(_bf: BruteforceState): ArrayBuffer {
+export function bf_serialize(): ArrayBuffer {
   return new Uint8Array(0).buffer;
 }
 /**
  *
  */
-export function bf_deserialize(_bf: BruteforceState, _buf: ArrayBuffer): void {}
-/**
- * @file Bruteforce ANN strategy implementation.
- */
+export function bf_deserialize(): void {}

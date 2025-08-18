@@ -4,13 +4,13 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { createVectorLite } from '../vectorlite/create'
+import { createVectorLiteState } from '../vectorlite/create'
 import { add, search, buildIVFFromStore } from '../vectorlite/ops/core'
 
 describe('IVF basic behavior', () => {
   it('returns similar results to BF on clustered data', () => {
     const dim = 4
-    const db = createVectorLite({ dim, metric: 'cosine', strategy: 'bruteforce' })
+    const db = createVectorLiteState({ dim, metric: 'cosine', strategy: 'bruteforce' })
     // two clusters around e1 and e2
     const e1 = new Float32Array([1,0,0,0])
     const e2 = new Float32Array([0,1,0,0])

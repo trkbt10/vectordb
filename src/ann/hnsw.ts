@@ -89,7 +89,6 @@ function ensureLevels(h: HNSWState, L: number) {
   while (h.links.length <= L) h.links.push([]);
 }
 
-type GreedyDescentArgs<TMeta> = { h: HNSWState; store: CoreStore<TMeta>; ep: number; target: Float32Array; fromLevel: number }
 function greedyDescent<TMeta>(h: HNSWState, store: CoreStore<TMeta>, ep: number, target: Float32Array, fromLevel: number): number {
   let cur = ep;
   for (let l = fromLevel; l > 0; l--) {

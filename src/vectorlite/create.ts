@@ -10,12 +10,12 @@ import { createStore } from "../core/store";
 import { createBruteforceState } from "../ann/bruteforce";
 import { createHNSWState } from "../ann/hnsw";
 import { createIVFState } from "../ann/ivf";
-import type { VectorLiteState, VectorLiteAnn } from "./state";
+import type { VectorLiteState, VectorLiteAnn } from "../types";
 
 /**
  *
  */
-export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
+export function createVectorLiteState<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
   const dim = opts.dim;
   const metric: Metric = opts.metric ?? "cosine";
   const strategy = opts.strategy ?? "bruteforce";

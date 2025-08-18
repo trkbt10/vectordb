@@ -1,8 +1,17 @@
 /**
- * Node.js persistence helpers (FileIO, snapshots, WAL appends).
- *
- * Why: Provide a thin, typed bridge to Node fs/promises for saving/loading
- * VectorLite snapshots and appending WAL, with atomic rename support.
+ * @file Node.js file system persistence adapter for VectorLite
+ * 
+ * This module provides file I/O operations specifically for Node.js environments,
+ * enabling VectorLite to persist vector databases to disk. It implements:
+ * 
+ * - Snapshot persistence: Save and load complete database states
+ * - Write-Ahead Logging (WAL): Append-only log for durability and crash recovery
+ * - Atomic writes: Use temp file + rename pattern for safe updates
+ * - FileIO interface: Consistent API that can be swapped with other adapters (e.g., OPFS)
+ * 
+ * The module is used by VectorLite when running in Node.js to provide durable
+ * storage capabilities, ensuring vector data survives process restarts and
+ * enabling incremental updates through the WAL mechanism.
  */
 import { writeFile, readFile, rename } from 'node:fs/promises'
 import type { FileIO } from './types'
