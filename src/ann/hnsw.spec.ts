@@ -1,3 +1,8 @@
+
+/**
+ * @file Tests for HNSW strategy behavior.
+ */
+
 import {
   createVectorLite,
   deserializeVectorLite,
@@ -57,3 +62,6 @@ test("computeNumSeeds auto and clamping", () => {
   expect(computeNumSeeds(10, 5)).toBe(5);
   expect(computeNumSeeds(10, 100)).toBe(32);
 });
+/**
+ * @file Tests for HNSW strategy behavior.
+ */

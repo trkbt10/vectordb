@@ -17,22 +17,37 @@
     "build": "tsup src/index.ts --format esm --dts --minify --sourcemap",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "clean": "rimraf dist",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test",
     "debug:wal": "bun run debug/scenarios/wal/index.ts",
     "debug:kvs": "bun run debug/scenarios/kvs/index.ts",
-    "debug:filter": "bun run debug/scenarios/filter/index.ts"
+    "debug:filter": "bun run debug/scenarios/filter/index.ts",
+    "debug:openai": "bun run debug/scenarios/embeddings-openai/bruteforce.tsx",
+    "debug:openai:bf": "bun run debug/scenarios/embeddings-openai/bruteforce.tsx",
+    "debug:openai:hnsw": "bun run debug/scenarios/embeddings-openai/hnsw.tsx"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsdoc": "^54.1.0",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.1"
   },
   "dependencies": {
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "ink": "^6.2.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-ink": "^6.5.4"
+    "react-dom": "^19.1.1"
   }
 }

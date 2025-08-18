@@ -1,5 +1,5 @@
 /**
- * Basic Attribute Index Strategy (function-based).
+ * @file Basic Attribute Index Strategy (function-based).
  *
  * Why: Provide a simple, predictable index suitable for small-to-mid datasets
  * with equality and numeric range filtering. This serves as the default, easy
@@ -128,3 +128,6 @@ export function createBasicIndex(): AttrIndex {
     range: (key, r) => basic_range(c, key, r),
   }
 }
+/**
+ * @file Basic attribute indexing and filtering strategy.
+ */

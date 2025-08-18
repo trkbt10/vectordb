@@ -1,5 +1,5 @@
 /**
- * Attribute Index (public interface and factory).
+ * @file Attribute Index (public interface and factory).
  *
  * Why: We want filterable, indexable attributes decoupled from meta, with
  * strategy-pluggable backends (e.g., basic vs bitmap) and a minimal, stable
@@ -167,3 +167,6 @@ export function queryExists(idx: AttrIndex, key: string): Set<number> | null { r
 export function queryRange(idx: AttrIndex, key: string, r: Range): Set<number> | null { return idx.range(key, r) }
 
 // Concrete strategy implementations have moved to ./strategies/*
+/**
+ * @file Attribute subsystem public API.
+ */

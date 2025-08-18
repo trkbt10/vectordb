@@ -1,3 +1,8 @@
+
+/**
+ * @file Tests for IVF strategy and utilities.
+ */
+
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
 import { add, search, buildIVFFromStore } from '../vectorlite/ops/core'
@@ -36,3 +41,6 @@ describe('IVF basic behavior', () => {
     expect(recall(bf2, ivf2)).toBeGreaterThanOrEqual(0.6)
   })
 })
+/**
+ * @file Tests for IVF strategy and utilities.
+ */

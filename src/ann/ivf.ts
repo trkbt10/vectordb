@@ -1,4 +1,8 @@
 /**
+ * @file Inverted File (IVF) index and retraining utilities.
+ */
+
+/**
  * Inverted File (IVF) index and retraining utilities.
  *
  * Why: Provide a pluggable ANN strategy that supports centroid-based routing

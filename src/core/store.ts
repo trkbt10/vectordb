@@ -1,5 +1,5 @@
 /**
- * CoreStore: contiguous vector storage + id mapping.
+ * @file CoreStore: contiguous vector storage + id mapping.
  *
  * Why: Provide a compact, dependency-free foundation for both accurate
  * (bruteforce) and approximate (HNSW) search strategies. It normalizes

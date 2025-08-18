@@ -1,3 +1,8 @@
+
+/**
+ * @file Bruteforce ANN strategy implementation.
+ */
+
 import { CoreStore } from "../core/store";
 import { Metric, SearchHit } from "../types";
 import { pushTopK } from "../util/topk";
@@ -67,3 +72,6 @@ export function bf_serialize(_bf: BruteforceState): ArrayBuffer {
  *
  */
 export function bf_deserialize(_bf: BruteforceState, _buf: ArrayBuffer): void {}
+/**
+ * @file Bruteforce ANN strategy implementation.
+ */

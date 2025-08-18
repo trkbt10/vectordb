@@ -1,3 +1,7 @@
+/**
+ * @file Debug utilities for persisting runtime state during local scenarios.
+ */
+
 import { createVectorLite, add, search, serialize, deserializeVectorLite } from '../src/index.ts'
 import { saveToFileNode, loadFromFileNode } from '../src/persist/node.ts'
 

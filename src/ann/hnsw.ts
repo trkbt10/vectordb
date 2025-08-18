@@ -1,3 +1,8 @@
+
+/**
+ * @file HNSW ANN strategy implementation.
+ */
+
 import { CoreStore, getByIndex, getIndex } from "../core/store";
 import { HNSWParams, Metric, SearchHit } from "../types";
 import { createReader, createWriter } from "../util/bin";
@@ -425,4 +430,7 @@ export function hnsw_deserialize(h: HNSWState, store: CoreStore<unknown>, seg: A
  * practicality of bruteforce while keeping a simple, dependency-free TS design.
  * We also expose optional exploration controls to integrate attribute-driven
  * preselection without hard-coding policy into the graph itself.
+ */
+/**
+ * @file HNSW ANN strategy implementation.
  */

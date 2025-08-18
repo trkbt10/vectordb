@@ -1,3 +1,7 @@
+/**
+ * @file Base types and helpers for ANN strategies.
+ */
+
 import { Metric, SearchHit } from '../types'
 import { CoreStore } from '../core/store'
 

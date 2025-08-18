@@ -1,3 +1,7 @@
+/**
+ * @file Quick local test for VectorLite end-to-end usage.
+ */
+
 import { createVectorLite, serialize, deserializeVectorLite, add, search } from '../src/index.ts'
 
 function approxEqual(a: number, b: number, eps = 1e-6) {
@@ -49,3 +53,6 @@ main().catch((e) => {
   console.error(e)
   process.exit(1)
 })
+/**
+ * @file Quick local test for VectorLite end-to-end usage.
+ */

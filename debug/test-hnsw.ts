@@ -1,3 +1,7 @@
+/**
+ * @file Quick local test for HNSW behavior.
+ */
+
 import { createVectorLite, add, search, serialize, deserializeVectorLite } from '../src/index.ts'
 
 function assert(cond: any, msg: string) { if (!cond) throw new Error(msg) }
@@ -21,3 +25,6 @@ assert(hits2.length === 2, 'expected 2 hits after restore')
 console.log('HNSW search hits after restore', hits2)
 
 console.log('VectorLite HNSW save & search: PASS')
+/**
+ * @file Quick local test for HNSW behavior.
+ */

@@ -1,3 +1,8 @@
+
+/**
+ * @file Tests for basic attribute strategy.
+ */
+
 import { createBasicIndex } from "./basic";
 
 test("basic strategy: eq/exists/range behave", () => {
@@ -10,3 +15,6 @@ test("basic strategy: eq/exists/range behave", () => {
   const r = idx.range("price", { gte: 10, lt: 20 });
   expect(Array.from(r ?? [])).toEqual([1, 3]);
 });
+/**
+ * @file Tests for basic attribute strategy.
+ */

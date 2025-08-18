@@ -6,6 +6,7 @@
  * - reassignIvfLists populates posting lists and idToList consistently
  * - evaluateIvf returns reasonable recall on clustered data
  */
+
 import { describe, it, expect } from 'vitest'
 import { createVectorLite } from '../vectorlite/create'
 import { add } from '../vectorlite/ops/core'
@@ -40,3 +41,6 @@ describe('IVF retrain/evaluate', () => {
     expect(ev.recall).toBeGreaterThan(0.6)
   })
 })
+/**
+ * @file Tests for IVF retraining and evaluation wrappers.
+ */

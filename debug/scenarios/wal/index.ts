@@ -1,4 +1,8 @@
 /**
+ * @file Debug scenario for write-ahead log (WAL) behavior.
+ */
+
+/**
  * VectorLite WAL Demo (console-based)
  * - Appends WAL (upsert/setMeta/remove)
  * - Applies WAL to in-memory DB
@@ -8,17 +12,13 @@
 import path from 'node:path'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
-import {
-  createVectorLite,
-  size,
-  getMeta,
-  search,
-  serialize,
-  deserializeVectorLite,
-} from '../../../src/index'
+import { createVectorLite } from '../../../src/vectorlite/create'
+import { size, getMeta, search } from '../../../src/vectorlite/ops/core'
+import { serialize, deserializeVectorLite } from '../../../src/vectorlite/serialize'
 import { encodeWal, applyWal } from '../../../src/wal'
 import { appendToFileNode, saveAtomicToFileNode, loadFromFileNode } from '../../../src/persist/node'
-import type { WalRecord, VectorLiteState } from '../../../src'
+import type { WalRecord } from '../../../src/wal'
+import type { VectorLiteState } from '../../../src/vectorlite/state'
 
 type Meta = { tag?: string }
 
@@ -122,3 +122,6 @@ main().catch((e) => {
   console.error(e)
   process.exitCode = 1
 })
+/**
+ * @file Debug scenario for write-ahead log (WAL) behavior.
+ */

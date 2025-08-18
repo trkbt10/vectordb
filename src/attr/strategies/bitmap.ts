@@ -1,5 +1,5 @@
 /**
- * Bitmap-like Attribute Index Strategy (function-based).
+ * @file Bitmap-like Attribute Index Strategy (function-based).
  * - Equality and existence maps using nested Maps -> Set<id>.
  * - Numeric range is not supported (returns null).
  * - Implemented as pure functions over a container injected by the factory.

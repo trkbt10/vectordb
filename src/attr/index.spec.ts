@@ -1,3 +1,7 @@
+/**
+ * @file Tests for attribute subsystem.
+ */
+
 import { createAttrIndex } from "./index";
 
 test("basic strategy: eq/exists/range behave", () => {
@@ -21,3 +25,6 @@ test("bitmap strategy: eq/exists work; range unsupported", () => {
   expect(Array.from(idx.exists("flag") ?? [])).toEqual([12]);
   expect(idx.range("price", { gte: 0, lt: 100 })).toBeNull();
 });
+/**
+ * @file Tests for attribute subsystem.
+ */

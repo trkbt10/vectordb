@@ -1,16 +1,17 @@
 /**
+ * @file Debug scenario demonstrating attribute filters.
+ */
+
+/**
  * VectorLite Filtered Search Demo (console-based)
  * - Demonstrates attribute index + filter-expression based search
  * - Shows attribute-scoped and meta-scoped filtering
  */
-import {
-  createVectorLite,
-  add,
-  size,
-  searchWithExpr,
-  setMeta,
-} from '../../../src/index'
+import { createVectorLite } from '../../../src/vectorlite/create'
+import { add, size, setMeta } from '../../../src/vectorlite/ops/core'
+import { searchWithExpr } from '../../../src/search/with_expr'
 import { createAttrIndex, setAttrs } from '../../../src/attr/index'
+import type { FilterExpr } from '../../../src/filter/expr'
 
 type Meta = { memo?: string; lang?: string }
 
@@ -39,39 +40,42 @@ async function main() {
   const q = new Float32Array([1, 0, 0])
 
   // 1) Attribute filter: color=red AND 10 <= price < 20
-  const expr1 = {
+  const expr1: FilterExpr = {
     must: [
       { key: 'color', match: 'red' },
       { key: 'price', range: { gte: 10, lt: 20 } },
     ],
   }
-  const hits1 = searchWithExpr(db, q, expr1 as any, { k: 10, index: idx })
+  const hits1 = searchWithExpr(db, q, expr1, { k: 10, index: idx })
   log(`expr1 color='red' && 10<=price<20 -> [${hits1.map(h => `${h.id}:${(h.meta as Meta)?.memo ?? ''}`).join(', ')}]`)
 
   // 2) Attribute filter: tags contains 'a' (match on array)
-  const expr2 = { key: 'tags', match: 'a' }
-  const hits2 = searchWithExpr(db, q, expr2 as any, { k: 10, index: idx })
+  const expr2: FilterExpr = { key: 'tags', match: 'a' }
+  const hits2 = searchWithExpr(db, q, expr2, { k: 10, index: idx })
   log(`expr2 tags contains 'a' -> [${hits2.map(h => h.id).join(', ')}]`)
 
   // 3) Meta-scoped filter: lang == 'en' (scope: 'meta')
-  const expr3 = { key: 'lang', match: 'en', scope: 'meta' }
-  const hits3 = searchWithExpr(db, q, expr3 as any, { k: 10, index: idx })
+  const expr3: FilterExpr = { key: 'lang', match: 'en', scope: 'meta' }
+  const hits3 = searchWithExpr(db, q, expr3, { k: 10, index: idx })
   log(`expr3 meta.lang == 'en' -> [${hits3.map(h => h.id).join(', ')}]`)
 
   // 4) Combine has_id + must_not
-  const expr4 = {
+  const expr4: FilterExpr = {
     has_id: { values: [1, 2, 3, 4] },
     must_not: [ { key: 'color', match: 'blue' } ],
   }
-  const hits4 = searchWithExpr(db, q, expr4 as any, { k: 10, index: idx })
+  const hits4 = searchWithExpr(db, q, expr4, { k: 10, index: idx })
   log(`expr4 has_id∩!color=blue -> [${hits4.map(h => h.id).join(', ')}]`)
 
   // 5) Update meta and query meta scope again
   setMeta(db, 2, { memo: 'bravo', lang: 'en' })
-  const hits5 = searchWithExpr(db, q, expr3 as any, { k: 10, index: idx })
+  const hits5 = searchWithExpr(db, q, expr3, { k: 10, index: idx })
   log(`expr5 after setMeta(2, lang='en') -> [${hits5.map(h => h.id).join(', ')}]`)
 
   console.log('\nDone.')
 }
 
 main().catch((e) => { console.error(e); process.exitCode = 1 })
+/**
+ * @file Debug scenario demonstrating attribute filters.
+ */

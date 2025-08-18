@@ -1,18 +1,14 @@
 /**
+ * @file Debug scenario for KVS-backed workflows.
+ */
+
+/**
  * VectorLite KVS Demo (console-based)
  * - Demonstrates id-indexed get/getMeta/setMeta/remove
  * - Verifies map stability across compaction (removeById swaps last)
  */
-import {
-  createVectorLite,
-  size,
-  add,
-  get as getRecord,
-  getMeta,
-  setMeta,
-  remove,
-  search,
-} from '../../../src/index'
+import { createVectorLite } from '../../../src/vectorlite/create'
+import { size, add, get as getRecord, getMeta, setMeta, remove, search } from '../../../src/vectorlite/ops/core'
 
 type Meta = { tag?: string }
 
@@ -71,3 +67,6 @@ async function main() {
 }
 
 main().catch((e) => { console.error(e); process.exitCode = 1 })
+/**
+ * @file Debug scenario for KVS-backed workflows.
+ */
