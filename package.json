@@ -1,0 +1,38 @@
+{
+  "name": "vectorlite",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --minify --sourcemap",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "bun test",
+    "debug:wal": "bun run debug/scenarios/wal/index.ts",
+    "debug:kvs": "bun run debug/scenarios/kvs/index.ts",
+    "debug:filter": "bun run debug/scenarios/filter/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.10",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-ink": "^6.5.4"
+  }
+}
