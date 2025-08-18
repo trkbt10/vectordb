@@ -1,4 +1,9 @@
-/** Utilities to maintain top-k collections sorted by score desc */
+/**
+ * Utilities to maintain top-k collections sorted by score desc.
+ *
+ * Why: Keep insertions local and cheap during scoring, avoiding full sorts of
+ * growing arrays when we only care about the best K results.
+ */
 
 export type Scored = { s: number }
 

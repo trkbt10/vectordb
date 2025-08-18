@@ -27,4 +27,9 @@ export function l2negAt(data: Float32Array, base: number, q: Float32Array, dim: 
   }
   return -s
 }
-
+/**
+ * Math helpers for similarity/distance and normalization.
+ *
+ * Why: Centralize hot-path math kernels (dot, L2 negative distance, cosine
+ * normalization) so strategies can share optimized implementations.
+ */

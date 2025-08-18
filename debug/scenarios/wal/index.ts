@@ -15,7 +15,7 @@ import {
   search,
   serialize,
   deserializeVectorLite,
-} from '../../../src/vectorlite'
+} from '../../../src/index'
 import { encodeWal, applyWal } from '../../../src/wal'
 import { appendToFileNode, saveAtomicToFileNode, loadFromFileNode } from '../../../src/persist/node'
 import type { WalRecord, VectorLiteState } from '../../../src'

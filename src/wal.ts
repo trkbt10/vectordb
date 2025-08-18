@@ -1,7 +1,6 @@
-import { add, remove, setMeta } from './vectorlite'
-import type { AttrIndex } from './attr/index'
-import type { VectorLiteState } from './vectorlite'
-import type { VectorLiteState } from './vectorlite'
+import { add, remove, setMeta } from './vectorlite/ops'
+import type { AttrIndex, Attrs } from './attr/index'
+import type { VectorLiteState } from './vectorlite/state'
 
 // Simple WAL format (little-endian)
 // Header: 'VLWA' (4 bytes), version u32 (1)
@@ -126,7 +125,7 @@ export function applyWal<TMeta>(vl: VectorLiteState<TMeta>, walBytes: Uint8Array
   }
 }
 
-export type MetaToAttrs<TMeta> = (meta: TMeta | null) => Record<string, unknown> | null
+export type MetaToAttrs<TMeta> = (meta: TMeta | null) => Attrs | null
 
 /**
  * Apply WAL and keep an attribute index in sync using a projector from meta to attrs.
@@ -145,12 +144,21 @@ export function applyWalWithIndex<TMeta>(
       continue
     }
     if (r.type === 'setMeta') {
-      setMeta(vl, r.id, r.meta as TMeta | null)
-      index.setAttrs(r.id, projector(r.meta as TMeta | null) as any)
+      const meta = r.meta as TMeta | null
+      setMeta(vl, r.id, meta)
+      index.setAttrs(r.id, projector(meta))
       continue
     }
     // upsert
-    add(vl, r.id, r.vector, r.meta as TMeta | null, { upsert: true })
-    index.setAttrs(r.id, projector(r.meta as TMeta | null) as any)
+    const meta = r.meta as TMeta | null
+    add(vl, r.id, r.vector, meta, { upsert: true })
+    index.setAttrs(r.id, projector(meta))
   }
 }
+/**
+ * WAL (Write-Ahead Log) for idempotent upserts/removals/meta changes.
+ *
+ * Why: Provide durable, append-only change recording that can be applied to a
+ * fresh in-memory instance and optionally projected into attribute indices
+ * without coupling to persistence backends.
+ */

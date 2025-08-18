@@ -3,6 +3,7 @@ import { HNSWParams, Metric, SearchHit } from "../types";
 import { createReader, createWriter } from "../util/bin";
 import { dotAt, l2negAt } from "../util/math";
 import { pushSortedDesc } from "../util/topk";
+import { MaxHeap } from "../util/heap";
 
 function createRng(seed = 42) {
   let state = seed >>> 0 || 1;
@@ -61,7 +62,7 @@ export function hnsw_ensureCapacity(h: HNSWState, capacity: number) {
   }
 }
 
-function hnsw_score(h: HNSWState, store: CoreStore<unknown>, idx: number, q: Float32Array): number {
+function hnsw_score<TMeta>(h: HNSWState, store: CoreStore<TMeta>, idx: number, q: Float32Array): number {
   const dim = store.dim;
   const base = idx * dim;
   return h.metric === "cosine" ? dotAt(store.data, base, q, dim) : l2negAt(store.data, base, q, dim);
@@ -76,13 +77,8 @@ function ensureLevels(h: HNSWState, L: number) {
   while (h.links.length <= L) h.links.push([]);
 }
 
-function greedyDescent(
-  h: HNSWState,
-  store: CoreStore<unknown>,
-  ep: number,
-  target: Float32Array,
-  fromLevel: number
-): number {
+type GreedyDescentArgs<TMeta> = { h: HNSWState; store: CoreStore<TMeta>; ep: number; target: Float32Array; fromLevel: number }
+function greedyDescent<TMeta>(h: HNSWState, store: CoreStore<TMeta>, ep: number, target: Float32Array, fromLevel: number): number {
   let cur = ep;
   for (let l = fromLevel; l > 0; l--) {
     let improved = true;
@@ -108,28 +104,52 @@ function greedyDescent(
 
 type Scored = { idx: number; s: number };
 
-function hnsw_searchLayer(
-  h: HNSWState,
-  store: CoreStore<unknown>,
-  entry: number,
-  target: Float32Array,
-  level: number,
+export type HNSWSearchControl = {
+  mode?: 'soft' | 'hard'
+  mask?: Set<number>
+  maskIdx?: Uint8Array
+  bridgeBudget?: number
+  seeds?: 'auto' | number
+  seedStrategy?: 'random' | 'topFreq'
+  adaptiveEf?: { base: number; min: number; max: number }
+  earlyStop?: { margin?: number }
+}
+
+export function computeNumSeeds(maskSize: number, seeds: 'auto' | number): number {
+  if (seeds === 'auto') return Math.max(1, Math.min(8, Math.floor(Math.sqrt(Math.max(0, maskSize)))))
+  const n = Math.floor(seeds)
+  return Math.max(1, Math.min(32, n))
+}
+
+type SearchLayerArgs<TMeta> = {
+  h: HNSWState
+  store: CoreStore<TMeta>
+  entry: number
+  target: Float32Array
+  level: number
   ef: number
-): Scored[] {
+  options?: HNSWSearchControl
+}
+
+function hnsw_searchLayer<TMeta>(args: SearchLayerArgs<TMeta>): Scored[] {
+  const { h, store, entry, target, level, ef, options } = args
   const visited = new Uint8Array(store._count);
-  const candidates: Scored[] = [];
+  const heap = new MaxHeap<Scored>();
   const results: Scored[] = [];
   const entryScore = hnsw_score(h, store, entry, target);
-  candidates.push({ idx: entry, s: entryScore });
+  heap.push({ idx: entry, s: entryScore });
   results.push({ idx: entry, s: entryScore });
   visited[entry] = 1;
+  const mode = options?.mode;
+  const mask = options?.mask;
+  const maskIdx = options?.maskIdx;
+  let bridges = options?.bridgeBudget ?? 0;
 
-  while (candidates.length) {
-    // get best candidate
-    candidates.sort((a, b) => b.s - a.s);
-    const cur = candidates.shift() as Scored;
+  while (heap.length) {
+    const cur = heap.pop() as Scored;
     const worst = results[results.length - 1]?.s ?? Number.NEGATIVE_INFINITY;
-    if (results.length >= ef && cur.s <= worst) {
+    const margin = options?.earlyStop?.margin ?? 0;
+    if (results.length >= ef && cur.s <= (worst + margin)) {
       break;
     }
     const neigh = h.links[level] && h.links[level][cur.idx] ? h.links[level][cur.idx] : [];
@@ -141,9 +161,19 @@ function hnsw_searchLayer(
       if (h.tombstone[nb]) {
         continue;
       }
+      if ((mask || maskIdx) && mode) {
+        const allowed = maskIdx ? !!(maskIdx[nb] === 1) : mask!.has(store.ids[nb] as number);
+        if (mode === 'hard' && !allowed) {
+          continue;
+        }
+        if (mode === 'soft' && !allowed) {
+          if (bridges <= 0) continue;
+          bridges--;
+        }
+      }
       const sc = hnsw_score(h, store, nb, target);
-      // push to candidates
-      candidates.push({ idx: nb, s: sc });
+      // push to candidates heap
+      heap.push({ idx: nb, s: sc });
       // push to results maintaining top-ef
       pushSortedDesc(results, { idx: nb, s: sc }, ef);
     }
@@ -180,17 +210,10 @@ export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: numbe
     return;
   }
   let ep = h.enterPoint;
-  if (h.maxLevel > L) ep = greedyDescent(h, store as CoreStore<unknown>, ep, getByIndex(store, idx).vector, h.maxLevel);
+  if (h.maxLevel > L) ep = greedyDescent(h, store, ep, getByIndex(store, idx).vector, h.maxLevel);
   for (let l = Math.min(L, h.maxLevel); l >= 0; l--) {
     // explore neighbors locally from entry point on this level
-    const cand = hnsw_searchLayer(
-      h,
-      store as CoreStore<unknown>,
-      ep,
-      getByIndex(store, idx).vector,
-      l,
-      h.efConstruction
-    );
+    const cand = hnsw_searchLayer({ h, store, entry: ep, target: getByIndex(store, idx).vector, level: l, ef: h.efConstruction })
     const neigh = cand
       .filter((c) => c.idx !== idx)
       .slice(0, h.M)
@@ -198,9 +221,9 @@ export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: numbe
     connectMutually(h, idx, neigh, l);
     // update ep to nearest among neighbors
     let best = ep;
-    let bestScore = hnsw_score(h, store as CoreStore<unknown>, ep, getByIndex(store, idx).vector);
+    let bestScore = hnsw_score(h, store, ep, getByIndex(store, idx).vector);
     for (const nb of neigh) {
-      const sc = hnsw_score(h, store as CoreStore<unknown>, nb, getByIndex(store, idx).vector);
+      const sc = hnsw_score(h, store, nb, getByIndex(store, idx).vector);
       if (sc > bestScore) {
         best = nb;
         bestScore = sc;
@@ -227,14 +250,49 @@ export function hnsw_search<TMeta>(
   h: HNSWState,
   store: CoreStore<TMeta>,
   q: Float32Array,
-  k: number,
-  filter?: (id: number, meta: TMeta | null) => boolean
+  args: { k: number; filter?: (id: number, meta: TMeta | null) => boolean; control?: HNSWSearchControl }
 ): SearchHit<TMeta>[] {
   if (h.enterPoint < 0 || store._count === 0) return [];
-  // descend greedily from top layers
-  const ep = greedyDescent(h, store as unknown as CoreStore<unknown>, h.enterPoint, q, h.maxLevel);
+  const k = Math.max(1, args.k | 0)
+  const filter = args.filter
+  const options = args.control
+  // optional multi-seed: select a better entry from candidate mask
+  let startEp = h.enterPoint;
+  if (options?.mask && options.seeds) {
+    const ids = Array.from(options.mask);
+    const n = ids.length;
+    const numSeeds = computeNumSeeds(n, options.seeds)
+    // Build candidate indices
+    const idxs: number[] = []
+    for (let i = 0; i < n && idxs.length < numSeeds; i++) {
+      const id = ids[i]
+      const idx = store.pos.get(id)
+      if (idx !== undefined) idxs.push(idx)
+    }
+    // If random strategy, shuffle a bit
+    if ((options.seedStrategy ?? 'random') === 'random') {
+      for (let i = idxs.length - 1; i > 0; i--) { const j = Math.floor((h.rng? h.rng() : Math.random()) * (i + 1)); const t = idxs[i]; idxs[i] = idxs[j]!; idxs[j] = t }
+    }
+    // Pick best by direct similarity
+    let bestIdx = startEp
+    let bestSc = hnsw_score(h, store, bestIdx, q)
+    for (const cand of idxs) {
+      const sc = hnsw_score(h, store, cand, q)
+      if (sc > bestSc) { bestSc = sc; bestIdx = cand }
+    }
+    startEp = bestIdx
+  }
+  // descend greedily from top layers starting at chosen entry
+  const ep = greedyDescent(h, store, startEp, q, h.maxLevel);
   // do efSearch exploration on level 0
-  const res = hnsw_searchLayer(h, store as unknown as CoreStore<unknown>, ep, q, 0, h.efSearch);
+  // adaptive ef based on candidate mask size if provided
+  let ef = h.efSearch
+  if (options?.adaptiveEf && options.mask && options.mask.size > 0) {
+    const { base, min, max } = options.adaptiveEf
+    const cand = Math.max(1, Math.floor(base * Math.sqrt(options.mask.size)))
+    ef = Math.max(min, Math.min(max, cand)) | 0
+  }
+  const res = hnsw_searchLayer({ h, store, entry: ep, target: q, level: 0, ef, options })
   const out: SearchHit<TMeta>[] = [];
   for (const r of res) {
     const idVal = store.ids[r.idx];
@@ -335,3 +393,11 @@ export function hnsw_deserialize(h: HNSWState, store: CoreStore<unknown>, seg: A
     h.links[l] = layer;
   }
 }
+/**
+ * HNSW (Hierarchical Navigable Small World) graph-based ANN search.
+ *
+ * Why: Enable fast approximate nearest neighbor search that scales beyond the
+ * practicality of bruteforce while keeping a simple, dependency-free TS design.
+ * We also expose optional exploration controls to integrate attribute-driven
+ * preselection without hard-coding policy into the graph itself.
+ */

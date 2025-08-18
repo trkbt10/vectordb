@@ -1,6 +1,5 @@
-import { createVectorLite } from '../src/vectorlite.ts'
-import { add, search, serialize, deserializeVectorLite } from '../src/vectorlite.ts'
-import { saveToFileNode, loadFromFileNode } from '../src/persist.ts'
+import { createVectorLite, add, search, serialize, deserializeVectorLite } from '../src/index.ts'
+import { saveToFileNode, loadFromFileNode } from '../src/persist/node.ts'
 
 function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error(String(msg))

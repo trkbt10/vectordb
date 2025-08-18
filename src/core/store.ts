@@ -156,3 +156,11 @@ export function restoreFromDeserialized<T>(s: CoreStore<T>, count: number) {
   }
   s._count = count
 }
+/**
+ * CoreStore: contiguous vector storage + id mapping.
+ *
+ * Why: Provide a compact, dependency-free foundation for both accurate
+ * (bruteforce) and approximate (HNSW) search strategies. It normalizes
+ * vectors for cosine, maintains id->index mapping, and supports O(1)
+ * compaction on remove.
+ */

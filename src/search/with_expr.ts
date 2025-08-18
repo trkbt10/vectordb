@@ -1,0 +1,134 @@
+import type { VectorLiteState } from '../vectorlite/state'
+import type { SearchHit } from '../types'
+import { normalizeQuery } from '../core/store'
+import { compilePredicate, preselectCandidates, type FilterExpr } from '../filter/expr'
+import type { AttrIndex } from '../attr/index'
+import { dotAt, l2negAt } from '../util/math'
+import { pushTopK } from '../util/topk'
+import { createBitMask, maskSet } from '../util/bitset'
+import { hnsw_search, HNSWState } from '../ann/hnsw'
+import { BruteforceState } from '../ann/bruteforce'
+
+export type SearchWithExprOptions = {
+  k?: number
+  index?: AttrIndex | null
+  hnsw?: {
+    mode?: 'none' | 'hard' | 'soft'
+    bridgeBudget?: number
+    seeds?: 'auto' | number
+    seedStrategy?: 'random' | 'topFreq'
+    adaptiveEf?: { base: number; min: number; max: number }
+    earlyStop?: { margin?: number }
+  }
+}
+
+export function searchWithExpr<TMeta>(
+  vl: VectorLiteState<TMeta>,
+  query: Float32Array,
+  expr: FilterExpr,
+  opts: SearchWithExprOptions = {}
+): SearchHit<TMeta>[] {
+  const k = Math.max(1, opts.k ?? 5)
+  const q = normalizeQuery(vl.metric, query)
+  const pred = compilePredicate(expr)
+  const idx = opts.index ?? null
+  const idxReader = idx ? {
+    eq: (key: string, value: any) => idx.eq(key, value),
+    exists: (key: string) => idx.exists(key),
+    range: (key: string, r: any) => idx.range(key, r),
+  } : null
+  const candidates = preselectCandidates(expr, idxReader)
+
+  // HNSW hard-mode: score only candidates
+  if (vl.strategy === 'hnsw' && candidates && candidates.size > 0 && opts.hnsw?.mode === 'hard') {
+    const dim = vl.store.dim
+    if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`)
+    const out: SearchHit<TMeta>[] = []
+    const data = vl.store.data
+    for (const id of candidates) {
+      const at = vl.store.pos.get(id)
+      if (at === undefined) continue
+      const meta = vl.store.metas[at]
+      const attrs = idx ? idx.getAttrs(id) : null
+      if (!pred(id, meta, attrs)) continue
+      const base = at * dim
+      const s = vl.metric === 'cosine' ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim)
+      pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
+    }
+    return out
+  }
+
+  // HNSW soft-mode: pass candidate mask into search
+  if (vl.strategy === 'hnsw' && candidates && candidates.size > 0 && opts.hnsw?.mode === 'soft') {
+    const filter = (id: number, meta: TMeta | null) => {
+      const attrs = idx ? idx.getAttrs(id) : null
+      return pred(id, meta, attrs)
+    }
+    const maskIdx = createBitMask(vl.store._count)
+    for (const id of candidates) {
+      const at = vl.store.pos.get(id)
+      if (at !== undefined) maskSet(maskIdx, at)
+    }
+    return hnsw_search(
+      (vl.ann as HNSWState),
+      vl.store,
+      q,
+      { k,
+        filter,
+        control: {
+          mode: 'soft',
+          mask: candidates,
+          maskIdx,
+          bridgeBudget: opts.hnsw?.bridgeBudget ?? 32,
+          seeds: opts.hnsw?.seeds ?? 'auto',
+          seedStrategy: opts.hnsw?.seedStrategy ?? 'random',
+          adaptiveEf: opts.hnsw?.adaptiveEf,
+          earlyStop: opts.hnsw?.earlyStop,
+        }
+      }
+    )
+  }
+
+  // Bruteforce with candidate preselection
+  if (vl.strategy === 'bruteforce' && candidates && candidates.size > 0) {
+    const dim = vl.store.dim
+    if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`)
+    const out: SearchHit<TMeta>[] = []
+    const data = vl.store.data
+    for (const id of candidates) {
+      const at = vl.store.pos.get(id)
+      if (at === undefined) continue
+      const meta = vl.store.metas[at]
+      const attrs = idx ? idx.getAttrs(id) : null
+      if (!pred(id, meta, attrs)) continue
+      const base = at * dim
+      const s = vl.metric === 'cosine' ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim)
+      pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
+    }
+    return out
+  }
+
+  // Fallback to built-in search with predicate filter
+  const filter = (id: number, meta: TMeta | null) => {
+    const attrs = idx ? idx.getAttrs(id) : null
+    return pred(id, meta, attrs)
+  }
+  // Call appropriate strategy directly
+  if (vl.strategy === 'hnsw') {
+    return hnsw_search((vl.ann as HNSWState), vl.store, q, { k, filter })
+  }
+  // bruteforce path when no candidates
+  const dim = vl.store.dim
+  if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`)
+  const out: SearchHit<TMeta>[] = []
+  const data = vl.store.data
+  for (let i = 0; i < vl.store._count; i++) {
+    const id = vl.store.ids[i]
+    const meta = vl.store.metas[i]
+    if (!filter(id, meta)) continue
+    const base = i * dim
+    const s = vl.metric === 'cosine' ? dotAt(data, base, q, dim) : l2negAt(data, base, q, dim)
+    pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
+  }
+  return out
+}

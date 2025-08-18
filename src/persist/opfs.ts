@@ -1,9 +1,14 @@
-// Browser OPFS (Origin Private File System) helpers
+/**
+ * Browser OPFS (Origin Private File System) helpers.
+ *
+ * Why: Support durable snapshot/WAL operations in browsers using OPFS, while
+ * keeping the FileIO interface consistent across environments.
+ */
 import type { FileIO } from './types'
 import { toUint8 } from './types'
 
 type FileWritable = { write(data: Uint8Array): Promise<void>; close(): Promise<void> }
-type FileHandleWritable = { createWritable(): Promise<FileWritable> }
+type FileHandleWritable = { createWritable(options?: { keepExistingData?: boolean }): Promise<FileWritable> }
 type FileHandleReadable = { getFile(): Promise<{ arrayBuffer(): Promise<ArrayBuffer> }> }
 type FileHandle = FileHandleWritable & FileHandleReadable
 type OPFSDirectory = { getFileHandle(name: string, opts?: { create?: boolean }): Promise<FileHandle> }
@@ -52,9 +57,13 @@ export async function loadWalFromOPFS(fileName = 'vectordb.vlite.wal'): Promise<
   const nav: unknown = (globalThis as { navigator?: unknown }).navigator
   if (!hasOPFSNavigator(nav)) throw new Error('OPFS not available in this environment')
   const root = await nav.storage.getDirectory()
-  const handle = await root.getFileHandle(fileName, { create: false }).catch(() => null as any)
-  if (!handle) return new Uint8Array()
-  const file = await handle.getFile()
+  let fh: FileHandle | null = null
+  try {
+    fh = await root.getFileHandle(fileName, { create: false })
+  } catch {
+    return new Uint8Array()
+  }
+  const file = await fh.getFile()
   const buf = await file.arrayBuffer()
   return new Uint8Array(buf)
 }
@@ -86,9 +95,8 @@ export function createOPFSFileIO(): FileIO {
       if (!hasOPFSNavigator(nav)) throw new Error('OPFS not available in this environment')
       const root = await nav.storage.getDirectory()
       const handle = await root.getFileHandle(fileName, { create: true })
-      const anyHandle = handle as unknown as { createWritable: (opts?: { keepExistingData?: boolean }) => Promise<FileWritable> }
       try {
-        const w = await anyHandle.createWritable({ keepExistingData: true })
+        const w = await (handle as unknown as { createWritable: (opts?: { keepExistingData?: boolean }) => Promise<FileWritable> }).createWritable({ keepExistingData: true })
         await w.write(toUint8(data))
         await w.close()
       } catch {

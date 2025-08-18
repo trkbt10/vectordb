@@ -1,4 +1,9 @@
-// Node.js persistence helpers
+/**
+ * Node.js persistence helpers (FileIO, snapshots, WAL appends).
+ *
+ * Why: Provide a thin, typed bridge to Node fs/promises for saving/loading
+ * VectorLite snapshots and appending WAL, with atomic rename support.
+ */
 import { writeFile, readFile, rename } from 'node:fs/promises'
 import type { FileIO } from './types'
 import { toUint8 } from './types'

@@ -1,5 +1,4 @@
-import { createVectorLite } from '../src/vectorlite.ts'
-import { serialize, deserializeVectorLite, add, search } from '../src/vectorlite.ts'
+import { createVectorLite, serialize, deserializeVectorLite, add, search } from '../src/index.ts'
 
 function approxEqual(a: number, b: number, eps = 1e-6) {
   return Math.abs(a - b) <= eps

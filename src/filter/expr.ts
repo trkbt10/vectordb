@@ -1,6 +1,10 @@
-// Filter-expression engine (qdrant-like subset, but unnamed here)
-// Converts a JSON-friendly expression into a predicate and can derive
-// a candidate id set when paired with an attribute index.
+/**
+ * Filter-expression engine (subset, unnamed here).
+ *
+ * Why: Express attribute/meta constraints declaratively and compile them to a
+ * predicate that can be used uniformly across strategies. When an attribute
+ * index is present, we can also preselect candidate ids to reduce scoring work.
+ */
 
 export type Scalar = string | number | boolean
 export type ScalarOrArray = Scalar | Scalar[]
@@ -30,7 +34,8 @@ export type BoolExpr = {
   should_min?: number
 }
 
-export type FilterExpr = LeafExpr | BoolExpr | { has_id: HasId }
+export type HasIdOnly = { has_id: HasId }
+export type FilterExpr = LeafExpr | BoolExpr | HasIdOnly | (HasIdOnly & BoolExpr)
 
 export type MetaLike = any
 export type AttrsLike = Record<string, any> | null | undefined
@@ -106,22 +111,21 @@ function compileLeaf(l: LeafExpr): (id: number, meta: MetaLike, attrs?: AttrsLik
   return () => true
 }
 
+/** Compile a filter expression into a predicate: (id, meta, attrs?) => boolean. */
 export function compilePredicate(expr: FilterExpr): CompiledPredicate {
-  if ('has_id' in (expr as any)) {
-    const e: any = expr as any
-    const set = new Set((e.has_id.values as number[]).map(v => v >>> 0))
-    // If this object has only has_id, return membership predicate.
-    const keys = Object.keys(e)
-    if (keys.length === 1) {
+  if ('has_id' in expr) {
+    const set = new Set(expr.has_id.values.map(v => v >>> 0))
+    const { has_id, ...rest } = expr as HasIdOnly & Partial<BoolExpr>
+    const hasRest = Object.keys(rest).length > 0
+    if (!hasRest) {
       return (id) => set.has(id >>> 0)
     }
-    // Otherwise, compose with the rest as a boolean AND
-    const { has_id, ...rest } = e
     const restPred = compilePredicate(rest as FilterExpr)
     return (id, meta, attrs) => set.has(id >>> 0) && restPred(id, meta, attrs)
   }
-  if (isObject((expr as LeafExpr).range) || (expr as LeafExpr).match !== undefined || (expr as LeafExpr).exists !== undefined || (expr as LeafExpr).is_null !== undefined) {
-    return compileLeaf(expr as LeafExpr)
+  const l = expr as Partial<LeafExpr>
+  if (l && (l.match !== undefined || l.range !== undefined || l.exists !== undefined || l.is_null !== undefined)) {
+    return compileLeaf(l as LeafExpr)
   }
   const b = expr as BoolExpr
   const must = (b.must ?? []).map(compilePredicate)
@@ -178,6 +182,10 @@ function subtractInto(dst: CandidateSet | null, src: CandidateSet | null): Candi
   return out
 }
 
+/**
+ * Preselect candidate ids using an AttrIndexReader. Returns null if reader is
+ * missing or expression cannot be mapped to index lookups.
+ */
 export function preselectCandidates(expr: FilterExpr, idx: AttrIndexReader | null): CandidateSet | null {
   // if no index supplied, bail
   if (!idx) return null

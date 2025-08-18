@@ -9,7 +9,7 @@ import {
   size,
   searchWithExpr,
   setMeta,
-} from '../../../src/vectorlite'
+} from '../../../src/index'
 import { createAttrIndex, setAttrs } from '../../../src/attr/index'
 
 type Meta = { memo?: string; lang?: string }
@@ -75,4 +75,3 @@ async function main() {
 }
 
 main().catch((e) => { console.error(e); process.exitCode = 1 })
-

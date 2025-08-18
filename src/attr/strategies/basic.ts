@@ -1,27 +1,16 @@
 /**
- * Attribute Index (public interface and factory).
+ * Basic Attribute Index Strategy (function-based).
  *
- * Why: We want filterable, indexable attributes decoupled from meta, with
- * strategy-pluggable backends (e.g., basic vs bitmap) and a minimal, stable
- * IO surface. This file defines the shared types, simple helper wrappers, and
- * the factory that injects each strategy's container and pure functions.
+ * Why: Provide a simple, predictable index suitable for small-to-mid datasets
+ * with equality and numeric range filtering. This serves as the default, easy
+ * to debug implementation that favors clarity while enabling decent prefiltering.
+ *
+ * How: We separate a mutable container from pure functions so that composition
+ * and testing are straightforward, and injection is explicit.
  */
-import type { Range, Scalar } from '../filter/expr'
+import type { AttrIndex, Attrs, AttrValue } from '../index'
+import type { Range, Scalar } from '../../filter/expr'
 
-export type AttrValue = string | number | boolean | (string | number)[] | null
-export type Attrs = Record<string, AttrValue>
-
-export interface AttrIndex {
-  strategy: string
-  setAttrs(id: number, attrs: Attrs | null): void
-  getAttrs(id: number): Attrs | null
-  removeId(id: number): void
-  eq(key: string, value: Scalar): Set<number> | null
-  exists(key: string): Set<number> | null
-  range(key: string, r: Range): Set<number> | null
-}
-
-// ------------ Basic strategy: container + pure functions ------------
 type NumEntry = { v: number; id: number }
 
 export type BasicAttrContainer = {
@@ -78,9 +67,7 @@ export function basic_setAttrs(c: BasicAttrContainer, id: number, attrs: Attrs |
   for (const [k,v] of Object.entries(attrs)) addOrRemoveValue(c, 'add', k, v as AttrValue, uid)
   c.data.set(uid, attrs)
 }
-
 export function basic_getAttrs(c: BasicAttrContainer, id: number): Attrs | null { return c.data.get(id>>>0) ?? null }
-
 export function basic_removeId(c: BasicAttrContainer, id: number): void {
   const uid = id>>>0
   const old = c.data.get(uid); if (!old) return
@@ -90,7 +77,6 @@ export function basic_removeId(c: BasicAttrContainer, id: number): void {
   }
   c.data.delete(uid)
 }
-
 export function basic_eq(c: BasicAttrContainer, key: string, value: Scalar): Set<number> | null { const m = c.eqMap.get(key); if (!m) return null; const s = m.get(typeof value+':'+String(value)); return s ? new Set(s) : null }
 export function basic_exists(c: BasicAttrContainer, key: string): Set<number> | null { const s = c.existsMap.get(key); return s ? new Set(s) : null }
 export function basic_range(c: BasicAttrContainer, key: string, r: Range): Set<number> | null {
@@ -100,48 +86,21 @@ export function basic_range(c: BasicAttrContainer, key: string, r: Range): Set<n
   if (lo<0) lo=0; if (ro>arr.length) ro=arr.length; if (lo>ro) return new Set(); const out = new Set<number>(); for (let i=lo;i<ro;i++) out.add(arr[i].id); return out
 }
 
-function createBasic(): AttrIndex {
+export function createBasicIndex(): AttrIndex {
   const c = createBasicContainer()
   return {
     strategy: 'basic',
+    /** Replace attributes for an id (removes prior state). */
     setAttrs: (id, attrs) => basic_setAttrs(c, id, attrs),
+    /** Read attributes for an id, if present. */
     getAttrs: (id) => basic_getAttrs(c, id),
+    /** Remove attributes for an id. */
     removeId: (id) => basic_removeId(c, id),
+    /** Equality preselection: ids having key=value. */
     eq: (key, value) => basic_eq(c, key, value),
+    /** Existence preselection: ids having a non-null key. */
     exists: (key) => basic_exists(c, key),
+    /** Range preselection: numeric range on key (inclusive/exclusive as specified). */
     range: (key, r) => basic_range(c, key, r),
   }
 }
-
-import { createBasicIndex } from './strategies/basic'
-import { createBitmapIndex } from './strategies/bitmap'
-
-/**
- * Create an attribute index instance with a given strategy.
- * Why: Allow future evolution (performance/features) behind a stable interface.
- */
-export function createAttrIndex(strategy: 'basic' | 'bitmap' = 'basic'): AttrIndex {
-  switch (strategy) {
-    case 'bitmap':
-      return createBitmapIndex()
-    case 'basic':
-    default:
-      return createBasicIndex()
-  }
-}
-
-// Backwards-compatible helpers (thin wrappers)
-/** Set all attributes for an id (replaces previous). */
-export function setAttrs(idx: AttrIndex, id: number, attrs: Attrs | null): void { idx.setAttrs(id, attrs) }
-/** Get attributes for an id (or null). */
-export function getAttrs(idx: AttrIndex, id: number): Attrs | null { return idx.getAttrs(id) }
-/** Remove all attributes for an id. */
-export function removeId(idx: AttrIndex, id: number): void { idx.removeId(id) }
-/** Equality preselection for a key/value. */
-export function queryEq(idx: AttrIndex, key: string, value: Scalar): Set<number> | null { return idx.eq(key, value) }
-/** Existence preselection for a key. */
-export function queryExists(idx: AttrIndex, key: string): Set<number> | null { return idx.exists(key) }
-/** Numeric range preselection for a key. */
-export function queryRange(idx: AttrIndex, key: string, r: Range): Set<number> | null { return idx.range(key, r) }
-
-// Concrete strategy implementations have moved to ./strategies/*

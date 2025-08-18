@@ -1,5 +1,4 @@
-import { createVectorLite } from '../src/vectorlite.ts'
-import { add, search, serialize, deserializeVectorLite } from '../src/vectorlite.ts'
+import { createVectorLite, add, search, serialize, deserializeVectorLite } from '../src/index.ts'
 
 function assert(cond: any, msg: string) { if (!cond) throw new Error(msg) }
 

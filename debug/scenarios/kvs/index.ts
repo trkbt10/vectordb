@@ -12,7 +12,7 @@ import {
   setMeta,
   remove,
   search,
-} from '../../../src/vectorlite'
+} from '../../../src/index'
 
 type Meta = { tag?: string }
 

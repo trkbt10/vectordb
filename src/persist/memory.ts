@@ -1,4 +1,9 @@
-// In-memory FileIO implementation for tests and demos
+/**
+ * In-memory FileIO implementation for tests and demos.
+ *
+ * Why: Provide a zero-dependency, side-effect-free FileIO for unit tests and
+ * simple scenarios without touching the filesystem.
+ */
 import type { FileIO } from './types'
 import { toUint8 } from './types'
 
@@ -36,4 +41,3 @@ export function createMemoryFileIO(initial?: Record<string, Uint8Array | ArrayBu
     },
   }
 }
-
