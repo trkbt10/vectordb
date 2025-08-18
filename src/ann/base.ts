@@ -1,7 +1,7 @@
 import { Metric, SearchHit } from '../types'
 import { CoreStore } from '../core/store'
 
-export interface ANNStrategy<TMeta = unknown> {
+export type ANNStrategy<TMeta = unknown> = {
   readonly type: 'bruteforce' | 'hnsw'
   readonly metric: Metric
   init(store: CoreStore<TMeta>): void
@@ -11,4 +11,3 @@ export interface ANNStrategy<TMeta = unknown> {
   serialize(): ArrayBuffer
   deserialize(buf: ArrayBuffer): void
 }
-

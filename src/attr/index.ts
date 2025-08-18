@@ -11,7 +11,7 @@ import type { Range, Scalar } from '../filter/expr'
 export type AttrValue = string | number | boolean | (string | number)[] | null
 export type Attrs = Record<string, AttrValue>
 
-export interface AttrIndex {
+export type AttrIndex = {
   strategy: string
   setAttrs(id: number, attrs: Attrs | null): void
   getAttrs(id: number): Attrs | null

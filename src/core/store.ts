@@ -1,7 +1,7 @@
 import { Metric, UpsertOptions } from '../types'
 import { normalizeVectorInPlace } from '../util/math'
 
-export interface CoreStore<TMeta = unknown> {
+export type CoreStore<TMeta = unknown> = {
   readonly dim: number
   readonly metric: Metric
   ids: Uint32Array
