@@ -1,8 +1,18 @@
 /**
- * Core ops: size/has/add/remove/search and strategy rebuild helpers.
- *
- * Why: Keep day-to-day operational methods cohesive and small, separating
- * them from creation and persistence so each module remains easy to test and evolve.
+ * @file Core vector database operations
+ * 
+ * This module implements the fundamental operations for VectorLite, providing
+ * the essential CRUD and search functionality. Key operations include:
+ * - Vector insertion with automatic index updates
+ * - Vector retrieval by ID with metadata
+ * - Similarity search across different ANN strategies
+ * - Vector removal with proper cleanup
+ * - Strategy switching and rebuilding
+ * 
+ * The module abstracts away strategy-specific details, providing a unified
+ * interface that works consistently across bruteforce, HNSW, and IVF backends.
+ * This separation ensures that users can switch strategies without changing
+ * their application code.
  */
 import type { SearchHit, SearchOptions, UpsertOptions, HNSWParams, IVFParams, VectorLiteOptions } from "../../types";
 import {
@@ -51,7 +61,7 @@ export function add<TMeta>(
   if (created) {
     if (isHnswVL(vl)) hnsw_add(vl.ann, vl.store, id);
     else if (isIvfVL(vl)) ivf_add(vl.ann, vl.store, id);
-    else if (isBfVL(vl)) bf_add(vl.ann, vl.store, id);
+    else if (isBfVL(vl)) bf_add();
   }
 }
 

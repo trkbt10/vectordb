@@ -1,4 +1,21 @@
 /**
+ * @file Statistics and diagnostics for VectorLite instances
+ *
+ * This module provides observability tools for understanding the state and
+ * performance characteristics of VectorLite indices. It offers read-only
+ * statistics gathering, performance diagnostics, and actionable suggestions
+ * without modifying the underlying data structures. This separation ensures
+ * that monitoring and debugging operations have zero impact on the runtime
+ * performance of the vector database.
+ *
+ * Features:
+ * - Index statistics: Graph connectivity, tombstone ratios, cluster distributions
+ * - Performance diagnostics: Recall estimation, hotspot detection
+ * - Optimization suggestions: Recommendations based on dataset characteristics
+ * - Strategy-specific metrics: HNSW levels/degrees, IVF cluster sizes, etc.
+ */
+
+/**
  * Stats and diagnose helpers.
  *
  * Why: Offer quick, read-only insights and suggestions without entangling

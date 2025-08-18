@@ -1,8 +1,16 @@
 /**
- * Minimal max-heap for { s: number } items.
- *
- * Why: HNSW search benefits from a priority queue for candidate selection.
- * This lightweight heap avoids repeated sorts, reducing overhead in tight loops.
+ * @file Max-heap priority queue implementation for efficient candidate selection
+ * 
+ * This module provides a specialized max-heap data structure optimized for
+ * HNSW graph exploration and other priority-based algorithms. Key features:
+ * - Generic implementation supporting any object with a numeric score
+ * - O(log n) insertion and extraction of maximum elements
+ * - Minimal memory allocations with in-place array operations
+ * - Optimized for the hot path in nearest neighbor search
+ * 
+ * The heap is essential for maintaining sorted candidates during graph
+ * traversal, allowing efficient selection of the most promising nodes
+ * without the overhead of repeated array sorting.
  */
 
 export type ScoreItem = { s: number }

@@ -1,12 +1,18 @@
 /**
- * @file Basic Attribute Index Strategy (function-based).
- *
- * Why: Provide a simple, predictable index suitable for small-to-mid datasets
- * with equality and numeric range filtering. This serves as the default, easy
- * to debug implementation that favors clarity while enabling decent prefiltering.
- *
- * How: We separate a mutable container from pure functions so that composition
- * and testing are straightforward, and injection is explicit.
+ * @file Basic attribute indexing strategy with in-memory maps
+ * 
+ * This module implements a straightforward attribute indexing strategy using
+ * nested hash maps for fast equality lookups and sorted arrays for range queries.
+ * Key features:
+ * - Direct storage of attributes per ID (Map<id, attrs>)
+ * - Inverted index for equality queries (Map<key, Map<value, Set<id>>>)
+ * - Sorted numeric arrays for efficient range queries
+ * - Support for multi-value attributes (arrays)
+ * - Pure functional design with injected container
+ * 
+ * This strategy is ideal for small to medium datasets where simplicity and
+ * query performance are prioritized over memory efficiency. All indexes are
+ * maintained in memory for fast access.
  */
 import type { AttrIndex, Attrs, AttrValue } from '../index'
 import type { Range, Scalar } from '../../filter/expr'
@@ -128,6 +134,3 @@ export function createBasicIndex(): AttrIndex {
     range: (key, r) => basic_range(c, key, r),
   }
 }
-/**
- * @file Basic attribute indexing and filtering strategy.
- */

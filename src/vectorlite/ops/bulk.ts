@@ -1,8 +1,16 @@
 /**
- * Bulk ops: upsertMany/removeMany.
- *
- * Why: Provide efficient batched mutation paths with clear error aggregation
- * semantics, reducing call overhead and centralizing result reporting.
+ * @file Bulk operations for efficient batch processing
+ * 
+ * This module provides optimized bulk operations for adding and removing
+ * multiple vectors in a single call. Key features:
+ * - Batch insertion with configurable error handling modes
+ * - Detailed result reporting (success count, failures, duplicates)
+ * - Transaction-like semantics with all-or-nothing mode
+ * - Efficient pre-allocation and capacity management
+ * 
+ * Bulk operations significantly reduce overhead when working with large
+ * datasets by minimizing function call overhead and enabling better
+ * resource allocation strategies.
  */
 import type { VectorLiteState } from '../../types'
 import type { UpsertOptions } from '../../types'

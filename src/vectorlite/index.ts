@@ -1,8 +1,16 @@
 /**
- * VectorLite subpath entry: curated exports for operational APIs.
- *
- * Why: Provide a single import path for day-to-day usage while keeping
- * internal modules decoupled for clarity and testability.
+ * @file VectorLite module aggregation and public API exports
+ * 
+ * This module serves as the main entry point for VectorLite's operational APIs,
+ * providing a carefully curated set of exports for users. It offers:
+ * - Core operations (add, search, remove, update)
+ * - Serialization/deserialization functions
+ * - Maintenance and optimization utilities
+ * - Bulk operations for efficient batch processing
+ * 
+ * By centralizing exports here, we maintain a clean public API surface while
+ * keeping internal modules properly encapsulated. This design enables better
+ * tree-shaking and allows users to import only what they need.
  */
 export type { VectorLiteState } from '../types'
 

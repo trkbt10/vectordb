@@ -1,11 +1,27 @@
+/**
+ * @file Write-Ahead Log (WAL) implementation for crash recovery
+ * 
+ * This module implements a Write-Ahead Log system that ensures durability
+ * and crash recovery for VectorLite operations. Key features:
+ * - Binary log format with magic number and version for validation
+ * - Support for all mutation operations (upsert, remove, setMeta)
+ * - Efficient binary encoding with little-endian format
+ * - Replay capability to reconstruct database state after crashes
+ * - Integration with attribute indexes for complete state recovery
+ * 
+ * The WAL format is designed to be compact yet self-describing, allowing
+ * reliable recovery even from partially written logs. Each record includes
+ * type information and payload sizes for robust parsing.
+ * 
+ * Format specification:
+ * - Header: 'VLWA' (4 bytes), version u32 (1)
+ * - Records: type u8, reserved u8, id u32, metaLen u32, vecLen u32, meta JSON bytes, vec bytes
+ * - Types: 1=upsert, 2=remove, 3=setMeta
+ */
+
 import { add, remove, setMeta } from './vectorlite/ops/core'
 import type { AttrIndex, Attrs } from './attr/index'
 import type { VectorLiteState } from './types'
-
-// Simple WAL format (little-endian)
-// Header: 'VLWA' (4 bytes), version u32 (1)
-// Records: type u8, reserved u8, id u32, metaLen u32, vecLen u32, meta JSON bytes, vec bytes (Float32Array)
-// Types: 1=upsert(add/update vector+meta), 2=remove, 3=setMeta(meta only)
 
 const MAGIC = 0x564c5741 // 'VLWA'
 const VERSION = 1

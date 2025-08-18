@@ -1,10 +1,18 @@
 /**
- * @file Attribute Index (public interface and factory).
- *
- * Why: We want filterable, indexable attributes decoupled from meta, with
- * strategy-pluggable backends (e.g., basic vs bitmap) and a minimal, stable
- * IO surface. This file defines the shared types, simple helper wrappers, and
- * the factory that injects each strategy's container and pure functions.
+ * @file Attribute indexing system for efficient metadata filtering
+ * 
+ * This module provides a flexible attribute indexing system that enables fast
+ * pre-filtering of vectors based on metadata constraints. Key features:
+ * - Support for equality, existence, and range queries on attributes
+ * - Pluggable backend strategies (basic, bitmap) for different use cases
+ * - Integration with filter expressions for query optimization
+ * - Type-safe attribute operations with proper null handling
+ * 
+ * The attribute index allows VectorLite to efficiently combine vector similarity
+ * search with traditional database-style filtering, dramatically reducing the
+ * search space before expensive similarity calculations. This is crucial for
+ * real-world applications where vectors have associated metadata (tags, timestamps,
+ * categories, etc.) that users want to filter by.
  */
 import type { Range, Scalar } from '../filter/expr'
 
@@ -154,6 +162,3 @@ export function queryExists(idx: AttrIndex, key: string): Set<number> | null { r
 export function queryRange(idx: AttrIndex, key: string, r: Range): Set<number> | null { return idx.range(key, r) }
 
 // Concrete strategy implementations have moved to ./strategies/*
-/**
- * @file Attribute subsystem public API.
- */

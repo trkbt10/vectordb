@@ -1,10 +1,26 @@
 /**
+ * @file Consistency checking and repair operations for VectorLite
+ *
+ * This module provides tools to detect and fix inconsistencies between the primary
+ * vector store and secondary indices (IVF, HNSW). These inconsistencies can arise
+ * from partial updates, crashes, or bugs. The module offers both diagnostic
+ * (checkConsistency) and repair (repairConsistency) capabilities, keeping repair
+ * logic separate from normal write paths to maintain clean separation of concerns.
+ *
+ * Key responsibilities:
+ * - Detect missing entries in indices that exist in the store
+ * - Find orphaned index entries with no corresponding store data
+ * - Identify position mismatches between store IDs and their array indices
+ * - Rebuild indices from the primary store when requested
+ */
+
+/**
  * Consistency check/repair between store and indices.
  *
  * Why: Detect and optionally fix drift between primary storage and
  * secondary indices without coupling repair logic to write paths.
  */
-import type { VectorLiteState } from '../state'
+import type { VectorLiteState } from '../../types'
 import { isIvfVL } from '../../util/guards'
 import { ivf_add } from '../../ann/ivf'
 

@@ -1,4 +1,21 @@
 /**
+ * @file Maintenance operations for VectorLite indices and storage
+ *
+ * This module provides explicit maintenance operations for optimizing VectorLite
+ * performance and storage efficiency. It includes compaction (removing tombstoned
+ * entries), full index rebuilds, IVF retraining, and capacity management. All
+ * operations are designed to be explicitly invoked by operators rather than
+ * happening automatically, ensuring predictable behavior and avoiding hidden
+ * performance costs during normal operations.
+ *
+ * Key operations:
+ * - HNSW compaction: Remove deleted entries and rebuild the graph
+ * - IVF retraining: Recompute centroids and reassign vectors to optimal clusters
+ * - Storage capacity adjustment: Grow or shrink backing arrays
+ * - Full index rebuilds: Create fresh indices from scratch for optimal structure
+ */
+
+/**
  * Maintain/compact/rebuild operations.
  *
  * Why: Isolate maintenance workflows (compaction, rebuild, capacity tuning)

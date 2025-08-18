@@ -1,8 +1,16 @@
 /**
- * Utilities to maintain top-k collections sorted by score desc.
- *
- * Why: Keep insertions local and cheap during scoring, avoiding full sorts of
- * growing arrays when we only care about the best K results.
+ * @file Top-K result collection utilities for efficient similarity search
+ * 
+ * This module provides optimized functions for maintaining collections of the
+ * K best results during vector search operations. Key features:
+ * - Efficient insertion sort for maintaining top-K results
+ * - Avoids full array sorting by keeping results in sorted order
+ * - Early termination when scores can't make it into top-K
+ * - Generic implementation supporting any scored object type
+ * 
+ * These utilities are critical for search performance, as they minimize
+ * the computational overhead of result collection in the inner loop of
+ * similarity calculations, where millions of comparisons may occur.
  */
 
 export type Scored = { s: number }

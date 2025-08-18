@@ -1,6 +1,18 @@
 
 /**
- * @file HNSW ANN strategy implementation.
+ * @file HNSW (Hierarchical Navigable Small World) graph-based ANN implementation
+ * 
+ * This module implements the HNSW algorithm for approximate nearest neighbor search,
+ * providing high-performance similarity search with logarithmic complexity. Features:
+ * - Multi-layer graph structure with hierarchical connections
+ * - Configurable parameters (M, efConstruction, efSearch) for performance tuning
+ * - Support for dynamic insertion and soft deletion (tombstones)
+ * - Advanced search controls (filtering modes, bridge budgets, adaptive exploration)
+ * - Efficient binary serialization for persistence
+ * 
+ * HNSW is the recommended strategy for large-scale vector databases where exact
+ * search becomes impractical. It trades a small amount of accuracy for massive
+ * speed improvements while maintaining high recall rates.
  */
 
 import { CoreStore, getByIndex, getIndex } from "../core/store";
@@ -429,7 +441,4 @@ export function hnsw_deserialize(h: HNSWState, store: CoreStore<unknown>, seg: A
  * practicality of bruteforce while keeping a simple, dependency-free TS design.
  * We also expose optional exploration controls to integrate attribute-driven
  * preselection without hard-coding policy into the graph itself.
- */
-/**
- * @file HNSW ANN strategy implementation.
  */
