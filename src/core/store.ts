@@ -20,6 +20,9 @@ export type CoreStore<TMeta = unknown> = {
   _count: number;
 };
 
+/**
+ *
+ */
 export function createStore<TMeta = unknown>(dim: number, metric: Metric, capacity = 1024): CoreStore<TMeta> {
   if (!Number.isInteger(dim) || dim <= 0) {
     throw new Error("dim must be positive integer");
@@ -37,16 +40,28 @@ export function createStore<TMeta = unknown>(dim: number, metric: Metric, capaci
   };
 }
 
+/**
+ *
+ */
 export function size<T>(s: CoreStore<T>) {
   return s._count;
 }
+/**
+ *
+ */
 export function capacity<T>(s: CoreStore<T>) {
   return s._capacity;
 }
+/**
+ *
+ */
 export function has<T>(s: CoreStore<T>, id: number) {
   return s.pos.has(id >>> 0);
 }
 
+/**
+ *
+ */
 export function ensure<T>(s: CoreStore<T>, extra = 1): boolean {
   if (s._count + extra <= s._capacity) {
     return false;
@@ -70,6 +85,9 @@ export function ensure<T>(s: CoreStore<T>, extra = 1): boolean {
   return true;
 }
 
+/**
+ *
+ */
 export function writeVectorAt<T>(s: CoreStore<T>, index: number, vector: Float32Array) {
   const base = index * s.dim;
   const dst = s.data.subarray(base, base + s.dim);
@@ -79,15 +97,24 @@ export function writeVectorAt<T>(s: CoreStore<T>, index: number, vector: Float32
   }
 }
 
+/**
+ *
+ */
 export function getIndex<T>(s: CoreStore<T>, id: number) {
   return s.pos.get(id >>> 0);
 }
 
+/**
+ *
+ */
 export function getByIndex<T>(s: CoreStore<T>, index: number): { vector: Float32Array; meta: T | null; id: number } {
   const base = index * s.dim;
   return { vector: s.data.slice(base, base + s.dim), meta: s.metas[index], id: s.ids[index] };
 }
 
+/**
+ *
+ */
 export function get<T>(s: CoreStore<T>, id: number): { vector: Float32Array; meta: T | null } | null {
   const at = getIndex(s, id);
   if (at === undefined) {
@@ -105,6 +132,9 @@ export function updateMeta<T>(s: CoreStore<T>, id: number, meta: T | null): bool
   return true;
 }
 
+/**
+ *
+ */
 export function addOrUpdate<T>(
   s: CoreStore<T>,
   id: number,
@@ -135,6 +165,9 @@ export function addOrUpdate<T>(
   return { index: idx, created: true };
 }
 
+/**
+ *
+ */
 export function removeById<T>(
   s: CoreStore<T>,
   id: number
@@ -162,6 +195,9 @@ export function removeById<T>(
   }
 }
 
+/**
+ *
+ */
 export function normalizeQuery(metric: Metric, q: Float32Array): Float32Array {
   if (metric !== "cosine") {
     return q;
@@ -171,6 +207,9 @@ export function normalizeQuery(metric: Metric, q: Float32Array): Float32Array {
   return out;
 }
 
+/**
+ *
+ */
 export function restoreFromDeserialized<T>(s: CoreStore<T>, count: number) {
   if (!Number.isInteger(count) || count < 0 || count > s._capacity) {
     throw new Error("invalid restore count");

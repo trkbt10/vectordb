@@ -15,6 +15,9 @@ export type WalRecord =
   | { type: 'remove'; id: number }
   | { type: 'setMeta'; id: number; meta: unknown | null }
 
+/**
+ *
+ */
 export function encodeWal(records: WalRecord[]): Uint8Array {
   const parts: Uint8Array[] = []
   const header = new Uint8Array(8)
@@ -70,6 +73,9 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
   return out
 }
 
+/**
+ *
+ */
 export function decodeWal(u8: Uint8Array): WalRecord[] {
   if (u8.length < 8) throw new Error('wal too short')
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength)

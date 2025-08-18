@@ -11,6 +11,9 @@ import { hnsw_add, hnsw_ensureCapacity, createHNSWState } from "../../ann/hnsw";
 import { ivf_add, ivf_reassignLists, ivf_trainCentroids, createIVFState } from "../../ann/ivf";
 import { createStore, getByIndex as storeGetByIndex, addOrUpdate, resizeCapacity, shrinkToFit } from "../../core/store";
 
+/**
+ *
+ */
 export function hnswCompactAndRebuild<TMeta>(vl: VectorLiteState<TMeta>): number {
   if (!isHnswVL(vl)) return 0;
   const h = vl.ann;
@@ -45,6 +48,9 @@ export function hnswCompactAndRebuild<TMeta>(vl: VectorLiteState<TMeta>): number
   return n - alive;
 }
 
+/**
+ *
+ */
 export function compactStore<TMeta>(
   vl: VectorLiteState<TMeta>,
   opts?: { shrink?: boolean; tombstoneRatio?: number; capacity?: number }
@@ -69,6 +75,9 @@ export function compactStore<TMeta>(
   return { shrunk, rebuilt };
 }
 
+/**
+ *
+ */
 export function rebuildIndex<TMeta>(
   vl: VectorLiteState<TMeta>,
   opts: { strategy: "hnsw" | "ivf"; params?: HNSWParams | IVFParams; ids?: number[] }

@@ -31,6 +31,9 @@ export type BasicAttrContainer = {
   numMap: Map<string, { arr: NumEntry[]; dirty: boolean }>
 }
 
+/**
+ *
+ */
 export function createBasicContainer(): BasicAttrContainer {
   return {
     data: new Map<number, Attrs>(),
@@ -71,6 +74,9 @@ function addOrRemoveValue(c: BasicAttrContainer, mode: 'add' | 'del', key: strin
   if (typeof val === 'number') { doEq(c, key, val, uid); doNum(c, key, val, uid); return }
 }
 
+/**
+ *
+ */
 export function basic_setAttrs(c: BasicAttrContainer, id: number, attrs: Attrs | null): void {
   const uid = id>>>0
   basic_removeId(c, uid)
@@ -79,8 +85,14 @@ export function basic_setAttrs(c: BasicAttrContainer, id: number, attrs: Attrs |
   c.data.set(uid, attrs)
 }
 
+/**
+ *
+ */
 export function basic_getAttrs(c: BasicAttrContainer, id: number): Attrs | null { return c.data.get(id>>>0) ?? null }
 
+/**
+ *
+ */
 export function basic_removeId(c: BasicAttrContainer, id: number): void {
   const uid = id>>>0
   const old = c.data.get(uid); if (!old) return
@@ -91,8 +103,17 @@ export function basic_removeId(c: BasicAttrContainer, id: number): void {
   c.data.delete(uid)
 }
 
+/**
+ *
+ */
 export function basic_eq(c: BasicAttrContainer, key: string, value: Scalar): Set<number> | null { const m = c.eqMap.get(key); if (!m) return null; const s = m.get(typeof value+':'+String(value)); return s ? new Set(s) : null }
+/**
+ *
+ */
 export function basic_exists(c: BasicAttrContainer, key: string): Set<number> | null { const s = c.existsMap.get(key); return s ? new Set(s) : null }
+/**
+ *
+ */
 export function basic_range(c: BasicAttrContainer, key: string, r: Range): Set<number> | null {
   const e = c.numMap.get(key); if (!e) return null; ensureSorted(e); const arr = e.arr; if (arr.length===0) return new Set()
   let lo = 0; if (r.gt!==undefined || r.gte!==undefined) { const x = r.gt ?? r.gte!; const strict = r.gt!==undefined; lo = lowerBound(arr, x, strict) }

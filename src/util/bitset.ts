@@ -7,6 +7,15 @@
 
 export type BitMask = Uint8Array
 
+/**
+ *
+ */
 export function createBitMask(n: number): BitMask { return new Uint8Array(n) }
+/**
+ *
+ */
 export function maskSet(mask: BitMask, idx: number): void { if (idx >= 0 && idx < mask.length) mask[idx] = 1 }
+/**
+ *
+ */
 export function maskHas(mask: BitMask, idx: number): boolean { return idx >= 0 && idx < mask.length && mask[idx] === 1 }

@@ -22,6 +22,9 @@ function hasOPFSNavigator(x: unknown): x is NavigatorWithOPFS {
   return typeof maybe.getDirectory === 'function'
 }
 
+/**
+ *
+ */
 export async function saveToOPFS(buf: ArrayBuffer, fileName = 'vectordb.vlite') {
   const nav: unknown = (globalThis as { navigator?: unknown }).navigator
   if (!hasOPFSNavigator(nav)) throw new Error('OPFS not available in this environment')
@@ -32,6 +35,9 @@ export async function saveToOPFS(buf: ArrayBuffer, fileName = 'vectordb.vlite') 
   await w.close()
 }
 
+/**
+ *
+ */
 export async function loadFromOPFS(fileName = 'vectordb.vlite'): Promise<ArrayBuffer> {
   const nav: unknown = (globalThis as { navigator?: unknown }).navigator
   if (!hasOPFSNavigator(nav)) throw new Error('OPFS not available in this environment')

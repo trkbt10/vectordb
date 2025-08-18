@@ -8,6 +8,9 @@ import type { VectorLiteState } from '../state'
 import type { UpsertOptions } from '../../types'
 import { add, remove } from './core'
 
+/**
+ *
+ */
 export function upsertMany<TMeta>(vl: VectorLiteState<TMeta>, rows: { id: number; vector: Float32Array; meta?: TMeta | null }[], opts?: UpsertOptions & { mode?: 'best_effort' | 'all_or_nothing' }) {
   const res: { ok: number; failed: number; duplicates: number[]; errors: { id: number; reason: string }[] } = { ok: 0, failed: 0, duplicates: [], errors: [] }
   const mode = opts?.mode ?? 'best_effort'
@@ -33,6 +36,9 @@ export function upsertMany<TMeta>(vl: VectorLiteState<TMeta>, rows: { id: number
   return res
 }
 
+/**
+ *
+ */
 export function removeMany<TMeta>(vl: VectorLiteState<TMeta>, ids: number[], opts?: { ignoreMissing?: boolean }) {
   const res = { ok: 0, missing: [] as number[] }
   for (const id of ids) {

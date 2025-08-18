@@ -7,6 +7,9 @@
 
 export type Scored = { s: number }
 
+/**
+ *
+ */
 export function pushTopK<T>(out: T[], hit: T, k: number, getScore: (t: T) => number): void {
   if (out.length < k) {
     out.push(hit)
@@ -24,6 +27,9 @@ export function pushTopK<T>(out: T[], hit: T, k: number, getScore: (t: T) => num
   }
 }
 
+/**
+ *
+ */
 export function pushSortedDesc<T extends Scored>(arr: T[], item: T, limit?: number): void {
   let i = arr.length - 1
   arr.push(item)

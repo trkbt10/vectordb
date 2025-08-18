@@ -12,6 +12,9 @@ import { search, buildHNSWFromStore, buildWithStrategy } from './core'
 export type HnswTuneGrid = { efSearch?: number[]; M?: number[] }
 export type HnswTuneResult = { params: { M: number; efSearch: number }; recall: number; latency: number }
 
+/**
+ *
+ */
 export function tuneHnsw<TMeta>(vl: VectorLiteState<TMeta>, grid: HnswTuneGrid, queries: Float32Array[], k: number): HnswTuneResult[] {
   if (!isHnswVL(vl)) return []
   // vl is narrowed to HNSW here

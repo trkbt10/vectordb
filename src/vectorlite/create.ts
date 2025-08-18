@@ -10,8 +10,11 @@ import { createStore } from "../core/store";
 import { createBruteforceState } from "../ann/bruteforce";
 import { createHNSWState } from "../ann/hnsw";
 import { createIVFState } from "../ann/ivf";
-import type { VectorLiteState } from "./state";
+import type { VectorLiteState, VectorLiteAnn } from "./state";
 
+/**
+ *
+ */
 export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
   const dim = opts.dim;
   const metric: Metric = opts.metric ?? "cosine";
@@ -23,11 +26,13 @@ export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): Vect
     throw new Error(`Unsupported strategy: ${String(strategy)}. Use 'bruteforce' | 'hnsw' | 'ivf'.`);
   }
   const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024);
-  const ann =
-    strategy === "hnsw"
-      ? createHNSWState(opts.hnsw ?? {}, metric, store._capacity)
-      : strategy === "ivf"
-      ? createIVFState(opts.ivf ?? {}, metric, opts.dim)
-      : createBruteforceState(metric);
+  let ann: VectorLiteAnn;
+  if (strategy === "hnsw") {
+    ann = createHNSWState(opts.hnsw ?? {}, metric, store._capacity);
+  } else if (strategy === "ivf") {
+    ann = createIVFState(opts.ivf ?? {}, metric, dim);
+  } else {
+    ann = createBruteforceState(metric);
+  }
   return { dim, metric, store, strategy, ann };
 }

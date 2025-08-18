@@ -23,6 +23,9 @@ export type SearchWithExprOptions = {
   }
 }
 
+/**
+ *
+ */
 export function searchWithExpr<TMeta>(
   vl: VectorLiteState<TMeta>,
   query: Float32Array,

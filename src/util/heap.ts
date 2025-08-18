@@ -7,6 +7,9 @@
 
 export type ScoreItem = { s: number }
 
+/**
+ *
+ */
 export class MaxHeap<T extends ScoreItem> {
   private a: T[] = []
   get length() { return this.a.length }

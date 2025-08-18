@@ -14,6 +14,9 @@ export type BitmapAttrContainer = {
   existsMap: Map<string, Set<number>>
 }
 
+/**
+ *
+ */
 export function createBitmapContainer(): BitmapAttrContainer {
   return {
     data: new Map<number, Attrs>(),
@@ -40,6 +43,9 @@ function addOrRemoveValue(c: BitmapAttrContainer, mode: 'add' | 'del', key: stri
   if (typeof val === 'number') { doEq(c, key, val, uid); return }
 }
 
+/**
+ *
+ */
 export function bitmap_setAttrs(c: BitmapAttrContainer, id: number, attrs: Attrs | null): void {
   const uid = id>>>0
   bitmap_removeId(c, uid)
@@ -47,7 +53,13 @@ export function bitmap_setAttrs(c: BitmapAttrContainer, id: number, attrs: Attrs
   for (const [k, v] of Object.entries(attrs)) addOrRemoveValue(c, 'add', k, v as AttrValue, uid)
   c.data.set(uid, attrs)
 }
+/**
+ *
+ */
 export function bitmap_getAttrs(c: BitmapAttrContainer, id: number): Attrs | null { return c.data.get(id>>>0) ?? null }
+/**
+ *
+ */
 export function bitmap_removeId(c: BitmapAttrContainer, id: number): void {
   const uid = id>>>0
   const old = c.data.get(uid); if (!old) return
@@ -57,14 +69,26 @@ export function bitmap_removeId(c: BitmapAttrContainer, id: number): void {
   }
   c.data.delete(uid)
 }
+/**
+ *
+ */
 export function bitmap_eq(c: BitmapAttrContainer, key: string, value: Scalar): Set<number> | null {
   const m = c.eqMap.get(key); if (!m) return null
   const s = m.get(skey(value))
   return s ? new Set(s) : null
 }
+/**
+ *
+ */
 export function bitmap_exists(c: BitmapAttrContainer, key: string): Set<number> | null { const s = c.existsMap.get(key); return s ? new Set(s) : null }
+/**
+ *
+ */
 export function bitmap_range(_c: BitmapAttrContainer, _key: string, _r: Range): Set<number> | null { return null }
 
+/**
+ *
+ */
 export function createBitmapIndex(): AttrIndex {
   const c = createBitmapContainer()
   return {

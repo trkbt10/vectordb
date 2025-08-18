@@ -8,6 +8,9 @@ export type ShardPlan = {
   shards: { name: string; ids: number[] }[]
 }
 
+/**
+ *
+ */
 export function createShardPlanByRange(ids: number[], shards: number): ShardPlan {
   const sorted = Array.from(ids).sort((a,b)=>a-b)
   const out: ShardPlan = { shards: [] }
@@ -31,6 +34,9 @@ export function createShardPlan(ids: number[], opts: { by: 'range'|'hash'; shard
   return opts.by === 'hash' ? createShardPlanByHash(ids, opts.shards) : createShardPlanByRange(ids, opts.shards)
 }
 
+/**
+ *
+ */
 export function searchParallel<TMeta>(
   vl: VectorLiteState<TMeta>,
   q: Float32Array,

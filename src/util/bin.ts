@@ -7,6 +7,9 @@ export type BinReader = {
   offset(): number;
 };
 
+/**
+ *
+ */
 export function createReader(buf: ArrayBufferLike): BinReader {
   const dv = new DataView(buf);
   let off = 0;
@@ -38,6 +41,9 @@ export type BinWriter = {
   concat(): Uint8Array;
 };
 
+/**
+ *
+ */
 export function createWriter(): BinWriter {
   const parts: Uint8Array[] = [];
   function pushU32(v: number): void {

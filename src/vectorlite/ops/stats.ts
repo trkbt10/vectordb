@@ -12,6 +12,9 @@ export type HnswStats = { levels: number; avgDeg: number; tombstoneRatio?: numbe
 export type IvfStats = { nlist: number; nprobe: number; listSizeHist: number[] }
 export type StatsOut = { n: number; dim: number; strategy: 'bruteforce'|'hnsw'|'ivf'; metric: 'cosine'|'l2'|'dot'; deletedRatio?: number; hnsw?: HnswStats; ivf?: IvfStats }
 
+/**
+ *
+ */
 export function stats<TMeta>(vl: VectorLiteState<TMeta>): StatsOut {
   const out: StatsOut = { n: vl.store._count, dim: vl.dim, strategy: vl.strategy, metric: vl.metric }
   if (isHnswVL(vl)) {
@@ -37,6 +40,9 @@ export function stats<TMeta>(vl: VectorLiteState<TMeta>): StatsOut {
   return out
 }
 
+/**
+ *
+ */
 export function diagnose<TMeta>(vl: VectorLiteState<TMeta>, opts?: { sampleQueries?: Float32Array[]; k?: number }): { stats: StatsOut; suggestions: string[]; recallEstimate?: number; hotspots?: string[] } {
   const s = stats(vl)
   const suggestions: string[] = []

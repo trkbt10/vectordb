@@ -30,6 +30,9 @@ export type IVFState = {
   idToList: Map<number, number>;
 };
 
+/**
+ *
+ */
 export function createIVFState(params: IVFParams, metric: Metric, dim: number): IVFState {
   const nlist = Math.max(1, params.nlist ?? 64);
   const nprobe = Math.max(1, Math.min(nlist, params.nprobe ?? Math.ceil(Math.sqrt(nlist))));
@@ -283,6 +286,9 @@ function nearestCentroid<TMeta>(h: IVFState, store: CoreStore<TMeta>, vec: Float
   return best >>> 0;
 }
 
+/**
+ *
+ */
 export function ivf_add<TMeta>(h: IVFState, store: CoreStore<TMeta>, id: number): void {
   const idx = store.pos.get(id >>> 0) ?? -1;
   if (idx < 0) return;
@@ -302,6 +308,9 @@ export function ivf_add<TMeta>(h: IVFState, store: CoreStore<TMeta>, id: number)
   h.idToList.set(id >>> 0, c);
 }
 
+/**
+ *
+ */
 export function ivf_remove<TMeta>(h: IVFState, _store: CoreStore<TMeta>, id: number): void {
   const uid = id >>> 0;
   const li = h.idToList.get(uid);
@@ -312,6 +321,9 @@ export function ivf_remove<TMeta>(h: IVFState, _store: CoreStore<TMeta>, id: num
   h.idToList.delete(uid);
 }
 
+/**
+ *
+ */
 export function ivf_search<TMeta>(
   h: IVFState,
   store: CoreStore<TMeta>,
@@ -358,6 +370,9 @@ export function ivf_search<TMeta>(
   return out;
 }
 
+/**
+ *
+ */
 export function ivf_serialize(h: IVFState, store: CoreStore<unknown>): ArrayBuffer {
   const dim = store.dim;
   const header = new Uint32Array([h.nlist >>> 0, h.nprobe >>> 0, h.centroidCount >>> 0, dim >>> 0]);
@@ -372,6 +387,9 @@ export function ivf_serialize(h: IVFState, store: CoreStore<unknown>): ArrayBuff
   return out.buffer;
 }
 
+/**
+ *
+ */
 export function ivf_deserialize(h: IVFState, store: CoreStore<unknown>, buf: ArrayBuffer): void {
   const dv = new DataView(buf);
   const nlist = dv.getUint32(0, true);

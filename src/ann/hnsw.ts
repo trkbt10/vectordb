@@ -33,6 +33,9 @@ export type HNSWState = {
   rng: () => number;
 };
 
+/**
+ *
+ */
 export function createHNSWState(params: HNSWParams, metric: Metric, capacity: number): HNSWState {
   const M = params.M ?? 16;
   return {
@@ -52,6 +55,9 @@ export function createHNSWState(params: HNSWParams, metric: Metric, capacity: nu
   };
 }
 
+/**
+ *
+ */
 export function hnsw_ensureCapacity(h: HNSWState, capacity: number) {
   if (h.levelArr.length >= capacity && h.tombstone.length >= capacity) return;
   if (h.levelArr.length < capacity) h.levelArr = h.levelArr.concat(new Array(capacity - h.levelArr.length).fill(0));
@@ -116,6 +122,9 @@ export type HNSWSearchControl = {
   earlyStop?: { margin?: number }
 }
 
+/**
+ *
+ */
 export function computeNumSeeds(maskSize: number, seeds: 'auto' | number): number {
   if (seeds === 'auto') return Math.max(1, Math.min(8, Math.floor(Math.sqrt(Math.max(0, maskSize)))))
   const n = Math.floor(seeds)
@@ -195,6 +204,9 @@ function connectMutually(h: HNSWState, a: number, neighbors: number[], level: nu
   }
 }
 
+/**
+ *
+ */
 export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: number) {
   hnsw_ensureCapacity(h, store._capacity);
   const idx = getIndex(store, id);
@@ -238,6 +250,9 @@ export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: numbe
   }
 }
 
+/**
+ *
+ */
 export function hnsw_remove<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: number) {
   const idx = getIndex(store, id);
   if (idx === undefined) return;
@@ -247,6 +262,9 @@ export function hnsw_remove<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: nu
   }
 }
 
+/**
+ *
+ */
 export function hnsw_search<TMeta>(
   h: HNSWState,
   store: CoreStore<TMeta>,
@@ -305,6 +323,9 @@ export function hnsw_search<TMeta>(
   return out;
 }
 
+/**
+ *
+ */
 export function hnsw_serialize(h: HNSWState, store: CoreStore<unknown>): ArrayBuffer {
   const paramsObj = { M: h.M, efConstruction: h.efConstruction, efSearch: h.efSearch, levelMult: h.levelMult };
   const paramsBytes = new TextEncoder().encode(JSON.stringify(paramsObj));
@@ -350,6 +371,9 @@ export function hnsw_serialize(h: HNSWState, store: CoreStore<unknown>): ArrayBu
   return w.concat().buffer as ArrayBuffer;
 }
 
+/**
+ *
+ */
 export function hnsw_deserialize(h: HNSWState, store: CoreStore<unknown>, seg: ArrayBufferLike): void {
   const r = createReader(seg);
   const paramsLen = r.readU32();

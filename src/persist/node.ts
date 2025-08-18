@@ -8,10 +8,16 @@ import { writeFile, readFile, rename } from 'node:fs/promises'
 import type { FileIO } from './types'
 import { toUint8 } from './types'
 
+/**
+ *
+ */
 export async function saveToFileNode(buf: ArrayBuffer, path: string) {
   await writeFile(path, new Uint8Array(buf))
 }
 
+/**
+ *
+ */
 export async function loadFromFileNode(path: string): Promise<ArrayBuffer> {
   const u8 = await readFile(path)
   const out = new Uint8Array(u8.byteLength)
@@ -31,6 +37,9 @@ export async function saveAtomicToFileNode(buf: ArrayBuffer, path: string): Prom
   await rename(tmp, path)
 }
 
+/**
+ *
+ */
 export function createNodeFileIO(): FileIO {
   return {
     async read(path: string) { const u8 = await readFile(path); const out = new Uint8Array(u8.byteLength); out.set(u8); return out },

@@ -24,10 +24,16 @@ export type Rule<TMeta> = (ctx: { vl: VectorLiteState<TMeta>; stats: StatsView }
 
 const registry: Rule<unknown>[] = []
 
+/**
+ *
+ */
 export function registerRules<TMeta>(rules: Rule<TMeta>[]): void {
   for (const r of rules) registry.push(r as unknown as Rule<unknown>)
 }
 
+/**
+ *
+ */
 export function clearRules(): void {
   registry.splice(0, registry.length)
 }

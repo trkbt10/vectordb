@@ -1,5 +1,8 @@
 /** Math helpers for vector operations */
 
+/**
+ *
+ */
 export function normalizeVectorInPlace(vec: Float32Array): void {
   let sum = 0
   for (let i = 0; i < vec.length; i++) {
@@ -11,6 +14,9 @@ export function normalizeVectorInPlace(vec: Float32Array): void {
   }
 }
 
+/**
+ *
+ */
 export function dotAt(data: Float32Array, base: number, q: Float32Array, dim: number): number {
   let s = 0
   for (let i = 0; i < dim; i++) {
@@ -19,6 +25,9 @@ export function dotAt(data: Float32Array, base: number, q: Float32Array, dim: nu
   return s
 }
 
+/**
+ *
+ */
 export function l2negAt(data: Float32Array, base: number, q: Float32Array, dim: number): number {
   let s = 0
   for (let i = 0; i < dim; i++) {

@@ -5,18 +5,30 @@ import { getScoreAtFn } from "../util/similarity";
 
 export type BruteforceState = { type: "bruteforce"; metric: Metric };
 
+/**
+ *
+ */
 export function createBruteforceState(metric: Metric): BruteforceState {
   return { type: "bruteforce", metric };
 }
 
+/**
+ *
+ */
 export function bf_add<TMeta>(_bf: BruteforceState, _store: CoreStore<TMeta>, _id: number): void {
   // no-op
 }
 
+/**
+ *
+ */
 export function bf_remove<TMeta>(_bf: BruteforceState, _store: CoreStore<TMeta>, _id: number): void {
   // no-op
 }
 
+/**
+ *
+ */
 export function bf_search<TMeta>(
   bf: BruteforceState,
   store: CoreStore<TMeta>,
@@ -45,7 +57,13 @@ export function bf_search<TMeta>(
   return out;
 }
 
+/**
+ *
+ */
 export function bf_serialize(_bf: BruteforceState): ArrayBuffer {
   return new Uint8Array(0).buffer;
 }
+/**
+ *
+ */
 export function bf_deserialize(_bf: BruteforceState, _buf: ArrayBuffer): void {}

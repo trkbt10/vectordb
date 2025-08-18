@@ -8,6 +8,9 @@ import type { VectorLiteState } from '../state'
 import { isIvfVL } from '../../util/guards'
 import { ivf_add } from '../../ann/ivf'
 
+/**
+ *
+ */
 export function checkConsistency<TMeta>(vl: VectorLiteState<TMeta>) {
   const missingInIndex: number[] = []
   const missingInStore: number[] = []
@@ -28,6 +31,9 @@ export function checkConsistency<TMeta>(vl: VectorLiteState<TMeta>) {
   return { missingInIndex, missingInStore, mismatchedPos }
 }
 
+/**
+ *
+ */
 export function repairConsistency<TMeta>(vl: VectorLiteState<TMeta>, opts?: { fixIndex?: boolean; fixStore?: boolean }) {
   const report = checkConsistency(vl)
   if (opts?.fixIndex) {

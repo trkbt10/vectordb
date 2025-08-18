@@ -9,6 +9,9 @@ const SCORE_AT: Record<Metric, ScoreAtFn> = {
   l2: l2negAt,
 }
 
+/**
+ *
+ */
 export function getScoreAtFn(metric: Metric): ScoreAtFn {
   const fn = SCORE_AT[metric]
   if (!fn) {

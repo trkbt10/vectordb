@@ -7,6 +7,9 @@
 import type { FileIO } from './types'
 import { toUint8 } from './types'
 
+/**
+ *
+ */
 export function createMemoryFileIO(initial?: Record<string, Uint8Array | ArrayBuffer>): FileIO {
   const store = new Map<string, Uint8Array>()
   if (initial) {
