@@ -35,8 +35,9 @@ export type VectorLiteOptions = {
   dim: number;
   metric?: Metric;
   capacity?: number;
-  strategy?: "bruteforce" | "hnsw";
+  strategy?: "bruteforce" | "hnsw" | "ivf";
   hnsw?: HNSWParams;
+  ivf?: IVFParams;
 }
 
 /** HNSW algorithm parameters. */
@@ -47,4 +48,9 @@ export type HNSWParams = {
   levelMult?: number;
   seed?: number;
   allowReplaceDeleted?: boolean;
+}
+
+export type IVFParams = {
+  nlist?: number;
+  nprobe?: number;
 }

@@ -9,12 +9,12 @@ import type { Metric } from '../types'
 import type { CoreStore } from '../core/store'
 import type { BruteforceState } from '../ann/bruteforce'
 import type { HNSWState } from '../ann/hnsw'
+import type { IVFState } from '../ann/ivf'
 
 export type VectorLiteState<TMeta> = {
   dim: number
   metric: Metric
   store: CoreStore<TMeta>
-  strategy: 'bruteforce' | 'hnsw'
-  ann: BruteforceState | HNSWState
+  strategy: 'bruteforce' | 'hnsw' | 'ivf'
+  ann: BruteforceState | HNSWState | IVFState
 }
-

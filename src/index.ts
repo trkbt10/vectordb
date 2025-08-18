@@ -22,6 +22,9 @@ export {
   remove,
   search,
   hnswCompactAndRebuild,
+  buildWithStrategy,
+  buildHNSWFromStore,
+  buildIVFFromStore,
 } from './vectorlite/ops'
 export { serialize, deserializeVectorLite } from './vectorlite/serialize'
 export { searchWithExpr } from './search/with_expr'

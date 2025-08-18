@@ -10,12 +10,14 @@ import { createVectorLite } from './create'
 import type { VectorLiteState } from './state'
 import { hnsw_serialize, hnsw_deserialize } from '../ann/hnsw'
 import { bf_serialize } from '../ann/bruteforce'
+import { ivf_serialize, ivf_deserialize } from '../ann/ivf'
 import { restoreFromDeserialized } from '../core/store'
-import { isHnswVL, isBfVL } from '../util/guards'
+import { isHnswVL, isBfVL, isIvfVL } from '../util/guards'
 
 function serializeAnnStrategy<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
   if (isHnswVL(vl)) return hnsw_serialize(vl.ann, vl.store)
   if (isBfVL(vl)) return bf_serialize(vl.ann)
+  if (isIvfVL(vl)) return ivf_serialize(vl.ann, vl.store)
   throw new Error(`Unsupported strategy in serialize: ${String(vl.strategy)}`)
 }
 
@@ -25,7 +27,7 @@ const VERSION_V2 = 2
 
 export function serialize<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
   const version = VERSION_V2
-  const strategyCode = vl.strategy === 'hnsw' ? 1 : 0
+  const strategyCode = vl.strategy === 'hnsw' ? 1 : (vl.strategy === 'ivf' ? 2 : 0)
   const header = new ArrayBuffer(24)
   const h = new DataView(header)
   h.setUint32(0, MAGIC, true)
@@ -87,12 +89,13 @@ export function deserializeVectorLite<TMeta = unknown>(buf: ArrayBuffer): Vector
   const metaObj = JSON.parse(new TextDecoder().decode(metaBytes)) as { metas: (TMeta | null)[]; ids: number[] }
   const idsBytes = r.readBytes(count * 4); const ids = new Uint32Array(idsBytes.buffer)
   const vecBytes = r.readBytes(count * dim * 4); const data = new Float32Array(vecBytes.buffer)
-  const stratLen = r.readU32(); const stratU8 = r.readBytes(stratLen); const stratBuf = stratU8.buffer.slice(stratU8.byteOffset, stratU8.byteOffset + stratU8.byteLength)
+  const stratLen = r.readU32(); const stratU8 = r.readBytes(stratLen); const stratBuf = stratU8.slice().buffer as ArrayBuffer
 
-  const inst = createVectorLite<TMeta>({ dim, metric, capacity: count, strategy: strategyCode === 1 ? 'hnsw' : 'bruteforce' })
+  const inst = createVectorLite<TMeta>({ dim, metric, capacity: count, strategy: strategyCode === 1 ? 'hnsw' : (strategyCode === 2 ? 'ivf' : 'bruteforce') })
   inst.store.ids.set(ids); inst.store.data.set(data)
   for (let i = 0; i < count; i++) { inst.store.metas[i] = metaObj.metas[i] ?? null }
   restoreFromDeserialized(inst.store, count)
   if (isHnswVL(inst)) { hnsw_deserialize(inst.ann, inst.store, stratBuf) }
+  else if (isIvfVL(inst)) { ivf_deserialize(inst.ann, inst.store, stratBuf) }
   return inst
 }

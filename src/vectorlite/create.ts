@@ -9,6 +9,7 @@ import type { Metric } from '../types'
 import { createStore } from '../core/store'
 import { createBruteforceState } from '../ann/bruteforce'
 import { createHNSWState } from '../ann/hnsw'
+import { createIVFState } from '../ann/ivf'
 import type { VectorLiteState } from './state'
 
 export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
@@ -18,10 +19,14 @@ export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): Vect
   if (metric !== 'cosine' && metric !== 'l2' && metric !== 'dot') {
     throw new Error(`Unsupported metric: ${String(metric)}. Use 'cosine' | 'l2' | 'dot'.`)
   }
-  if (strategy !== 'bruteforce' && strategy !== 'hnsw') {
-    throw new Error(`Unsupported strategy: ${String(strategy)}. Use 'bruteforce' | 'hnsw'.`)
+  if (strategy !== 'bruteforce' && strategy !== 'hnsw' && strategy !== 'ivf') {
+    throw new Error(`Unsupported strategy: ${String(strategy)}. Use 'bruteforce' | 'hnsw' | 'ivf'.`)
   }
   const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024)
-  const ann = strategy === 'hnsw' ? createHNSWState(opts.hnsw ?? {}, metric, store._capacity) : createBruteforceState(metric)
+  const ann = strategy === 'hnsw'
+    ? createHNSWState(opts.hnsw ?? {}, metric, store._capacity)
+    : strategy === 'ivf'
+      ? createIVFState(opts.ivf ?? {}, metric, opts.dim)
+      : createBruteforceState(metric)
   return { dim, metric, store, strategy, ann }
 }
