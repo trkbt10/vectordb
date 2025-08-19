@@ -19,7 +19,7 @@
  * - Types: 1=upsert, 2=remove, 3=setMeta
  */
 
-import { add, remove, setMeta } from "./vectorlite/ops/core";
+import { add, remove, setMeta } from "./attr/ops/core";
 import type { AttrIndex, Attrs } from "./attr/index";
 import type { VectorLiteState } from "./types";
 

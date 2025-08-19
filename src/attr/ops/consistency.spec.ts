@@ -4,10 +4,10 @@
  * Why: Ensure check/repair surfaces inconsistencies and can repair IVF lists.
  */
 
-import { createState } from "../create";
 import { add } from "./core";
 import { checkConsistency, repairConsistency } from "./consistency";
-import { isIvfVL } from "../../../util/guards";
+import { isIvfVL } from "../../util/guards";
+import { createState } from "../state/create";
 
 describe("ops.consistency", () => {
   it("detects missingInIndex for IVF and can repair", () => {

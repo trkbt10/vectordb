@@ -4,7 +4,7 @@
  * Why: Ensure upsertMany/removeMany aggregate results and mutate state correctly.
  */
 
-import { createState } from "../create";
+import { createState } from "../state/create";
 import { upsertMany, removeMany } from "./bulk";
 
 describe("ops.bulk", () => {

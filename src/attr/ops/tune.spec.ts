@@ -4,7 +4,7 @@
  * Why: Verify suggestions are returned and recall values are bounded.
  */
 
-import { createState } from "../create";
+import { createState } from "../state/create";
 import { add } from "./core";
 import { tuneHnsw } from "./tune";
 

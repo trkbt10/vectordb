@@ -9,9 +9,10 @@
  *   of core ANN routines for clearer layering and future cross-cutting hooks
  *   (logging/metrics/permissions) without touching ANN internals.
  */
-import type { VectorLiteState } from "../../../types";
-import { isIvfVL } from "../../../util/guards";
-import { ivf_trainCentroids, ivf_reassignLists, ivf_evaluate } from "../../../ann/ivf";
+
+import { ivf_evaluate, ivf_reassignLists, ivf_trainCentroids } from "../../ann/ivf";
+import { VectorLiteState } from "../../types";
+import { isIvfVL } from "../../util/guards";
 
 /**
  * Train IVF centroids via k-means over the current store.

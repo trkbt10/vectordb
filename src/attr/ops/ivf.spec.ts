@@ -4,7 +4,7 @@
  * Why: Ensure wrapper functions call into IVF module and produce reasonable outputs.
  */
 
-import { createState } from "../create";
+import { createState } from "../state/create";
 import { add } from "./core";
 import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "./ivf";
 

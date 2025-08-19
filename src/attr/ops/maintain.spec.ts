@@ -1,6 +1,6 @@
 /** Maintain ops smoke test */
 
-import { createState } from "../create";
+import { createState } from "../state/create";
 import { add, remove } from "./core";
 import { hnswCompactAndRebuild, rebuildIndex } from "./maintain";
 

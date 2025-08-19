@@ -14,15 +14,16 @@
  * - Rebuild indices from the primary store when requested
  */
 
+import { ivf_add } from "../../ann/ivf";
+import { VectorLiteState } from "../../types";
+import { isIvfVL } from "../../util/guards";
+
 /**
  * Consistency check/repair between store and indices.
  *
  * Why: Detect and optionally fix drift between primary storage and
  * secondary indices without coupling repair logic to write paths.
  */
-import type { VectorLiteState } from "../../../types";
-import { isIvfVL } from "../../../util/guards";
-import { ivf_add } from "../../../ann/ivf";
 
 /**
  *

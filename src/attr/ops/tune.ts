@@ -22,9 +22,9 @@
  * Why: Evaluate recall/latency trade-offs across parameter grids in isolation
  * and surface ranked suggestions without mutating the active instance.
  */
-import type { VectorLiteState } from "../../../types";
-import { isHnswVL } from "../../../util/guards";
-import type { HNSWState } from "../../../ann/hnsw";
+import { HNSWState } from "../../ann/hnsw";
+import { VectorLiteState } from "../../types";
+import { isHnswVL } from "../../util/guards";
 import { search, buildHNSWFromStore, buildWithStrategy } from "./core";
 
 export type HnswTuneGrid = { efSearch?: number[]; M?: number[] };

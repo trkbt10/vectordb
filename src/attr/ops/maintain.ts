@@ -15,19 +15,18 @@
  * - Full index rebuilds: Create fresh indices from scratch for optimal structure
  */
 
+import { createHNSWState, hnsw_add } from "../../ann/hnsw";
+import { createIVFState, ivf_trainCentroids, ivf_reassignLists, ivf_add } from "../../ann/ivf";
+import { VectorLiteState, HNSWParams, IVFParams } from "../../types";
+import { isHnswVL, isIvfVL } from "../../util/guards";
+import { createStore, addOrUpdate, resizeCapacity, shrinkToFit, getByIndex } from "../store/store";
+
 /**
  * Maintain/compact/rebuild operations.
  *
  * Why: Isolate maintenance workflows (compaction, rebuild, capacity tuning)
  * behind explicit, operator-invoked functions to avoid hidden mutations.
  */
-import type { VectorLiteState } from "../../../types";
-import type { HNSWParams, IVFParams } from "../../../types";
-import { isHnswVL, isIvfVL } from "../../../util/guards";
-import { hnsw_add, createHNSWState } from "../../../ann/hnsw";
-import { ivf_add, ivf_reassignLists, ivf_trainCentroids, createIVFState } from "../../../ann/ivf";
-import { createStore, getByIndex as storeGetByIndex, addOrUpdate, resizeCapacity, shrinkToFit } from "../../store/store";
-
 /**
  *
  */
@@ -56,7 +55,7 @@ export function hnswCompactAndRebuild<TMeta>(vl: VectorLiteState<TMeta>): number
   );
   for (let i = 0; i < n; i++) {
     if (h.tombstone[i]) continue;
-    const { id, vector, meta } = storeGetByIndex(vl.store, i);
+    const { id, vector, meta } = getByIndex(vl.store, i);
     addOrUpdate(newStore, id, vector, meta, { upsert: false });
   }
   for (let i = 0; i < newStore._count; i++) hnsw_add(newH, newStore, newStore.ids[i]);

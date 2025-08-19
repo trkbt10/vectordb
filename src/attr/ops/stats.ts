@@ -21,8 +21,8 @@
  * Why: Offer quick, read-only insights and suggestions without entangling
  * core operations, aiding observability and manual decision making.
  */
-import type { VectorLiteState } from "../../../types";
-import { isHnswVL, isIvfVL } from "../../../util/guards";
+import { VectorLiteState } from "../../types";
+import { isHnswVL, isIvfVL } from "../../util/guards";
 import { search } from "./core";
 
 export type HnswStats = { levels: number; avgDeg: number; tombstoneRatio?: number };
