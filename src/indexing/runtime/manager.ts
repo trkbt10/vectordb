@@ -15,7 +15,7 @@ import { writeSegments } from "../placement/segmenter";
 import { writeIndexFile, writePlacementManifest } from "../index_builder";
 import { writeCatalog, readCatalog } from "../catalog";
 import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../attr/vectorlite/format";
-import { buildHNSWFromStore, buildIVFFromStore } from "../../attr/vectorlite/ops/core";
+import { buildHNSWFromStore, buildIVFFromStore } from "../../attr/ops/core";
 
 /** Save state into separated data segments and an index in the index folder. */
 export async function saveIndexing<TMeta>(vl: VectorLiteState<TMeta>, opts: SaveIndexingOptions): Promise<void> {

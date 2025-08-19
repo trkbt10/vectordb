@@ -6,7 +6,7 @@ import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
 import { createVectorLiteState } from "../attr/vectorlite/create";
-import { persistIndex, openFromIndex } from "../attr/vectorlite/ops/index_persist";
+import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
 import { createLocalCrushEnv } from "./helpers/local_crush";
 
 describe("indexing/local_crush", () => {
