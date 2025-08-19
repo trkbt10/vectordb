@@ -1,7 +1,7 @@
 /**
  * Rule-based Alerts spec
  */
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { add, remove } from "../attr/ops/core";
 import {
   registerRules,
@@ -14,7 +14,7 @@ import {
 
 describe("rules engine", () => {
   it("emits alert for large BF dataset", () => {
-    const vl = createVectorLiteState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    const vl = createState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
     for (let i = 0; i < 12000; i++) add(vl, i + 1, new Float32Array([1, 0]), null);
     clearRules();
     registerRules([ruleLargeDatasetBF(10000)]);
@@ -23,7 +23,7 @@ describe("rules engine", () => {
   });
 
   it("emits alert for HNSW tombstones", () => {
-    const vl = createVectorLiteState({
+    const vl = createState({
       dim: 2,
       metric: "cosine",
       strategy: "hnsw",

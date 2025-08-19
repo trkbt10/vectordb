@@ -4,13 +4,13 @@
 
 import { writeIndexFile, writePlacementManifest } from "./index_builder";
 import { createMemoryFileIO } from "../persist/memory";
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { decodeIndexFile } from "./formats/index_file";
 
 describe("indexing/index_builder", () => {
   it("writes index and manifest files readable from index IO", async () => {
     const io = createMemoryFileIO();
-    const vl = createVectorLiteState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    const vl = createState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
     const entries = [
       { id: 1, ptr: { segment: "db.pg0.part0", offset: 8, length: 24 } },
       { id: 2, ptr: { segment: "db.pg1.part0", offset: 32, length: 24 } },

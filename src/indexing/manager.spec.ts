@@ -1,14 +1,14 @@
 /**
  * @file Integration test for indexing manager (save/open)
  */
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { saveIndexing, openIndexing } from "./runtime/manager";
 import type { CrushMap } from "./types";
 import { createMemoryFileIO } from "../persist/memory";
 
 describe("indexing/manager", () => {
   it("saves to segments and opens via index + CRUSH", async () => {
-    const vl = createVectorLiteState<{ tag?: string }>({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    const vl = createState<{ tag?: string }>({ dim: 2, metric: "cosine", strategy: "bruteforce" });
     // add three rows
     vl.store.ids[0] = 1;
     vl.store.data.set(new Float32Array([1, 0]), 0);

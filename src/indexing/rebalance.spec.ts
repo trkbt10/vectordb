@@ -4,7 +4,7 @@
 import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
 import { createLocalCrushEnv } from "./helpers/local_crush";
 import { planRebalance, applyRebalance } from "./placement/rebalance";
@@ -13,7 +13,7 @@ describe("indexing/rebalance", () => {
   it("moves segments to satisfy new crushmap and opens with updated placement", async () => {
     const base = await mkdtemp(joinPath(tmpdir(), "vlite-rebal-"));
     const env = createLocalCrushEnv(base, 2, 16);
-    const vl = createVectorLiteState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    const vl = createState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
     for (let i = 0; i < 10; i++) {
       vl.store.ids[i] = i + 1;
       vl.store.data.set(new Float32Array([i, i + 1]), i * 2);

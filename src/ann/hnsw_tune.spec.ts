@@ -1,14 +1,14 @@
 /**
  * HNSW tuning spec
  */
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { add, buildHNSWFromStore } from "../attr/ops/core";
 import { tuneHnsw } from "../attr/ops/tune";
 
 describe("tuneHnsw", () => {
   it("produces results and recall within [0,1]", () => {
     const dim = 4;
-    const bf = createVectorLiteState({ dim, metric: "cosine", strategy: "bruteforce" });
+    const bf = createState({ dim, metric: "cosine", strategy: "bruteforce" });
     const base1 = new Float32Array([1, 0, 0, 0]);
     const base2 = new Float32Array([0, 1, 0, 0]);
     function jit(b: Float32Array) {

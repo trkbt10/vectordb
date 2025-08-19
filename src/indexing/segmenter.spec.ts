@@ -3,13 +3,13 @@
  */
 
 import { writeSegments } from "./placement/segmenter";
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import type { CrushMap } from "./types";
 import { createMemoryFileIO } from "../persist/memory";
 
 describe("indexing/segmenter", () => {
   it("writes segments and returns pointers/manifest", async () => {
-    const vl = createVectorLiteState<{ tag?: string }>({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    const vl = createState<{ tag?: string }>({ dim: 2, metric: "cosine", strategy: "bruteforce" });
     for (let i = 0; i < 5; i++) {
       vl.store.ids[i] = i + 1;
       vl.store.data.set(new Float32Array([i, i + 1]), i * 2);

@@ -5,7 +5,7 @@
 import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
 import { createLocalCrushEnv } from "./helpers/local_crush";
 
@@ -15,7 +15,7 @@ describe("indexing/local_crush", () => {
     const env = createLocalCrushEnv(base, /*shards*/ 4, /*pgs*/ 32);
 
     // Prepare small dataset
-    const vl = createVectorLiteState<{ tag?: string }>({ dim: 3, metric: "cosine", strategy: "bruteforce" });
+    const vl = createState<{ tag?: string }>({ dim: 3, metric: "cosine", strategy: "bruteforce" });
     for (let i = 0; i < 20; i++) {
       vl.store.ids[i] = i + 1;
       vl.store.data.set(new Float32Array([i, i + 1, i + 2]), i * 3);

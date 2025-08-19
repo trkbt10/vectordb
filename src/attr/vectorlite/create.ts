@@ -23,7 +23,7 @@ import type { VectorLiteState, VectorLiteAnn } from "../../types";
 /**
  *
  */
-export function createVectorLiteState<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
+export function createState<TMeta = unknown>(opts: VectorLiteOptions): VectorLiteState<TMeta> {
   const dim = opts.dim;
   const metric: Metric = opts.metric ?? "cosine";
   const strategy = opts.strategy ?? "bruteforce";

@@ -12,9 +12,8 @@
  * using numeric codes for enums while maintaining compile-time guarantees
  * through exhaustive TypeScript switches.
  */
-import type { Metric } from "../../types";
-import type { VectorLiteState } from "../../types";
-import { createEnumCodec } from "../../util/enum_codec";
+import type { Metric, VectorLiteState } from "../types";
+import { createEnumCodec } from "../util/enum_codec";
 
 export const MAGIC = 0x564c4954; // 'VLIT'
 export const VERSION = 1;

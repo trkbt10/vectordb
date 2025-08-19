@@ -2,13 +2,13 @@
  * @file Tests for IVF strategy and utilities.
  */
 
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { add, search, buildIVFFromStore } from "../attr/ops/core";
 
 describe("IVF basic behavior", () => {
   it("returns similar results to BF on clustered data", () => {
     const dim = 4;
-    const db = createVectorLiteState({ dim, metric: "cosine", strategy: "bruteforce" });
+    const db = createState({ dim, metric: "cosine", strategy: "bruteforce" });
     // two clusters around e1 and e2
     const e1 = new Float32Array([1, 0, 0, 0]);
     const e2 = new Float32Array([0, 1, 0, 0]);

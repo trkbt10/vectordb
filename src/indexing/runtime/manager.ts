@@ -9,12 +9,12 @@ import { crushLocate } from "../placement/crush";
 import { isHnswVL, isIvfVL } from "../../util/guards";
 import { hnsw_deserialize } from "../../ann/hnsw";
 import { ivf_deserialize } from "../../ann/ivf";
-import { createVectorLiteState } from "../../attr/vectorlite/create";
+import { createState } from "../../attr/vectorlite/create";
 import { normalizeVectorInPlace } from "../../util/math";
 import { writeSegments } from "../placement/segmenter";
 import { writeIndexFile, writePlacementManifest } from "../index_builder";
 import { writeCatalog, readCatalog } from "../catalog";
-import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../attr/vectorlite/format";
+import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../constants/format";
 import { buildHNSWFromStore, buildIVFFromStore } from "../../attr/ops/core";
 
 /** Save state into separated data segments and an index in the index folder. */
@@ -62,7 +62,7 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
   }
 
   const { header, entries, ann } = decodeIndexFile(idxU8);
-  const vl0 = createVectorLiteState<TMeta>({
+  const vl0 = createState<TMeta>({
     dim: header.dim,
     metric: decodeMetric(header.metricCode),
     strategy: decodeStrategy(header.strategyCode),
@@ -150,7 +150,7 @@ export async function rebuildIndexingFromData<TMeta = unknown>(
   // Load catalog (required to avoid guessing)
   const cat = await readCatalog(base, { resolveIndexIO: opts.resolveIndexIO });
   if (!cat) throw new Error("catalog missing; cannot rebuild without metric/strategy/dim");
-  const vl = createVectorLiteState<TMeta>({
+  const vl = createState<TMeta>({
     dim: cat.dim,
     metric: decodeMetric(cat.metricCode),
     strategy: decodeStrategy(cat.strategyCode),

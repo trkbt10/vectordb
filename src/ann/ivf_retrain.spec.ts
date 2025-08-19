@@ -7,14 +7,14 @@
  * - evaluateIvf returns reasonable recall on clustered data
  */
 
-import { createVectorLiteState } from "../attr/vectorlite/create";
+import { createState } from "../attr/vectorlite/create";
 import { add } from "../attr/ops/core";
 import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "../attr/ops/ivf";
 
 describe("IVF retrain/evaluate", () => {
   it("trains, reassigns, and evaluates with good recall", () => {
     const dim = 4;
-    const vl = createVectorLiteState({ dim, metric: "cosine", strategy: "ivf", ivf: { nlist: 6, nprobe: 6 } });
+    const vl = createState({ dim, metric: "cosine", strategy: "ivf", ivf: { nlist: 6, nprobe: 6 } });
     const e1 = new Float32Array([1, 0, 0, 0]);
     const e2 = new Float32Array([0, 1, 0, 0]);
     const e3 = new Float32Array([0, 0, 1, 0]);

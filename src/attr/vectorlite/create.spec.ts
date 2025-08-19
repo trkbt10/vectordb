@@ -4,11 +4,11 @@
  * Why: Verify that instances are constructed correctly across strategies/metrics
  * and expose the expected state shape.
  */
-import { createVectorLiteState } from "./create";
+import { createState } from "./create";
 
 describe("vectorlite/create", () => {
   it("creates bruteforce by default with cosine metric", () => {
-    const vl = createVectorLiteState({ dim: 3 });
+    const vl = createState({ dim: 3 });
     expect(vl.dim).toBe(3);
     expect(vl.metric).toBe("cosine");
     expect(vl.strategy).toBe("bruteforce");
@@ -16,13 +16,13 @@ describe("vectorlite/create", () => {
   });
 
   it("creates HNSW with provided params", () => {
-    const vl = createVectorLiteState({ dim: 4, strategy: "hnsw", hnsw: { M: 8, efSearch: 32 } });
+    const vl = createState({ dim: 4, strategy: "hnsw", hnsw: { M: 8, efSearch: 32 } });
     expect(vl.strategy).toBe("hnsw");
     expect(vl.dim).toBe(4);
   });
 
   it("creates IVF with nlist/nprobe", () => {
-    const vl = createVectorLiteState({ dim: 2, strategy: "ivf", ivf: { nlist: 8, nprobe: 2 } });
+    const vl = createState({ dim: 2, strategy: "ivf", ivf: { nlist: 8, nprobe: 2 } });
     expect(vl.strategy).toBe("ivf");
     expect(vl.dim).toBe(2);
   });
