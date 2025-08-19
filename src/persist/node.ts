@@ -72,7 +72,9 @@ export function createNodeFileIO(): FileIO {
     async del(path: string) {
       try {
         await rm(path, { force: true });
-      } catch {}
+      } catch {
+        // Ignore errors - file may not exist
+      }
     },
   };
 }
@@ -111,7 +113,9 @@ export function createPrefixedNodeFileIO(baseDir: string): FileIO {
       const full = joinPath(baseDir, path);
       try {
         await rm(full, { force: true });
-      } catch {}
+      } catch {
+        // Ignore errors - file may not exist
+      }
     },
   };
 }

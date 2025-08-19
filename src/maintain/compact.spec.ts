@@ -1,5 +1,5 @@
 /**
- * Compaction / Rebuild spec
+ * @file Unit tests for compaction and rebuild functionality
  */
 import { createState } from "../attr/state/create";
 import { add, remove } from "../attr/ops/core";

@@ -72,7 +72,11 @@ export async function saveWalToOPFS(buf: Uint8Array, fileName = "vectordb.vlite.
 }
 
 // Not all browsers expose delete; provide a best-effort stub.
-export async function deleteFromOPFS(fileName: string) {
+/**
+ *
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function deleteFromOPFS(_fileName: string) {
   // No-op in this minimal adapter; callers should treat delete as optional.
 }
 

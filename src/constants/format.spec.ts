@@ -1,7 +1,7 @@
 /**
- * format.ts spec
+ * @file Unit tests for format constants
  *
- * Why: Ensure metric/strategy mappers are bijective and exhaustive.
+ * Ensures metric/strategy mappers are bijective and exhaustive.
  */
 import { encodeMetric, decodeMetric, encodeStrategy, decodeStrategy, METRIC_CODES, STRATEGY_CODES } from "./format";
 

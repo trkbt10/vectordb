@@ -2,8 +2,6 @@
  * @file Rebalance utilities for CRUSH map updates (segment relocation)
  */
 import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "../types";
-import { readCatalog } from "../catalog";
-import { DataSegmentReader } from "../formats/data_segment";
 
 export type PlacementManifest = { segments: { name: string; targetKey: string }[] };
 
@@ -22,6 +20,9 @@ function targetForPg(pg: number, crush: CrushMap): string {
   return crush.targets[idx].key;
 }
 
+/**
+ *
+ */
 export async function readManifest(
   baseName: string,
   opts: { resolveIndexIO: ResolveIndexIO },
@@ -34,6 +35,9 @@ export async function readManifest(
   }
 }
 
+/**
+ *
+ */
 export async function writeManifest(
   baseName: string,
   m: PlacementManifest,

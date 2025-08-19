@@ -6,7 +6,7 @@
  */
 import type { AttrIndex, Attrs } from "../index";
 export type AttrValue = string | number | boolean | (string | number)[] | null;
-import type { Scalar } from "../filter/expr";
+import type { Range, Scalar } from "../filter/expr";
 
 export type BitmapAttrContainer = {
   data: Map<number, Attrs>;
@@ -129,7 +129,9 @@ export function bitmap_exists(c: BitmapAttrContainer, key: string): Set<number> 
 /**
  *
  */
-export function bitmap_range(_c?: BitmapAttrContainer, _key?: string, _r?: unknown): Set<number> | null {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function bitmap_range(_c: BitmapAttrContainer, _key: string, _r: Range): Set<number> | null {
+  // TODO: Implement bitmap range queries
   return null;
 }
 
