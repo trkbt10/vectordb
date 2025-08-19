@@ -11,7 +11,7 @@
  */
 
 import { ivf_evaluate, ivf_reassignLists, ivf_trainCentroids } from "../../ann/ivf";
-import { VectorLiteState } from "../../types";
+import { VectorStoreState } from "../../types";
 import { isIvfVL } from "../../util/guards";
 
 /**
@@ -19,7 +19,7 @@ import { isIvfVL } from "../../util/guards";
  * No-op if the current strategy is not IVF.
  */
 export function trainIvfCentroids<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   opts?: { iters?: number; seed?: number },
 ): { updated: number } {
   if (!isIvfVL(vl)) return { updated: 0 };
@@ -30,7 +30,7 @@ export function trainIvfCentroids<TMeta>(
  * Reassign posting lists based on current centroids.
  * No-op if the current strategy is not IVF.
  */
-export function reassignIvfLists<TMeta>(vl: VectorLiteState<TMeta>): { moved: number } {
+export function reassignIvfLists<TMeta>(vl: VectorStoreState<TMeta>): { moved: number } {
   if (!isIvfVL(vl)) return { moved: 0 };
   return ivf_reassignLists(vl.ann, vl.store);
 }
@@ -40,7 +40,7 @@ export function reassignIvfLists<TMeta>(vl: VectorLiteState<TMeta>): { moved: nu
  * Returns { recall: 0, latency: 0 } if strategy is not IVF.
  */
 export function evaluateIvf<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   queries: Float32Array[],
   k: number,
 ): { recall: number; latency: number } {

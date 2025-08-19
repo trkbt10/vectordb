@@ -23,7 +23,7 @@
  * and surface ranked suggestions without mutating the active instance.
  */
 import { HNSWState } from "../../ann/hnsw";
-import { VectorLiteState } from "../../types";
+import { VectorStoreState } from "../../types";
 import { isHnswVL } from "../../util/guards";
 import { search, buildHNSWFromStore, buildWithStrategy } from "./core";
 
@@ -34,7 +34,7 @@ export type HnswTuneResult = { params: { M: number; efSearch: number }; recall: 
  *
  */
 export function tuneHnsw<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   grid: HnswTuneGrid,
   queries: Float32Array[],
   k: number,
@@ -52,18 +52,18 @@ export function tuneHnsw<TMeta>(
     // Build candidate HNSW state if M differs
     let cand =
       M === vl.ann.M
-        ? (vl as VectorLiteState<TMeta> & { strategy: "hnsw"; ann: HNSWState })
+        ? (vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState })
         : (buildHNSWFromStore(vl, {
             M,
             efConstruction: vl.ann.efConstruction,
             efSearch: vl.ann.efSearch,
-          }) as VectorLiteState<TMeta>);
+          }) as VectorStoreState<TMeta>);
     // ensure cand is HNSW (buildHNSWFromStore returns HNSW)
     if (!isHnswVL(cand)) {
       // fall back to original
-      cand = vl as VectorLiteState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+      cand = vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
     }
-    const hnswCand = cand as VectorLiteState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+    const hnswCand = cand as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
     const origEf = hnswCand.ann.efSearch;
     for (const ef of efList) {
       hnswCand.ann.efSearch = ef;

@@ -21,7 +21,7 @@
 
 import { add, remove, setMeta } from "./attr/ops/core";
 import type { AttrIndex, Attrs } from "./attr/index";
-import type { VectorLiteState } from "./types";
+import type { VectorStoreState } from "./types";
 
 const MAGIC = 0x564c5741; // 'VLWA'
 const VERSION = 1;
@@ -159,7 +159,7 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
 }
 
 /** Apply a WAL buffer to a VectorLite instance (idempotent upserts). */
-export function applyWal<TMeta>(vl: VectorLiteState<TMeta>, walBytes: Uint8Array): void {
+export function applyWal<TMeta>(vl: VectorStoreState<TMeta>, walBytes: Uint8Array): void {
   const records = decodeWal(walBytes);
   for (const r of records) {
     if (r.type === "remove") {
@@ -180,7 +180,7 @@ export type MetaToAttrs<TMeta> = (meta: TMeta | null) => Attrs | null;
  * Apply WAL and keep an attribute index in sync using a projector from meta to attrs.
  */
 export function applyWalWithIndex<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   walBytes: Uint8Array,
   index: AttrIndex,
   projector: MetaToAttrs<TMeta>,

@@ -1,7 +1,7 @@
 /**
  * @file Index builder for separated layout (writes index + manifest)
  */
-import type { VectorLiteState } from "../types";
+import type { VectorStoreState } from "../types";
 import type { IndexEntry } from "./types";
 import { encodeIndexFile } from "./formats/index_file";
 import type { ResolveIndexIO } from "./types";
@@ -17,7 +17,7 @@ export type IndexBuildOptions = {
   includeAnn?: boolean;
 };
 
-function annBytesFor<T>(vl: VectorLiteState<T>): Uint8Array {
+function annBytesFor<T>(vl: VectorStoreState<T>): Uint8Array {
   if (isHnswVL(vl)) return new Uint8Array(hnsw_serialize(vl.ann, vl.store));
   if (isIvfVL(vl)) return new Uint8Array(ivf_serialize(vl.ann, vl.store));
   return new Uint8Array(bf_serialize());
@@ -25,7 +25,7 @@ function annBytesFor<T>(vl: VectorLiteState<T>): Uint8Array {
 
 /** Build and write an index file using precomputed entries. */
 export async function writeIndexFile<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   entries: IndexEntry[],
   opts: IndexBuildOptions,
 ): Promise<void> {

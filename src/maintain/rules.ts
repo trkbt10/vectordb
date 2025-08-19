@@ -20,7 +20,7 @@
  * Used by applications that need proactive monitoring of vector database health
  * and performance, enabling preventive maintenance before issues impact users.
  */
-import type { VectorLiteState } from "../types";
+import type { VectorStoreState } from "../types";
 import type { Metric } from "../types";
 import { isHnswVL, isIvfVL } from "../util/guards";
 
@@ -36,7 +36,7 @@ export type StatsView = {
 };
 
 export type Alert = { code: string; message: string; severity?: "info" | "warn" | "error" };
-export type Rule<TMeta> = (ctx: { vl: VectorLiteState<TMeta>; stats: StatsView }) => Alert | Alert[] | null;
+export type Rule<TMeta> = (ctx: { vl: VectorStoreState<TMeta>; stats: StatsView }) => Alert | Alert[] | null;
 
 const registry: Rule<unknown>[] = [];
 
@@ -54,7 +54,7 @@ export function clearRules(): void {
   registry.splice(0, registry.length);
 }
 
-function computeStatsView<TMeta>(vl: VectorLiteState<TMeta>): StatsView {
+function computeStatsView<TMeta>(vl: VectorStoreState<TMeta>): StatsView {
   const base = { n: vl.store._count, dim: vl.dim, strategy: vl.strategy, metric: vl.metric as Metric };
   if (isHnswVL(vl)) {
     // avgDeg across all layers / nodes (rough indicator)
@@ -75,7 +75,7 @@ function computeStatsView<TMeta>(vl: VectorLiteState<TMeta>): StatsView {
   return base as StatsView;
 }
 
-function hnswTombstoneRatio<TMeta>(vl: VectorLiteState<TMeta>): number | null {
+function hnswTombstoneRatio<TMeta>(vl: VectorStoreState<TMeta>): number | null {
   if (!isHnswVL(vl)) return null;
   // eslint-disable-next-line no-restricted-syntax -- accumulating counter for readability and performance
   let dead = 0;
@@ -85,7 +85,7 @@ function hnswTombstoneRatio<TMeta>(vl: VectorLiteState<TMeta>): number | null {
 }
 
 /** Evaluate all registered rules on the given instance. */
-export function evaluateRules<TMeta>(vl: VectorLiteState<TMeta>): Alert[] {
+export function evaluateRules<TMeta>(vl: VectorStoreState<TMeta>): Alert[] {
   const stats = computeStatsView(vl);
   const out: Alert[] = [];
   for (const r of registry) {

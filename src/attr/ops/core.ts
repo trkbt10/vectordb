@@ -18,7 +18,7 @@ import { bf_add, bf_search } from "../../ann/bruteforce";
 import { hnsw_ensureCapacity, hnsw_add, hnsw_remove, hnsw_search } from "../../ann/hnsw";
 import { ivf_add, ivf_remove, ivf_search } from "../../ann/ivf";
 import {
-  VectorLiteState,
+  VectorStoreState,
   UpsertOptions,
   SearchOptions,
   SearchHit,
@@ -32,13 +32,13 @@ import * as Store from "../store/store";
 /**
  *
  */
-export function size<TMeta>(vl: VectorLiteState<TMeta>) {
+export function size<TMeta>(vl: VectorStoreState<TMeta>) {
   return Store.size(vl.store);
 }
 /**
  *
  */
-export function has<TMeta>(vl: VectorLiteState<TMeta>, id: number) {
+export function has<TMeta>(vl: VectorStoreState<TMeta>, id: number) {
   return Store.has(vl.store, id);
 }
 
@@ -46,7 +46,7 @@ export function has<TMeta>(vl: VectorLiteState<TMeta>, id: number) {
  *
  */
 export function add<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   id: number,
   vector: Float32Array,
   meta: TMeta | null = null,
@@ -66,7 +66,7 @@ export function add<TMeta>(
  *
  */
 export function addMany<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   rows: { id: number; vector: Float32Array; meta?: TMeta | null }[],
   up?: UpsertOptions,
 ) {
@@ -78,28 +78,28 @@ export function addMany<TMeta>(
 /**
  *
  */
-export function getOne<TMeta>(vl: VectorLiteState<TMeta>, id: number) {
+export function getOne<TMeta>(vl: VectorStoreState<TMeta>, id: number) {
   return Store.get(vl.store, id);
 }
 export const get = getOne;
 /**
  *
  */
-export function getMeta<TMeta>(vl: VectorLiteState<TMeta>, id: number): TMeta | null {
+export function getMeta<TMeta>(vl: VectorStoreState<TMeta>, id: number): TMeta | null {
   const r = Store.get(vl.store, id);
   return r ? r.meta : null;
 }
 /**
  *
  */
-export function setMeta<TMeta>(vl: VectorLiteState<TMeta>, id: number, meta: TMeta | null): boolean {
+export function setMeta<TMeta>(vl: VectorStoreState<TMeta>, id: number, meta: TMeta | null): boolean {
   return Store.updateMeta(vl.store, id, meta);
 }
 
 /**
  *
  */
-export function remove<TMeta>(vl: VectorLiteState<TMeta>, id: number): boolean {
+export function remove<TMeta>(vl: VectorStoreState<TMeta>, id: number): boolean {
   if (isHnswVL(vl)) {
     if (!has(vl, id)) return false;
     hnsw_remove(vl.ann, vl.store, id);
@@ -118,7 +118,7 @@ export function remove<TMeta>(vl: VectorLiteState<TMeta>, id: number): boolean {
  *
  */
 export function search<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   query: Float32Array,
   options: SearchOptions<TMeta> = {},
 ): SearchHit<TMeta>[] {
@@ -132,10 +132,10 @@ export function search<TMeta>(
 
 /** Build a new instance with a chosen strategy using the same data (no auto switch). */
 export function buildWithStrategy<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   next: "bruteforce" | "hnsw" | "ivf",
   params?: { hnsw?: HNSWParams; ivf?: IVFParams },
-): VectorLiteState<TMeta> {
+): VectorStoreState<TMeta> {
   const opts: VectorLiteOptions = {
     dim: vl.dim,
     metric: vl.metric,
@@ -159,13 +159,13 @@ export function buildWithStrategy<TMeta>(
 /**
  *
  */
-export function buildHNSWFromStore<TMeta>(vl: VectorLiteState<TMeta>, params?: HNSWParams): VectorLiteState<TMeta> {
+export function buildHNSWFromStore<TMeta>(vl: VectorStoreState<TMeta>, params?: HNSWParams): VectorStoreState<TMeta> {
   return buildWithStrategy(vl, "hnsw", { hnsw: params });
 }
 
 /**
  *
  */
-export function buildIVFFromStore<TMeta>(vl: VectorLiteState<TMeta>, params?: IVFParams): VectorLiteState<TMeta> {
+export function buildIVFFromStore<TMeta>(vl: VectorStoreState<TMeta>, params?: IVFParams): VectorStoreState<TMeta> {
   return buildWithStrategy(vl, "ivf", { ivf: params });
 }

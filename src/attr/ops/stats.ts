@@ -21,7 +21,7 @@
  * Why: Offer quick, read-only insights and suggestions without entangling
  * core operations, aiding observability and manual decision making.
  */
-import { VectorLiteState } from "../../types";
+import { VectorStoreState } from "../../types";
 import { isHnswVL, isIvfVL } from "../../util/guards";
 import { search } from "./core";
 
@@ -40,7 +40,7 @@ export type StatsOut = {
 /**
  *
  */
-export function stats<TMeta>(vl: VectorLiteState<TMeta>): StatsOut {
+export function stats<TMeta>(vl: VectorStoreState<TMeta>): StatsOut {
   const out: StatsOut = { n: vl.store._count, dim: vl.dim, strategy: vl.strategy, metric: vl.metric };
   if (isHnswVL(vl)) {
     const h = vl.ann;
@@ -69,7 +69,7 @@ export function stats<TMeta>(vl: VectorLiteState<TMeta>): StatsOut {
  *
  */
 export function diagnose<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   opts?: { sampleQueries?: Float32Array[]; k?: number },
 ): { stats: StatsOut; suggestions: string[]; recallEstimate?: number; hotspots?: string[] } {
   const s = stats(vl);

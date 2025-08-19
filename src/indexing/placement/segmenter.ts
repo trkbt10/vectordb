@@ -1,7 +1,7 @@
 /**
  * @file Data segmenter (writes segments only and returns pointers)
  */
-import type { VectorLiteState } from "../../types";
+import type { VectorStoreState } from "../../types";
 import { DataSegmentWriter } from "../formats/data_segment";
 import type { IndexEntry } from "../types";
 import type { CrushMap } from "../types";
@@ -26,7 +26,7 @@ export type SegmentManifest = { base: string; segments: { name: string; targetKe
  * Write data segments according to CRUSH mapping and return index entries.
  */
 export async function writeSegments<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   opts: SegmentationOptions,
 ): Promise<{ entries: IndexEntry[]; manifest: SegmentManifest; dim: number; count: number }> {
   const base = opts.baseName;

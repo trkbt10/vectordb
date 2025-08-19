@@ -15,7 +15,7 @@
  */
 
 import { ivf_add } from "../../ann/ivf";
-import { VectorLiteState } from "../../types";
+import { VectorStoreState } from "../../types";
 import { isIvfVL } from "../../util/guards";
 
 /**
@@ -28,7 +28,7 @@ import { isIvfVL } from "../../util/guards";
 /**
  *
  */
-export function checkConsistency<TMeta>(vl: VectorLiteState<TMeta>) {
+export function checkConsistency<TMeta>(vl: VectorStoreState<TMeta>) {
   const missingInIndex: number[] = [];
   const missingInStore: number[] = [];
   const mismatchedPos: number[] = [];
@@ -52,7 +52,7 @@ export function checkConsistency<TMeta>(vl: VectorLiteState<TMeta>) {
  *
  */
 export function repairConsistency<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   opts?: { fixIndex?: boolean; fixStore?: boolean },
 ) {
   const report = checkConsistency(vl);

@@ -13,7 +13,7 @@
  */
 
 import { searchWithExpr } from "./with_expr";
-import type { VectorLiteState } from "../../types";
+import type { VectorStoreState } from "../../types";
 import type { FilterExpr } from "../filter/expr";
 import type { SearchHit } from "../../types";
 
@@ -51,7 +51,7 @@ export function createShardPlan(ids: number[], opts: { by: "range" | "hash"; sha
  *
  */
 export function searchParallel<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   q: Float32Array,
   opts: { k: number; plan?: ShardPlan; expr?: FilterExpr },
 ) {

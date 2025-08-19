@@ -16,7 +16,7 @@
 import type { HNSWState } from "../ann/hnsw";
 import type { BruteforceState } from "../ann/bruteforce";
 import type { IVFState } from "../ann/ivf";
-import type { VectorLiteState } from "../types";
+import type { VectorStoreState } from "../types";
 
 /**
  *
@@ -36,8 +36,8 @@ export function isBruteforceState(x: BruteforceState | HNSWState): x is Brutefor
  *
  */
 export function isHnswVL<TMeta>(
-  vl: VectorLiteState<TMeta>,
-): vl is VectorLiteState<TMeta> & { strategy: "hnsw"; ann: HNSWState } {
+  vl: VectorStoreState<TMeta>,
+): vl is VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState } {
   return vl.strategy === "hnsw";
 }
 
@@ -45,8 +45,8 @@ export function isHnswVL<TMeta>(
  *
  */
 export function isBfVL<TMeta>(
-  vl: VectorLiteState<TMeta>,
-): vl is VectorLiteState<TMeta> & { strategy: "bruteforce"; ann: BruteforceState } {
+  vl: VectorStoreState<TMeta>,
+): vl is VectorStoreState<TMeta> & { strategy: "bruteforce"; ann: BruteforceState } {
   return vl.strategy === "bruteforce";
 }
 
@@ -54,8 +54,8 @@ export function isBfVL<TMeta>(
  *
  */
 export function isIvfVL<TMeta>(
-  vl: VectorLiteState<TMeta>,
-): vl is VectorLiteState<TMeta> & { strategy: "ivf"; ann: IVFState } {
+  vl: VectorStoreState<TMeta>,
+): vl is VectorStoreState<TMeta> & { strategy: "ivf"; ann: IVFState } {
   return vl.strategy === "ivf";
 }
 /**

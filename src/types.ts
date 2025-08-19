@@ -85,12 +85,12 @@ import type { HNSWState } from "./ann/hnsw";
 import type { IVFState } from "./ann/ivf";
 import { CoreStore } from "./attr/store/store";
 
-export type VectorLiteAnn = BruteforceState | HNSWState | IVFState;
+export type ANNs = BruteforceState | HNSWState | IVFState;
 
-export type VectorLiteState<TMeta> = {
+export type VectorStoreState<TMeta> = {
   dim: number;
   metric: Metric;
   store: CoreStore<TMeta>;
   strategy: "bruteforce" | "hnsw" | "ivf";
-  ann: VectorLiteAnn;
+  ann: ANNs;
 };

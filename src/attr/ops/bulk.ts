@@ -12,14 +12,14 @@
  * datasets by minimizing function call overhead and enabling better
  * resource allocation strategies.
  */
-import { VectorLiteState, UpsertOptions } from "../../types";
+import { VectorStoreState, UpsertOptions } from "../../types";
 import { add, remove } from "./core";
 
 /**
  *
  */
 export function upsertMany<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   rows: { id: number; vector: Float32Array; meta?: TMeta | null }[],
   opts?: UpsertOptions & { mode?: "best_effort" | "all_or_nothing" },
 ) {
@@ -59,7 +59,7 @@ export function upsertMany<TMeta>(
 /**
  *
  */
-export function removeMany<TMeta>(vl: VectorLiteState<TMeta>, ids: number[], opts?: { ignoreMissing?: boolean }) {
+export function removeMany<TMeta>(vl: VectorStoreState<TMeta>, ids: number[], opts?: { ignoreMissing?: boolean }) {
   const res = { ok: 0, missing: [] as number[] };
   for (const id of ids) {
     const ok = remove(vl, id);

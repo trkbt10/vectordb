@@ -15,7 +15,7 @@
 
 import type {
   VectorLiteOptions,
-  VectorLiteState,
+  VectorStoreState,
   SearchHit,
   SearchOptions,
   UpsertOptions,
@@ -36,13 +36,13 @@ export type {
   VectorLiteOptions,
   HNSWParams,
   IVFParams,
-  VectorLiteAnn,
-  VectorLiteState,
+  ANNs as VectorLiteAnn,
+  VectorStoreState as VectorLiteState,
 } from "./types";
 export type { SaveIndexingOptions, OpenIndexingOptions, CrushMap };
 
 // Internal helper to attach client methods to an existing state
-function attachClient<TMeta>(state: VectorLiteState<TMeta>): VLiteClient<TMeta> {
+function attachClient<TMeta>(state: VectorStoreState<TMeta>): VLiteClient<TMeta> {
   return {
     state,
     size: () => size(state),
@@ -62,7 +62,7 @@ function attachClient<TMeta>(state: VectorLiteState<TMeta>): VLiteClient<TMeta> 
 
 // Derive client type from attachClient's return type to avoid duplication
 export type VLiteClient<TMeta = unknown> = {
-  state: VectorLiteState<TMeta>;
+  state: VectorStoreState<TMeta>;
   size: () => number;
   has: (id: number) => boolean;
   add: (id: number, v: Float32Array, meta?: TMeta | null, opts?: UpsertOptions) => void;
@@ -123,7 +123,7 @@ export function vlite<
     segmentBytes: over?.segmentBytes ?? defaults.segmentBytes ?? 1 << 20,
     includeAnn: over?.includeAnn ?? defaults.includeAnn ?? false,
   });
-  function isClient(x: VLiteClient<TMeta> | VectorLiteState<TMeta>): x is VLiteClient<TMeta> {
+  function isClient(x: VLiteClient<TMeta> | VectorStoreState<TMeta>): x is VLiteClient<TMeta> {
     return typeof (x as VLiteClient<TMeta>).state !== "undefined";
   }
   return {
@@ -136,19 +136,19 @@ export function vlite<
         return createVectorLite<TMeta>(opts, seed);
       },
       /** Attach client helpers to an existing state. */
-      from(state: VectorLiteState<TMeta>): VLiteClient<TMeta> {
+      from(state: VectorStoreState<TMeta>): VLiteClient<TMeta> {
         return attachClient<TMeta>(state);
       },
     },
     index: {
       /** Persist a client/state into this environment. */
       async save(
-        clientOrState: VLiteClient<TMeta> | VectorLiteState<TMeta>,
+        clientOrState: VLiteClient<TMeta> | VectorStoreState<TMeta>,
         args: { baseName: string } & Partial<SaveIndexingOptions>,
       ) {
         const state = isClient(clientOrState)
           ? (clientOrState as VLiteClient<TMeta>).state
-          : (clientOrState as VectorLiteState<TMeta>);
+          : (clientOrState as VectorStoreState<TMeta>);
         const saveOpts: SaveIndexingOptions = {
           baseName: args.baseName,
           crush: env.crush,
@@ -159,7 +159,7 @@ export function vlite<
         await saveIndexing(state, saveOpts);
       },
       /** Open state from persisted index in this environment. */
-      async openState(args: { baseName: string }): Promise<VectorLiteState<TMeta>> {
+      async openState(args: { baseName: string }): Promise<VectorStoreState<TMeta>> {
         return await openIndexing<TMeta>({
           baseName: args.baseName,
           crush: env.crush,
@@ -168,7 +168,7 @@ export function vlite<
         });
       },
       /** Rebuild state from data (when index is missing/corrupt or to drop ANN bytes). */
-      async rebuildState(args: { baseName: string }): Promise<VectorLiteState<TMeta>> {
+      async rebuildState(args: { baseName: string }): Promise<VectorStoreState<TMeta>> {
         return await rebuildIndexingFromData<TMeta>({
           baseName: args.baseName,
           crush: env.crush,

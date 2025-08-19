@@ -1,7 +1,7 @@
 /**
  * @file Indexing runtime manager: orchestrates open/save/rebuild over index/data
  */
-import type { VectorLiteState } from "../../types";
+import type { VectorStoreState } from "../../types";
 import { DataSegmentReader } from "../formats/data_segment";
 import { decodeIndexFile } from "../formats/index_file";
 import type { SaveIndexingOptions, OpenIndexingOptions } from "../types";
@@ -18,7 +18,7 @@ import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../.
 import { buildHNSWFromStore, buildIVFFromStore } from "../../attr/ops/core";
 
 /** Save state into separated data segments and an index in the index folder. */
-export async function saveIndexing<TMeta>(vl: VectorLiteState<TMeta>, opts: SaveIndexingOptions): Promise<void> {
+export async function saveIndexing<TMeta>(vl: VectorStoreState<TMeta>, opts: SaveIndexingOptions): Promise<void> {
   // 1) Data segmentation (data-only IO)
   const { entries, manifest } = await writeSegments(vl, {
     baseName: opts.baseName,
@@ -48,7 +48,7 @@ export async function saveIndexing<TMeta>(vl: VectorLiteState<TMeta>, opts: Save
 }
 
 /** Open a separated index/data layout using CRUSH to resolve segment locations. */
-export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): Promise<VectorLiteState<TMeta>> {
+export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): Promise<VectorStoreState<TMeta>> {
   const base = opts.baseName;
   const idxU8 = await (async () => {
     try {
@@ -134,7 +134,7 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
 /** Rebuild a state from data segments using the index folder manifest. */
 export async function rebuildIndexingFromData<TMeta = unknown>(
   opts: OpenIndexingOptions,
-): Promise<VectorLiteState<TMeta>> {
+): Promise<VectorStoreState<TMeta>> {
   const base = opts.baseName;
   // use manifest (if exists) to observe segments and destinations; fallback to CRUSH scan by probing likely pgs
   const manifest = await (async () => {

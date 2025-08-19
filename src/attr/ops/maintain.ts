@@ -17,7 +17,7 @@
 
 import { createHNSWState, hnsw_add } from "../../ann/hnsw";
 import { createIVFState, ivf_trainCentroids, ivf_reassignLists, ivf_add } from "../../ann/ivf";
-import { VectorLiteState, HNSWParams, IVFParams } from "../../types";
+import { VectorStoreState, HNSWParams, IVFParams } from "../../types";
 import { isHnswVL, isIvfVL } from "../../util/guards";
 import { createStore, addOrUpdate, resizeCapacity, shrinkToFit, getByIndex } from "../store/store";
 
@@ -30,7 +30,7 @@ import { createStore, addOrUpdate, resizeCapacity, shrinkToFit, getByIndex } fro
 /**
  *
  */
-export function hnswCompactAndRebuild<TMeta>(vl: VectorLiteState<TMeta>): number {
+export function hnswCompactAndRebuild<TMeta>(vl: VectorStoreState<TMeta>): number {
   if (!isHnswVL(vl)) return 0;
   const h = vl.ann;
   const n = vl.store._count;
@@ -68,7 +68,7 @@ export function hnswCompactAndRebuild<TMeta>(vl: VectorLiteState<TMeta>): number
  *
  */
 export function compactStore<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   opts?: { shrink?: boolean; tombstoneRatio?: number; capacity?: number },
 ): { shrunk: boolean; rebuilt: number } {
   let rebuilt = 0;
@@ -95,7 +95,7 @@ export function compactStore<TMeta>(
  *
  */
 export function rebuildIndex<TMeta>(
-  vl: VectorLiteState<TMeta>,
+  vl: VectorStoreState<TMeta>,
   opts: { strategy: "hnsw" | "ivf"; params?: HNSWParams | IVFParams; ids?: number[] },
 ): number {
   const ids = opts.ids && opts.ids.length ? Array.from(opts.ids) : null;
@@ -103,7 +103,7 @@ export function rebuildIndex<TMeta>(
   return rebuildIvf(vl, opts.params as IVFParams | undefined, ids);
 }
 
-function rebuildHnsw<TMeta>(vl: VectorLiteState<TMeta>, params: HNSWParams | undefined, ids: number[] | null): number {
+function rebuildHnsw<TMeta>(vl: VectorStoreState<TMeta>, params: HNSWParams | undefined, ids: number[] | null): number {
   const old = isHnswVL(vl) ? vl.ann : null;
   const p: HNSWParams =
     params ??
@@ -130,7 +130,7 @@ function rebuildHnsw<TMeta>(vl: VectorLiteState<TMeta>, params: HNSWParams | und
   return ids ? ids.length : vl.store._count;
 }
 
-function rebuildIvf<TMeta>(vl: VectorLiteState<TMeta>, params: IVFParams | undefined, ids: number[] | null): number {
+function rebuildIvf<TMeta>(vl: VectorStoreState<TMeta>, params: IVFParams | undefined, ids: number[] | null): number {
   const old = isIvfVL(vl) ? vl.ann : null;
   const next: IVFParams = params ?? (old ? { nlist: old.nlist, nprobe: old.nprobe } : { nlist: 64, nprobe: 8 });
   const needRecreate = !old || (typeof next.nlist === "number" && next.nlist !== old.nlist);
