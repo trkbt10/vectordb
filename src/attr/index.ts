@@ -62,14 +62,3 @@ export function createAttrIndex(strategy: "basic" | "bitmap" = "basic"): AttrInd
   }
 }
 
-// Re-export strategy-specific types and implementations for advanced usage
-export type { BasicAttrContainer } from "./strategies/basic";
-export {
-  createBasicContainer,
-  basic_setAttrs,
-  basic_getAttrs,
-  basic_removeId,
-  basic_eq,
-  basic_exists,
-  basic_range,
-} from "./strategies/basic";
