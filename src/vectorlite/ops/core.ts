@@ -1,6 +1,6 @@
 /**
  * @file Core vector database operations
- * 
+ *
  * This module implements the fundamental operations for VectorLite, providing
  * the essential CRUD and search functionality. Key operations include:
  * - Vector insertion with automatic index updates
@@ -8,7 +8,7 @@
  * - Similarity search across different ANN strategies
  * - Vector removal with proper cleanup
  * - Strategy switching and rebuilding
- * 
+ *
  * The module abstracts away strategy-specific details, providing a unified
  * interface that works consistently across bruteforce, HNSW, and IVF backends.
  * This separation ensures that users can switch strategies without changing
@@ -110,7 +110,7 @@ export function remove<TMeta>(vl: VectorLiteState<TMeta>, id: number): boolean {
   }
   if (isIvfVL(vl)) {
     if (!has(vl, id)) return false;
-    ivf_remove(vl.ann, vl.store, id);
+    ivf_remove(vl.ann, id);
     return true;
   }
   const res = removeById(vl.store, id);

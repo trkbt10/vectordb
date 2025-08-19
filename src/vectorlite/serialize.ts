@@ -1,4 +1,21 @@
 /**
+ * @file Binary serialization and deserialization for VectorLite
+ *
+ * This module handles the persistence of VectorLite instances to and from binary
+ * formats. It provides a versioned, efficient binary format that preserves all
+ * state including vectors, metadata, and index structures. The serialization
+ * format is designed to be compact, fast to read/write, and forward-compatible
+ * through version headers. This module isolates all serialization concerns,
+ * allowing the binary format to evolve independently from the core logic.
+ *
+ * Format structure:
+ * - Header: Magic number, version, metric, dimensions, count, strategy
+ * - Metadata: JSON-encoded IDs and user metadata
+ * - Vectors: Raw float32 array data
+ * - Index data: Strategy-specific serialized structures (HNSW graph, IVF clusters, etc.)
+ */
+
+/**
  * Serialization and deserialization for VectorLite state.
  *
  * Why: Keep binary formats and (de)serialization details isolated so they can

@@ -94,7 +94,7 @@ function argmax(scores: Float32Array): number {
 export function ivf_trainCentroids<TMeta>(
   ivf: IVFState,
   store: CoreStore<TMeta>,
-  opts: KMeansOptions = {}
+  opts: KMeansOptions = {},
 ): { updated: number } {
   const n = store._count;
   const dim = store.dim;
@@ -218,7 +218,7 @@ export function ivf_evaluate<TMeta>(
   ivf: IVFState,
   store: CoreStore<TMeta>,
   queries: Float32Array[],
-  k: number
+  k: number,
 ): { recall: number; latency: number } {
   const dim = store.dim;
   const bfTopK = (q: Float32Array, kk: number): number[] => {
@@ -332,7 +332,7 @@ export function ivf_search<TMeta>(
   store: CoreStore<TMeta>,
   q: Float32Array,
   k: number,
-  filter?: (id: number, meta: TMeta | null) => boolean
+  filter?: (id: number, meta: TMeta | null) => boolean,
 ): SearchHit<TMeta>[] {
   const dim = store.dim;
   if (q.length !== dim) {
@@ -405,7 +405,7 @@ export function ivf_deserialize(h: IVFState, store: CoreStore<unknown>, buf: Arr
   const centStart = 20 + listsLen;
   const centBytes = new Uint8Array(buf, centStart);
   const cent = new Float32Array(
-    centBytes.buffer.slice(centBytes.byteOffset, centBytes.byteOffset + centBytes.byteLength)
+    centBytes.buffer.slice(centBytes.byteOffset, centBytes.byteOffset + centBytes.byteLength),
   );
   h.nlist = nlist;
   h.nprobe = nprobe;

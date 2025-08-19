@@ -1,4 +1,22 @@
 /**
+ * @file Parameter tuning and optimization for VectorLite indices
+ *
+ * This module provides automated parameter tuning capabilities for optimizing
+ * the recall/latency trade-offs in vector search indices. It performs grid
+ * search across different parameter combinations, evaluates their performance
+ * using provided query sets, and returns ranked suggestions without modifying
+ * the active instance. This allows operators to make informed decisions about
+ * parameter settings based on their specific workload characteristics.
+ *
+ * Capabilities:
+ * - HNSW parameter tuning: M (connectivity) and efSearch grid search
+ * - Recall measurement against brute-force ground truth
+ * - Latency profiling for different parameter combinations
+ * - Non-invasive testing: All evaluations on temporary instances
+ * - Future: IVF nprobe tuning, metric-specific optimizations
+ */
+
+/**
  * HNSW parameter tuning (suggestions only, no auto-apply).
  *
  * Why: Evaluate recall/latency trade-offs across parameter grids in isolation
