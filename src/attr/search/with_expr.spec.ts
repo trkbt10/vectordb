@@ -1,3 +1,6 @@
+/**
+ * @file Unit tests for search with filter expressions
+ */
 import { createAttrIndex } from "../index";
 import type { FilterExpr } from "../filter/expr";
 import { createState } from "../state/create";

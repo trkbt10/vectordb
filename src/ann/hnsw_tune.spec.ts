@@ -1,5 +1,5 @@
 /**
- * HNSW tuning spec
+ * @file Unit tests for HNSW tuning and parameter optimization
  */
 import { createState } from "../attr/state/create";
 import { add, buildHNSWFromStore } from "../attr/ops/core";

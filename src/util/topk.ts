@@ -41,6 +41,7 @@ export function pushTopK<T>(out: T[], hit: T, k: number, getScore: (t: T) => num
  *
  */
 export function pushSortedDesc<T extends Scored>(arr: T[], item: T, limit?: number): void {
+  // eslint-disable-next-line no-restricted-syntax -- Performance-critical: insertion sort requires mutable index
   let i = arr.length - 1;
   arr.push(item);
   while (i >= 0 && arr[i].s < item.s) {

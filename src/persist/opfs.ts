@@ -75,7 +75,7 @@ export async function saveWalToOPFS(buf: Uint8Array, fileName = "vectordb.vlite.
 /**
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- No-op function requires parameter for interface compatibility
 export async function deleteFromOPFS(_fileName: string) {
   // No-op in this minimal adapter; callers should treat delete as optional.
 }

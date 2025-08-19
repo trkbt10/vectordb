@@ -1,3 +1,6 @@
+/**
+ * @file Unit tests for Write-Ahead Log (WAL) functionality
+ */
 import { get, getMeta, search } from "./attr/ops/core";
 import { createState } from "./attr/state/create";
 import { encodeWal, applyWal, type WalRecord } from "./wal";

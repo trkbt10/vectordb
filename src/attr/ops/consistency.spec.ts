@@ -1,7 +1,7 @@
 /**
- * Consistency spec.
+ * @file Unit tests for consistency checking and repair
  *
- * Why: Ensure check/repair surfaces inconsistencies and can repair IVF lists.
+ * Ensures check/repair surfaces inconsistencies and can repair IVF lists.
  */
 
 import { add } from "./core";

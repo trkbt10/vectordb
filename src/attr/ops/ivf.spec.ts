@@ -4,6 +4,9 @@
  * Why: Ensure wrapper functions call into IVF module and produce reasonable outputs.
  */
 
+/**
+ * @file Unit tests for IVF operations
+ */
 import { createState } from "../state/create";
 import { add } from "./core";
 import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "./ivf";

@@ -4,6 +4,9 @@
  * Why: Validate fields are populated and suggestions can be produced.
  */
 
+/**
+ * @file Unit tests for statistics operations
+ */
 import { createState } from "../state/create";
 import { add } from "./core";
 import { stats, diagnose } from "./stats";

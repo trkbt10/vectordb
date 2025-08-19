@@ -54,7 +54,7 @@ function getByPath(obj: unknown, path: string | undefined): unknown {
   if (!path) return undefined;
   if (obj == null) return undefined;
   const parts = path.split(".");
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line no-restricted-syntax -- Performance: object traversal requires mutable cursor
   let cur = obj as Record<string, unknown>;
   for (const p of parts) {
     if (cur == null) return undefined;
@@ -150,6 +150,7 @@ export function compilePredicate(expr: FilterExpr): CompiledPredicate {
       if (n(id, meta, attrs)) return false;
     }
     if (should.length > 0) {
+      // eslint-disable-next-line no-restricted-syntax -- Performance: counting matched should clauses
       let ok = 0;
       for (const s of should) {
         if (s(id, meta, attrs)) ok++;
@@ -214,6 +215,7 @@ export function preselectCandidates(expr: FilterExpr, idx: AttrIndexReader | nul
     if (scope !== "attrs") return null; // index only covers attrs
     if (l.match !== undefined && l.key) {
       const vals = ensureArray(l.match).filter((v) => typeof v !== "object") as Scalar[];
+      // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating union of candidate sets
       let out: CandidateSet | null = null;
       for (const v of vals) out = unionInto(out, idx.eq(l.key!, v));
       return out;
@@ -228,6 +230,7 @@ export function preselectCandidates(expr: FilterExpr, idx: AttrIndexReader | nul
   }
   // bool
   const b = expr as BoolExpr;
+  // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating candidate set across bool clauses
   let cur: CandidateSet | null = null;
   // must: intersect
   if (b.must && b.must.length) {

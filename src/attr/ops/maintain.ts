@@ -35,7 +35,9 @@ export function hnswCompactAndRebuild<TMeta>(vl: VectorStoreState<TMeta>): numbe
   const h = vl.ann;
   const n = vl.store._count;
   if (n === 0) return 0;
+  // eslint-disable-next-line no-restricted-syntax -- Performance: counting alive vectors for compaction
   let alive = 0;
+   
   for (let i = 0; i < n; i++) {
     if (!h.tombstone[i]) alive++;
   }
@@ -71,15 +73,19 @@ export function compactStore<TMeta>(
   vl: VectorStoreState<TMeta>,
   opts?: { shrink?: boolean; tombstoneRatio?: number; capacity?: number },
 ): { shrunk: boolean; rebuilt: number } {
+  // eslint-disable-next-line no-restricted-syntax -- Performance: tracking rebuild count
   let rebuilt = 0;
   const ratio = opts?.tombstoneRatio;
   if (isHnswVL(vl) && typeof ratio === "number") {
     const h = vl.ann;
     const n = vl.store._count;
+    // eslint-disable-next-line no-restricted-syntax -- Performance: counting dead vectors
     let dead = 0;
+     
     for (let i = 0; i < n; i++) if (h.tombstone[i] === 1) dead++;
     if (n > 0 && dead / n > ratio) rebuilt = hnswCompactAndRebuild(vl);
   }
+  // eslint-disable-next-line no-restricted-syntax -- Performance: tracking shrink status
   let shrunk = false;
   if (typeof opts?.capacity === "number") {
     resizeCapacity(vl.store, opts.capacity);

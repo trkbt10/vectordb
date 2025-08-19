@@ -1,7 +1,7 @@
 /**
- * state.ts spec
+ * @file Unit tests for state serialization and merging
  *
- * Why: Sanity check that created instances expose expected state shape.
+ * Sanity check that created instances expose expected state shape.
  */
 import { createState } from "./create";
 

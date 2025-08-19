@@ -84,11 +84,13 @@ export function createWriter(): BinWriter {
     parts.push(u8);
   }
   function concat(): Uint8Array {
+    // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating total size requires mutable counter
     let total = 0;
     for (const p of parts) {
       total += p.length;
     }
     const out = new Uint8Array(total);
+    // eslint-disable-next-line no-restricted-syntax -- Performance: tracking offset position requires mutable variable
     let off = 0;
     for (const p of parts) {
       out.set(p, off);

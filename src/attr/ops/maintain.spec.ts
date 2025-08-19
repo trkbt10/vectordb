@@ -1,5 +1,8 @@
 /** Maintain ops smoke test */
 
+/**
+ * @file Unit tests for maintenance operations
+ */
 import { createState } from "../state/create";
 import { add, remove } from "./core";
 import { hnswCompactAndRebuild, rebuildIndex } from "./maintain";

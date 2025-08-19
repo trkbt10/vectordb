@@ -1,5 +1,5 @@
 /**
- * IVF retraining APIs spec
+ * @file Unit tests for IVF retraining APIs
  *
  * Verifies that:
  * - trainIvfCentroids updates centroids without errors

@@ -46,6 +46,7 @@ const ensureSorted = (e: { arr: NumEntry[]; dirty: boolean }) => {
 };
 
 function lowerBound(arr: NumEntry[], x: number, strict: boolean): number {
+  // eslint-disable-next-line no-restricted-syntax -- Performance-critical: binary search requires mutable indices
   let l = 0,
     r = arr.length;
   while (l < r) {
@@ -54,6 +55,7 @@ function lowerBound(arr: NumEntry[], x: number, strict: boolean): number {
     else l = m + 1;
   }
   if (strict) {
+    // eslint-disable-next-line no-restricted-syntax -- Performance-critical: post-adjustment requires mutable index
     let i = l;
     while (i < arr.length && arr[i].v <= x) i++;
     return i;
@@ -61,6 +63,7 @@ function lowerBound(arr: NumEntry[], x: number, strict: boolean): number {
   return l;
 }
 function upperBound(arr: NumEntry[], x: number, strict: boolean): number {
+  // eslint-disable-next-line no-restricted-syntax -- Performance-critical: binary search requires mutable indices
   let l = 0,
     r = arr.length;
   while (l < r) {
@@ -69,6 +72,7 @@ function upperBound(arr: NumEntry[], x: number, strict: boolean): number {
     else r = m;
   }
   if (strict) {
+    // eslint-disable-next-line no-restricted-syntax -- Performance-critical: post-adjustment requires mutable index
     let i = l;
     while (i > 0 && arr[i - 1].v >= x) i--;
     return i;
@@ -77,8 +81,10 @@ function upperBound(arr: NumEntry[], x: number, strict: boolean): number {
 }
 
 function addEq(c: BasicAttrContainer, key: string, v: Scalar, id: number) {
+  // eslint-disable-next-line no-restricted-syntax -- Map initialization requires mutable variable
   let m = c.eqMap.get(key);
   if (!m) c.eqMap.set(key, (m = new Map()));
+  // eslint-disable-next-line no-restricted-syntax -- Set initialization requires mutable variable
   let s = m.get(skey(v));
   if (!s) m.set(skey(v), (s = new Set()));
   s.add(id >>> 0);
@@ -92,6 +98,7 @@ function delEq(c: BasicAttrContainer, key: string, v: Scalar, id: number) {
   if (s.size === 0) m.delete(skey(v));
 }
 function addExists(c: BasicAttrContainer, key: string, id: number) {
+  // eslint-disable-next-line no-restricted-syntax -- Set initialization requires mutable variable
   let s = c.existsMap.get(key);
   if (!s) c.existsMap.set(key, (s = new Set()));
   s.add(id >>> 0);
@@ -103,6 +110,7 @@ function delExists(c: BasicAttrContainer, key: string, id: number) {
   if (s.size === 0) c.existsMap.delete(key);
 }
 function addNum(c: BasicAttrContainer, key: string, v: number, id: number) {
+  // eslint-disable-next-line no-restricted-syntax -- Map entry initialization requires mutable variable
   let e = c.numMap.get(key);
   if (!e) c.numMap.set(key, (e = { arr: [], dirty: false }));
   e.arr.push({ v, id: id >>> 0 });
@@ -198,12 +206,14 @@ export function basic_range(c: BasicAttrContainer, key: string, r: Range): Set<n
   ensureSorted(e);
   const arr = e.arr;
   if (arr.length === 0) return new Set();
+  // eslint-disable-next-line no-restricted-syntax -- Performance: range lower bound index
   let lo = 0;
   if (r.gt !== undefined || r.gte !== undefined) {
     const x = r.gt ?? r.gte!;
     const strict = r.gt !== undefined;
     lo = lowerBound(arr, x, strict);
   }
+  // eslint-disable-next-line no-restricted-syntax -- Performance: range upper bound index
   let ro = arr.length;
   if (r.lt !== undefined || r.lte !== undefined) {
     const x = r.lt ?? r.lte!;

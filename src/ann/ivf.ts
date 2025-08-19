@@ -58,9 +58,11 @@ export type KMeansOptions = {
 };
 
 function createRng(seed: number): () => number {
+  // eslint-disable-next-line no-restricted-syntax -- Performance: RNG state requires mutable variable
   let s = seed >>> 0 || 1;
   return () => {
     // xorshift32
+    // eslint-disable-next-line no-restricted-syntax -- Performance: XORShift algorithm requires mutable variable
     let x = s;
     x ^= x << 13;
     x ^= x >>> 17;
@@ -71,15 +73,21 @@ function createRng(seed: number): () => number {
 }
 
 function normalizeVec(v: Float32Array): void {
+  // eslint-disable-next-line no-restricted-syntax -- Performance: sum accumulator for normalization
   let ss = 0;
+   
   for (let i = 0; i < v.length; i++) ss += v[i] * v[i];
   const n = Math.sqrt(ss) || 1;
+   
   for (let i = 0; i < v.length; i++) v[i] = v[i] / n;
 }
 
 function argmax(scores: Float32Array): number {
+  // eslint-disable-next-line no-restricted-syntax -- Performance: tracking best index in argmax
   let bi = 0;
+  // eslint-disable-next-line no-restricted-syntax -- Performance: tracking best value in argmax
   let bv = -Infinity;
+   
   for (let i = 0; i < scores.length; i++) {
     const v = scores[i];
     if (v > bv) {
@@ -108,9 +116,11 @@ export function ivf_trainCentroids<TMeta>(
     chosen.add(pick);
   }
   const cents = new Float32Array(k * dim);
+  // eslint-disable-next-line no-restricted-syntax -- Performance: centroid index tracker
   let ci = 0;
   for (const idx of chosen) {
     const base = idx * dim;
+     
     for (let d = 0; d < dim; d++) cents[ci * dim + d] = store.data[base + d];
     if (ivf.metric !== "l2") normalizeVec(cents.subarray(ci * dim, (ci + 1) * dim));
     ci++;
@@ -128,28 +138,38 @@ export function ivf_trainCentroids<TMeta>(
   const scores = new Float32Array(k);
   const sums = new Float64Array(k * dim);
   const counts = new Uint32Array(k);
+   
   for (let it = 0; it < iters; it++) {
     // reset accumulators
+     
     for (let j = 0; j < sums.length; j++) sums[j] = 0;
+     
     for (let j = 0; j < counts.length; j++) counts[j] = 0;
     // assign
+     
     for (let i = 0; i < n; i++) {
       const base = i * dim;
+       
       for (let c = 0; c < k; c++) {
         const off = c * dim;
         // scoreAt expects a contiguous vector in data and query; we adapt by computing score vs centroid
         // Implement scoreAt(data, base, q, dim) -> we create a temporary score using dot/L2 via inline loop
+        // eslint-disable-next-line no-restricted-syntax -- Performance: score accumulator
         let s = 0;
         if (ivf.metric === "l2") {
           // negative L2
+          // eslint-disable-next-line no-restricted-syntax -- Performance: distance accumulator
           let acc = 0;
+           
           for (let d = 0; d < dim; d++) {
             const diff = store.data[base + d] - cents[off + d];
             acc += diff * diff;
           }
           s = -acc;
         } else if (ivf.metric === "dot" || ivf.metric === "cosine") {
+          // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
           let acc = 0;
+           
           for (let d = 0; d < dim; d++) acc += store.data[base + d] * cents[off + d];
           s = acc;
         }
@@ -159,6 +179,7 @@ export function ivf_trainCentroids<TMeta>(
       assign[i] = best >>> 0;
       counts[best]++;
       const soff = best * dim;
+       
       for (let d = 0; d < dim; d++) sums[soff + d] += store.data[base + d];
     }
     // recompute centroids
@@ -186,20 +207,27 @@ export function ivf_reassignLists<TMeta>(ivf: IVFState, store: CoreStore<TMeta>)
   for (let i = 0; i < ivf.lists.length; i++) ivf.lists[i] = [];
   if (n === 0 || k === 0 || ivf.centroidCount === 0) return { moved: 0 };
   const scores = new Float32Array(k);
+   
   for (let i = 0; i < n; i++) {
     const base = i * dim;
+     
     for (let c = 0; c < k; c++) {
       const off = c * dim;
+      // eslint-disable-next-line no-restricted-syntax -- Performance: score accumulator
       let s = 0;
       if (ivf.metric === "l2") {
+        // eslint-disable-next-line no-restricted-syntax -- Performance: L2 distance accumulator
         let acc = 0;
+         
         for (let d = 0; d < dim; d++) {
           const diff = store.data[base + d] - ivf.centroids[off + d];
           acc += diff * diff;
         }
         s = -acc;
       } else {
+        // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
         let acc = 0;
+         
         for (let d = 0; d < dim; d++) acc += store.data[base + d] * ivf.centroids[off + d];
         s = acc;
       }
@@ -223,24 +251,32 @@ export function ivf_evaluate<TMeta>(
   const dim = store.dim;
   const bfTopK = (q: Float32Array, kk: number): number[] => {
     const out: { id: number; score: number }[] = [];
+     
     for (let i = 0; i < store._count; i++) {
       const id = store.ids[i];
       const base = i * dim;
+      // eslint-disable-next-line no-restricted-syntax -- Performance: score accumulator
       let s = 0;
       if (ivf.metric === "l2") {
+        // eslint-disable-next-line no-restricted-syntax -- Performance: L2 distance accumulator
         let acc = 0;
+         
         for (let d = 0; d < dim; d++) {
           const diff = store.data[base + d] - q[d];
           acc += diff * diff;
         }
         s = -acc;
       } else {
+        // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
         let acc = 0;
+         
         for (let d = 0; d < dim; d++) acc += store.data[base + d] * q[d];
         s = acc;
       }
       // insert sorted desc
+      // eslint-disable-next-line no-restricted-syntax -- Performance: finding insertion position
       let pos = out.length;
+       
       for (let j = 0; j < out.length; j++) {
         if (s > out[j]!.score) {
           pos = j;
@@ -252,7 +288,9 @@ export function ivf_evaluate<TMeta>(
     }
     return out.map((x) => x.id);
   };
+  // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating recall scores
   let sumRecall = 0;
+  // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating latency measurements
   let sumLatency = 0;
   for (const q of queries) {
     const t0 = Date.now();

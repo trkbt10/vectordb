@@ -4,6 +4,9 @@
  * Why: Verify that instances are constructed correctly across strategies/metrics
  * and expose the expected state shape.
  */
+/**
+ * @file Unit tests for state creation
+ */
 import { createState } from "./create";
 
 describe("vectorlite/create", () => {

@@ -1,5 +1,5 @@
 /**
- * Rule-based Alerts spec
+ * @file Unit tests for rule-based alerts
  */
 import { createState } from "../attr/state/create";
 import { add, remove } from "../attr/ops/core";

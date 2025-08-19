@@ -4,6 +4,9 @@
  * Why: Ensure upsertMany/removeMany aggregate results and mutate state correctly.
  */
 
+/**
+ * @file Unit tests for bulk operations
+ */
 import { createState } from "../state/create";
 import { upsertMany, removeMany } from "./bulk";
 

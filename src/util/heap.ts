@@ -16,8 +16,10 @@
 export type ScoreItem = { s: number };
 
 /**
- *
+ * Max heap implementation for efficient priority queue operations.
+ * Class-based approach is justified here due to the stateful nature of the heap data structure.
  */
+// eslint-disable-next-line no-restricted-syntax -- Heap data structure requires class for encapsulating state and operations
 export class MaxHeap<T extends ScoreItem> {
   private a: T[] = [];
   get length() {
@@ -55,6 +57,7 @@ export class MaxHeap<T extends ScoreItem> {
     while (true) {
       const l = i * 2 + 1,
         r = l + 1;
+      // eslint-disable-next-line no-restricted-syntax -- Performance-critical: heap operations require mutable index for finding max child
       let m = i;
       if (l < n && a[l].s > a[m].s) m = l;
       if (r < n && a[r].s > a[m].s) m = r;

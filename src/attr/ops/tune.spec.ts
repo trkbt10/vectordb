@@ -4,6 +4,9 @@
  * Why: Verify suggestions are returned and recall values are bounded.
  */
 
+/**
+ * @file Unit tests for tuning operations
+ */
 import { createState } from "../state/create";
 import { add } from "./core";
 import { tuneHnsw } from "./tune";

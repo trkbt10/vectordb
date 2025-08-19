@@ -1,5 +1,8 @@
 /** Core ops smoke test (module-local) */
 
+/**
+ * @file Unit tests for core attribute operations
+ */
 import { createState } from "../state/create";
 import { add, size, search } from "./core";
 

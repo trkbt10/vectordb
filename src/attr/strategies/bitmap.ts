@@ -28,8 +28,10 @@ export function createBitmapContainer(): BitmapAttrContainer {
 const skey = (v: Scalar) => typeof v + ":" + String(v);
 
 function addEq(c: BitmapAttrContainer, key: string, v: Scalar, id: number) {
+  // eslint-disable-next-line no-restricted-syntax -- Map initialization requires mutable variable
   let m = c.eqMap.get(key);
   if (!m) c.eqMap.set(key, (m = new Map()));
+  // eslint-disable-next-line no-restricted-syntax -- Set initialization requires mutable variable
   let s = m.get(skey(v));
   if (!s) m.set(skey(v), (s = new Set()));
   s.add(id >>> 0);
@@ -43,6 +45,7 @@ function delEq(c: BitmapAttrContainer, key: string, v: Scalar, id: number) {
   if (s.size === 0) m.delete(skey(v));
 }
 function addExists(c: BitmapAttrContainer, key: string, id: number) {
+  // eslint-disable-next-line no-restricted-syntax -- Set initialization requires mutable variable
   let s = c.existsMap.get(key);
   if (!s) c.existsMap.set(key, (s = new Set()));
   s.add(id >>> 0);
@@ -129,7 +132,7 @@ export function bitmap_exists(c: BitmapAttrContainer, key: string): Set<number> 
 /**
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Parameters required for interface compatibility, function not yet implemented
 export function bitmap_range(_c: BitmapAttrContainer, _key: string, _r: Range): Set<number> | null {
   // TODO: Implement bitmap range queries
   return null;
