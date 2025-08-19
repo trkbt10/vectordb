@@ -1,7 +1,7 @@
 /**
  * @file Deterministic CRUSH-like mapping utilities for indexing placement
  */
-import type { CrushMap, LocateResult } from "./types";
+import type { CrushMap, LocateResult } from "../types";
 
 // Simple CRUSH-like deterministic mapping
 // 1) id -> pg via modulo of a stable hash

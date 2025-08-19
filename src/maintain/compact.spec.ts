@@ -1,7 +1,6 @@
 /**
  * Compaction / Rebuild spec
  */
-import { describe, it, expect } from "vitest";
 import { createVectorLiteState } from "../vectorlite/create";
 import { add, remove } from "../vectorlite/ops/core";
 import { compactStore, rebuildIndex } from "../vectorlite/ops/maintain";

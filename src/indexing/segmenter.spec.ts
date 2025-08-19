@@ -2,7 +2,7 @@
  * @file Tests for data segmenter (writeSegments)
  */
 
-import { writeSegments } from "./segmenter";
+import { writeSegments } from "./placement/segmenter";
 import { createVectorLiteState } from "../vectorlite/create";
 import type { CrushMap } from "./types";
 import { createMemoryFileIO } from "../persist/memory";
@@ -42,6 +42,6 @@ describe("indexing/segmenter", () => {
         /* ignore */
       }
     }
-    expect(any).toBeTrue();
+    expect(any).toBeTruthy();
   });
 });

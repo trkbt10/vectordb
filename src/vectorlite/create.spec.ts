@@ -4,7 +4,6 @@
  * Why: Verify that instances are constructed correctly across strategies/metrics
  * and expose the expected state shape.
  */
-import { describe, it, expect } from "vitest";
 import { createVectorLiteState } from "./create";
 
 describe("vectorlite/create", () => {

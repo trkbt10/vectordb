@@ -1,12 +1,12 @@
 /**
  * @file Data segmenter (writes segments only and returns pointers)
  */
-import type { VectorLiteState } from "../types";
-import { DataSegmentWriter } from "./formats/data_segment";
-import type { IndexEntry } from "./types";
-import type { CrushMap } from "./types";
+import type { VectorLiteState } from "../../types";
+import { DataSegmentWriter } from "../formats/data_segment";
+import type { IndexEntry } from "../types";
+import type { CrushMap } from "../types";
 import { crushLocate } from "./crush";
-import type { ResolveDataIO } from "./types";
+import type { ResolveDataIO } from "../types";
 
 export type SegmentationOptions = {
   baseName: string;

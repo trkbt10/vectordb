@@ -3,7 +3,7 @@
  */
 import type { VectorLiteState } from "../../types";
 import type { SaveIndexingOptions, OpenIndexingOptions } from "../../indexing/types";
-import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../../indexing/manager";
+import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../../indexing/runtime/manager";
 
 /** Persist the current state to separated data segments + index (includes ANN when requested). */
 export async function persistIndex<TMeta>(vl: VectorLiteState<TMeta>, opts: SaveIndexingOptions): Promise<void> {

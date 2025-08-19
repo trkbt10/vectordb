@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
 import { createVectorLiteState } from "../vectorlite/create";
 import { persistIndex, openFromIndex } from "../vectorlite/ops/index_persist";
-import { createLocalCrushEnv } from "./local_crush";
+import { createLocalCrushEnv } from "./helpers/local_crush";
 
 describe("indexing/local_crush", () => {
   it("saves segments across shard directories and opens back", async () => {

@@ -1,9 +1,9 @@
 /**
  * @file Rebalance utilities for CRUSH map updates (segment relocation)
  */
-import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "./types";
-import { readCatalog } from "./catalog";
-import { DataSegmentReader } from "./formats/data_segment";
+import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "../types";
+import { readCatalog } from "../catalog";
+import { DataSegmentReader } from "../formats/data_segment";
 
 export type PlacementManifest = { segments: { name: string; targetKey: string }[] };
 

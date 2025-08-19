@@ -1,21 +1,21 @@
 /**
- * @file Indexing manager: orchestrates data segmentation and index building
+ * @file Indexing runtime manager: orchestrates open/save/rebuild over index/data
  */
-import type { VectorLiteState } from "../types";
-import { DataSegmentReader } from "./formats/data_segment";
-import { decodeIndexFile } from "./formats/index_file";
-import type { SaveIndexingOptions, OpenIndexingOptions } from "./types";
-import { crushLocate } from "./crush";
-import { isHnswVL, isIvfVL } from "../util/guards";
-import { hnsw_deserialize } from "../ann/hnsw";
-import { ivf_deserialize } from "../ann/ivf";
-import { createVectorLiteState } from "../vectorlite/create";
-import { normalizeVectorInPlace } from "../util/math";
-import { writeSegments } from "./segmenter";
-import { writeIndexFile, writePlacementManifest } from "./index_builder";
-import { writeCatalog, readCatalog } from "./catalog";
-import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../vectorlite/format";
-import { buildHNSWFromStore, buildIVFFromStore } from "../vectorlite/ops/core";
+import type { VectorLiteState } from "../../types";
+import { DataSegmentReader } from "../formats/data_segment";
+import { decodeIndexFile } from "../formats/index_file";
+import type { SaveIndexingOptions, OpenIndexingOptions } from "../types";
+import { crushLocate } from "../placement/crush";
+import { isHnswVL, isIvfVL } from "../../util/guards";
+import { hnsw_deserialize } from "../../ann/hnsw";
+import { ivf_deserialize } from "../../ann/ivf";
+import { createVectorLiteState } from "../../vectorlite/create";
+import { normalizeVectorInPlace } from "../../util/math";
+import { writeSegments } from "../placement/segmenter";
+import { writeIndexFile, writePlacementManifest } from "../index_builder";
+import { writeCatalog, readCatalog } from "../catalog";
+import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../vectorlite/format";
+import { buildHNSWFromStore, buildIVFFromStore } from "../../vectorlite/ops/core";
 
 /** Save state into separated data segments and an index in the index folder. */
 export async function saveIndexing<TMeta>(vl: VectorLiteState<TMeta>, opts: SaveIndexingOptions): Promise<void> {

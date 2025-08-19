@@ -129,7 +129,7 @@ export function bitmap_exists(c: BitmapAttrContainer, key: string): Set<number> 
 /**
  *
  */
-export function bitmap_range(): Set<number> | null {
+export function bitmap_range(_c?: BitmapAttrContainer, _key?: string, _r?: unknown): Set<number> | null {
   return null;
 }
 

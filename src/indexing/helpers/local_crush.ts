@@ -1,8 +1,8 @@
 /**
  * @file Helpers for local CRUSH-like environment with directory sharding
  */
-import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "./types";
-import { createPrefixedNodeFileIO } from "../persist/node";
+import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "../types";
+import { createPrefixedNodeFileIO } from "../../persist/node";
 import { join as joinPath } from "node:path";
 
 export type LocalCrushEnv = {

@@ -3,7 +3,6 @@
  *
  * Why: Sanity check that created instances expose expected state shape.
  */
-import { describe, it, expect } from "vitest";
 import { createVectorLiteState } from "./create";
 
 describe("vectorlite/state", () => {

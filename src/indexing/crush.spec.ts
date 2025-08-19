@@ -2,7 +2,7 @@
  * @file Tests for CRUSH-like deterministic mapping
  */
 
-import { crushLocate } from "./crush";
+import { crushLocate } from "./placement/crush";
 import type { CrushMap } from "./types";
 
 describe("indexing/crush", () => {
