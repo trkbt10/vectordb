@@ -1,13 +1,13 @@
 /**
  * @file VectorLite instance creation and initialization
- * 
+ *
  * This module handles the creation of new VectorLite instances with proper
  * initialization of all components. It provides:
  * - Factory function for creating VectorLite state with chosen strategy
  * - Validation of configuration parameters (dimensions, metrics, strategies)
  * - Proper initialization of storage and ANN strategy components
  * - Type-safe construction with compile-time guarantees
- * 
+ *
  * By separating creation logic from operations and serialization, this module
  * ensures clean separation of concerns and makes the codebase more maintainable
  * and testable.

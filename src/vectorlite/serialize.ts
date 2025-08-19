@@ -34,7 +34,7 @@ import { MAGIC, VERSION, encodeMetric, decodeMetric, encodeStrategy, decodeStrat
 
 function serializeAnnStrategy<TMeta>(vl: VectorLiteState<TMeta>): ArrayBuffer {
   if (isHnswVL(vl)) return hnsw_serialize(vl.ann, vl.store);
-  if (isBfVL(vl)) return bf_serialize(vl.ann);
+  if (isBfVL(vl)) return bf_serialize();
   if (isIvfVL(vl)) return ivf_serialize(vl.ann, vl.store);
   throw new Error(`Unsupported strategy in serialize: ${String(vl.strategy)}`);
 }
