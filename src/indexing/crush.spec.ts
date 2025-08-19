@@ -1,7 +1,7 @@
 /**
  * @file Tests for CRUSH-like deterministic mapping
  */
-import { describe, it, expect } from "bun:test";
+
 import { crushLocate } from "./crush";
 import type { CrushMap } from "./types";
 

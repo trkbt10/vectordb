@@ -1,7 +1,7 @@
 /**
  * @file Tests for catalog read/write
  */
-import { describe, it, expect } from "bun:test";
+
 import { writeCatalog, readCatalog } from "./catalog";
 import { createMemoryFileIO } from "../persist/memory";
 

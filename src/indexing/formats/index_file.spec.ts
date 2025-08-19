@@ -1,7 +1,7 @@
 /**
  * @file Tests for index file format (encode/decode)
  */
-import { describe, it, expect } from "bun:test";
+
 import { encodeIndexFile, decodeIndexFile } from "./index_file";
 
 describe("indexing/formats/index_file", () => {

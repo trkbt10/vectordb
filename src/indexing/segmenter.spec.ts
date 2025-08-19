@@ -1,7 +1,7 @@
 /**
  * @file Tests for data segmenter (writeSegments)
  */
-import { describe, it, expect } from "bun:test";
+
 import { writeSegments } from "./segmenter";
 import { createVectorLiteState } from "../vectorlite/create";
 import type { CrushMap } from "./types";

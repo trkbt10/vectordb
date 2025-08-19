@@ -1,7 +1,7 @@
 /**
  * @file Local CRUSH env integration: verifies directory-sharded persistence
  */
-import { describe, it, expect } from "bun:test";
+
 import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";

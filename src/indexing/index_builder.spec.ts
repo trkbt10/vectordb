@@ -1,7 +1,7 @@
 /**
  * @file Tests for index builder (writeIndexFile + writePlacementManifest)
  */
-import { describe, it, expect } from "bun:test";
+
 import { writeIndexFile, writePlacementManifest } from "./index_builder";
 import { createMemoryFileIO } from "../persist/memory";
 import { createVectorLiteState } from "../vectorlite/create";

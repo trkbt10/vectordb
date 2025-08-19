@@ -1,7 +1,7 @@
 /**
  * @file Tests for data segment format (encode/decode, read/write)
  */
-import { describe, it, expect } from "bun:test";
+
 import { DataSegmentWriter, DataSegmentReader, encodeRow, decodeRow } from "./data_segment";
 import { createMemoryFileIO } from "../../persist/memory";
 
