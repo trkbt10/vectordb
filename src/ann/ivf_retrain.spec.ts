@@ -8,8 +8,8 @@
  */
 
 import { createVectorLiteState } from "../attr/vectorlite/create";
-import { add } from "../attr/vectorlite/ops/core";
-import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "../attr/vectorlite/ops/ivf";
+import { add } from "../attr/ops/core";
+import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "../attr/ops/ivf";
 
 describe("IVF retrain/evaluate", () => {
   it("trains, reassigns, and evaluates with good recall", () => {

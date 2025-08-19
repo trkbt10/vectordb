@@ -3,7 +3,7 @@
  */
 
 import { createVectorLiteState } from "../attr/vectorlite/create";
-import { add, search, buildIVFFromStore } from "../attr/vectorlite/ops/core";
+import { add, search, buildIVFFromStore } from "../attr/ops/core";
 
 describe("IVF basic behavior", () => {
   it("returns similar results to BF on clustered data", () => {
