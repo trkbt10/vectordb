@@ -1,4 +1,3 @@
-
 /**
  * @file Tests for bitmap attribute strategy.
  */

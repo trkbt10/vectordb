@@ -1,4 +1,3 @@
-
 /**
  * @file Bruteforce ANN strategy implementation.
  */
@@ -39,7 +38,7 @@ export function bf_search<TMeta>(
   store: CoreStore<TMeta>,
   q: Float32Array,
   k: number,
-  filter?: (id: number, meta: TMeta | null) => boolean
+  filter?: (id: number, meta: TMeta | null) => boolean,
 ): SearchHit<TMeta>[] {
   const dim = store.dim;
   if (q.length !== dim) {
@@ -57,7 +56,7 @@ export function bf_search<TMeta>(
     const base = i * dim;
     const s = scoreAt(data, base, q, dim);
     // adapt to Scored.s naming for util: map score->s when pushing
-    pushTopK(out, { id, score: s, meta }, k, (x) => x.score)
+    pushTopK(out, { id, score: s, meta }, k, (x) => x.score);
   }
   return out;
 }

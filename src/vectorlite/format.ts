@@ -1,13 +1,13 @@
 /**
  * @file Binary serialization format definitions and codecs
- * 
+ *
  * This module defines the binary format specification for VectorLite persistence,
  * ensuring consistent and type-safe serialization across versions. Features:
  * - Magic number (VLIT) for file format identification
  * - Version number for forward compatibility
  * - Type-safe enum codecs for metrics and strategies
  * - Centralized format constants to prevent inconsistencies
- * 
+ *
  * The format design prioritizes both space efficiency and type safety,
  * using numeric codes for enums while maintaining compile-time guarantees
  * through exhaustive TypeScript switches.

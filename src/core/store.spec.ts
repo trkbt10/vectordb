@@ -1,4 +1,3 @@
-
 /**
  * @file Tests for core store structure and behavior.
  */

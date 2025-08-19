@@ -1,7 +1,6 @@
-
 /**
  * @file HNSW (Hierarchical Navigable Small World) graph-based ANN implementation
- * 
+ *
  * This module implements the HNSW algorithm for approximate nearest neighbor search,
  * providing high-performance similarity search with logarithmic complexity. Features:
  * - Multi-layer graph structure with hierarchical connections
@@ -9,7 +8,7 @@
  * - Support for dynamic insertion and soft deletion (tombstones)
  * - Advanced search controls (filtering modes, bridge budgets, adaptive exploration)
  * - Efficient binary serialization for persistence
- * 
+ *
  * HNSW is the recommended strategy for large-scale vector databases where exact
  * search becomes impractical. It trades a small amount of accuracy for massive
  * speed improvements while maintaining high recall rates.
@@ -101,7 +100,13 @@ function ensureLevels(h: HNSWState, L: number) {
   while (h.links.length <= L) h.links.push([]);
 }
 
-function greedyDescent<TMeta>(h: HNSWState, store: CoreStore<TMeta>, ep: number, target: Float32Array, fromLevel: number): number {
+function greedyDescent<TMeta>(
+  h: HNSWState,
+  store: CoreStore<TMeta>,
+  ep: number,
+  target: Float32Array,
+  fromLevel: number,
+): number {
   let cur = ep;
   for (let l = fromLevel; l > 0; l--) {
     let improved = true;
@@ -128,37 +133,37 @@ function greedyDescent<TMeta>(h: HNSWState, store: CoreStore<TMeta>, ep: number,
 type Scored = { idx: number; s: number };
 
 export type HNSWSearchControl = {
-  mode?: 'soft' | 'hard'
-  mask?: Set<number>
-  maskIdx?: Uint8Array
-  bridgeBudget?: number
-  seeds?: 'auto' | number
-  seedStrategy?: 'random' | 'topFreq'
-  adaptiveEf?: { base: number; min: number; max: number }
-  earlyStop?: { margin?: number }
-}
+  mode?: "soft" | "hard";
+  mask?: Set<number>;
+  maskIdx?: Uint8Array;
+  bridgeBudget?: number;
+  seeds?: "auto" | number;
+  seedStrategy?: "random" | "topFreq";
+  adaptiveEf?: { base: number; min: number; max: number };
+  earlyStop?: { margin?: number };
+};
 
 /**
  *
  */
-export function computeNumSeeds(maskSize: number, seeds: 'auto' | number): number {
-  if (seeds === 'auto') return Math.max(1, Math.min(8, Math.floor(Math.sqrt(Math.max(0, maskSize)))))
-  const n = Math.floor(seeds)
-  return Math.max(1, Math.min(32, n))
+export function computeNumSeeds(maskSize: number, seeds: "auto" | number): number {
+  if (seeds === "auto") return Math.max(1, Math.min(8, Math.floor(Math.sqrt(Math.max(0, maskSize)))));
+  const n = Math.floor(seeds);
+  return Math.max(1, Math.min(32, n));
 }
 
 type SearchLayerArgs<TMeta> = {
-  h: HNSWState
-  store: CoreStore<TMeta>
-  entry: number
-  target: Float32Array
-  level: number
-  ef: number
-  options?: HNSWSearchControl
-}
+  h: HNSWState;
+  store: CoreStore<TMeta>;
+  entry: number;
+  target: Float32Array;
+  level: number;
+  ef: number;
+  options?: HNSWSearchControl;
+};
 
 function hnsw_searchLayer<TMeta>(args: SearchLayerArgs<TMeta>): Scored[] {
-  const { h, store, entry, target, level, ef, options } = args
+  const { h, store, entry, target, level, ef, options } = args;
   const visited = new Uint8Array(store._count);
   const heap = new MaxHeap<Scored>();
   const results: Scored[] = [];
@@ -175,7 +180,7 @@ function hnsw_searchLayer<TMeta>(args: SearchLayerArgs<TMeta>): Scored[] {
     const cur = heap.pop() as Scored;
     const worst = results[results.length - 1]?.s ?? Number.NEGATIVE_INFINITY;
     const margin = options?.earlyStop?.margin ?? 0;
-    if (results.length >= ef && cur.s <= (worst + margin)) {
+    if (results.length >= ef && cur.s <= worst + margin) {
       break;
     }
     const neigh = h.links[level] && h.links[level][cur.idx] ? h.links[level][cur.idx] : [];
@@ -189,10 +194,10 @@ function hnsw_searchLayer<TMeta>(args: SearchLayerArgs<TMeta>): Scored[] {
       }
       if ((mask || maskIdx) && mode) {
         const allowed = maskIdx ? !!(maskIdx[nb] === 1) : mask!.has(store.ids[nb] as number);
-        if (mode === 'hard' && !allowed) {
+        if (mode === "hard" && !allowed) {
           continue;
         }
-        if (mode === 'soft' && !allowed) {
+        if (mode === "soft" && !allowed) {
           if (bridges <= 0) continue;
           bridges--;
         }
@@ -242,7 +247,14 @@ export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: numbe
   if (h.maxLevel > L) ep = greedyDescent(h, store, ep, getByIndex(store, idx).vector, h.maxLevel);
   for (let l = Math.min(L, h.maxLevel); l >= 0; l--) {
     // explore neighbors locally from entry point on this level
-    const cand = hnsw_searchLayer({ h, store, entry: ep, target: getByIndex(store, idx).vector, level: l, ef: h.efConstruction })
+    const cand = hnsw_searchLayer({
+      h,
+      store,
+      entry: ep,
+      target: getByIndex(store, idx).vector,
+      level: l,
+      ef: h.efConstruction,
+    });
     const neigh = cand
       .filter((c) => c.idx !== idx)
       .slice(0, h.M)
@@ -285,49 +297,57 @@ export function hnsw_search<TMeta>(
   h: HNSWState,
   store: CoreStore<TMeta>,
   q: Float32Array,
-  args: { k: number; filter?: (id: number, meta: TMeta | null) => boolean; control?: HNSWSearchControl }
+  args: { k: number; filter?: (id: number, meta: TMeta | null) => boolean; control?: HNSWSearchControl },
 ): SearchHit<TMeta>[] {
   if (h.enterPoint < 0 || store._count === 0) return [];
-  const k = Math.max(1, args.k | 0)
-  const filter = args.filter
-  const options = args.control
+  const k = Math.max(1, args.k | 0);
+  const filter = args.filter;
+  const options = args.control;
   // optional multi-seed: select a better entry from candidate mask
   let startEp = h.enterPoint;
   if (options?.mask && options.seeds) {
     const ids = Array.from(options.mask);
     const n = ids.length;
-    const numSeeds = computeNumSeeds(n, options.seeds)
+    const numSeeds = computeNumSeeds(n, options.seeds);
     // Build candidate indices
-    const idxs: number[] = []
+    const idxs: number[] = [];
     for (let i = 0; i < n && idxs.length < numSeeds; i++) {
-      const id = ids[i]
-      const idx = store.pos.get(id)
-      if (idx !== undefined) idxs.push(idx)
+      const id = ids[i];
+      const idx = store.pos.get(id);
+      if (idx !== undefined) idxs.push(idx);
     }
     // If random strategy, shuffle a bit
-    if ((options.seedStrategy ?? 'random') === 'random') {
-      for (let i = idxs.length - 1; i > 0; i--) { const j = Math.floor((h.rng? h.rng() : Math.random()) * (i + 1)); const t = idxs[i]; idxs[i] = idxs[j]!; idxs[j] = t }
+    if ((options.seedStrategy ?? "random") === "random") {
+      for (let i = idxs.length - 1; i > 0; i--) {
+        const j = Math.floor((h.rng ? h.rng() : Math.random()) * (i + 1));
+        const t = idxs[i];
+        idxs[i] = idxs[j]!;
+        idxs[j] = t;
+      }
     }
     // Pick best by direct similarity
-    let bestIdx = startEp
-    let bestSc = hnsw_score(h, store, bestIdx, q)
+    let bestIdx = startEp;
+    let bestSc = hnsw_score(h, store, bestIdx, q);
     for (const cand of idxs) {
-      const sc = hnsw_score(h, store, cand, q)
-      if (sc > bestSc) { bestSc = sc; bestIdx = cand }
+      const sc = hnsw_score(h, store, cand, q);
+      if (sc > bestSc) {
+        bestSc = sc;
+        bestIdx = cand;
+      }
     }
-    startEp = bestIdx
+    startEp = bestIdx;
   }
   // descend greedily from top layers starting at chosen entry
   const ep = greedyDescent(h, store, startEp, q, h.maxLevel);
   // do efSearch exploration on level 0
   // adaptive ef based on candidate mask size if provided
-  let ef = h.efSearch
+  let ef = h.efSearch;
   if (options?.adaptiveEf && options.mask && options.mask.size > 0) {
-    const { base, min, max } = options.adaptiveEf
-    const cand = Math.max(1, Math.floor(base * Math.sqrt(options.mask.size)))
-    ef = Math.max(min, Math.min(max, cand)) | 0
+    const { base, min, max } = options.adaptiveEf;
+    const cand = Math.max(1, Math.floor(base * Math.sqrt(options.mask.size)));
+    ef = Math.max(min, Math.min(max, cand)) | 0;
   }
-  const res = hnsw_searchLayer({ h, store, entry: ep, target: q, level: 0, ef, options })
+  const res = hnsw_searchLayer({ h, store, entry: ep, target: q, level: 0, ef, options });
   const out: SearchHit<TMeta>[] = [];
   for (const r of res) {
     const idVal = store.ids[r.idx];

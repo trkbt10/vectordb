@@ -1,9 +1,9 @@
 /**
  * @file Binary I/O utilities for VectorLite serialization
- * 
+ *
  * This module provides low-level binary reading and writing capabilities used
  * throughout VectorLite for efficient data serialization. Key features:
- * 
+ *
  * - Little-endian format: Consistent byte ordering across platforms for
  *   interoperability between different architectures
  * - Streaming readers/writers: Memory-efficient processing of large vector
@@ -12,13 +12,13 @@
  *   with proper TypeScript typing
  * - Zero dependencies: Pure JavaScript implementation using native ArrayBuffer
  *   and DataView APIs for maximum compatibility
- * 
+ *
  * Used internally by VectorLite's persistence layer to serialize:
  * - Vector data and metadata
  * - Index structures (HNSW graphs, IVF clusters)
  * - Write-Ahead Log (WAL) entries
  * - Snapshot files
- * 
+ *
  * The simple, explicit API makes the serialization format transparent and
  * debuggable, while maintaining high performance for large-scale vector operations.
  */

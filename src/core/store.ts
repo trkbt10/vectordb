@@ -138,7 +138,7 @@ export function addOrUpdate<T>(
   id: number,
   vector: Float32Array,
   meta: T | null = null,
-  opts?: UpsertOptions
+  opts?: UpsertOptions,
 ): { index: number; created: boolean } {
   if (vector.length !== s.dim) {
     throw new Error(`dim mismatch: got ${vector.length}, want ${s.dim}`);
@@ -168,7 +168,7 @@ export function addOrUpdate<T>(
  */
 export function removeById<T>(
   s: CoreStore<T>,
-  id: number
+  id: number,
 ): { movedId?: number; movedFrom?: number; movedTo?: number } | null {
   const uid = id >>> 0;
   const at = s.pos.get(uid);
