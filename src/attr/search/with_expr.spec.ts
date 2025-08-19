@@ -1,4 +1,4 @@
-import { createAttrIndex, setAttrs, removeId } from "../index";
+import { createAttrIndex } from "../index";
 import type { FilterExpr } from "../filter/expr";
 import { createState } from "../state/create";
 import { add } from "../ops/core";
@@ -11,9 +11,9 @@ test("filter expr: equality and range with index, bruteforce", () => {
   add(db, 3, new Float32Array([0.5, 0, 0]), { memo: "c" });
 
   const idx = createAttrIndex();
-  setAttrs(idx, 1, { color: "red", price: 10 });
-  setAttrs(idx, 2, { color: "blue", price: 20 });
-  setAttrs(idx, 3, { color: "red", price: 15 });
+  idx.setAttrs(1, { color: "red", price: 10 });
+  idx.setAttrs(2, { color: "blue", price: 20 });
+  idx.setAttrs(3, { color: "red", price: 15 });
 
   const expr: FilterExpr = {
     must: [
@@ -33,9 +33,9 @@ test("filter expr: has_id and must_not/should", () => {
   add(db, 12, new Float32Array([0.8, 0]), null);
 
   const idx = createAttrIndex();
-  setAttrs(idx, 10, { tag: ["a", "b"] });
-  setAttrs(idx, 11, { tag: ["b"] });
-  setAttrs(idx, 12, { tag: ["c"] });
+  idx.setAttrs(10, { tag: ["a", "b"] });
+  idx.setAttrs(11, { tag: ["b"] });
+  idx.setAttrs(12, { tag: ["c"] });
 
   const expr: FilterExpr = {
     has_id: { values: [10, 11, 12] },
@@ -53,9 +53,9 @@ test("attr index removal stays consistent", () => {
   add(db, 1, new Float32Array([1, 0]));
   add(db, 2, new Float32Array([0.9, 0]));
   const idx = createAttrIndex();
-  setAttrs(idx, 1, { group: "g1" });
-  setAttrs(idx, 2, { group: "g2" });
-  removeId(idx, 2);
+  idx.setAttrs(1, { group: "g1" });
+  idx.setAttrs(2, { group: "g2" });
+  idx.removeId(2);
   const expr: FilterExpr = { key: "group", match: "g2" };
   const hits = searchWithExpr(db, new Float32Array([1, 0]), expr, { k: 5, index: idx });
   expect(hits.length).toBe(0);
@@ -71,9 +71,9 @@ test("HNSW hard-mode respects candidate ids", () => {
   add(db, 2, new Float32Array([0.95, 0, 0]), { tag: "b" });
   add(db, 3, new Float32Array([0, 1, 0]), { tag: "c" });
   const idx = createAttrIndex();
-  setAttrs(idx, 1, { color: "red" });
-  setAttrs(idx, 2, { color: "blue" });
-  setAttrs(idx, 3, { color: "red" });
+  idx.setAttrs(1, { color: "red" });
+  idx.setAttrs(2, { color: "blue" });
+  idx.setAttrs(3, { color: "red" });
   const expr: FilterExpr = { key: "color", match: "red" };
   const hits = searchWithExpr(db, new Float32Array([1, 0, 0]), expr, { k: 3, index: idx, hnsw: { mode: "hard" } });
   const ids = hits.map((h) => h.id).sort((a, b) => a - b);
@@ -90,9 +90,9 @@ test("HNSW soft-mode bridges limited steps", () => {
   add(db, 2, new Float32Array([0.95, 0]), { tag: "b" });
   add(db, 3, new Float32Array([0, 1]), { tag: "c" });
   const idx = createAttrIndex();
-  setAttrs(idx, 1, { group: "g1" });
-  setAttrs(idx, 2, { group: "g2" });
-  setAttrs(idx, 3, { group: "g2" });
+  idx.setAttrs(1, { group: "g1" });
+  idx.setAttrs(2, { group: "g2" });
+  idx.setAttrs(3, { group: "g2" });
   const expr: FilterExpr = { key: "group", match: "g2" };
   const hitsSoft = searchWithExpr(db, new Float32Array([1, 0]), expr, {
     k: 2,
