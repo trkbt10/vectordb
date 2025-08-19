@@ -11,7 +11,7 @@ import prettierConfig from "eslint-config-prettier";
 
 export default [
   // Ignore patterns
-  { ignores: ["node_modules/**", "dist/**", "build/**"] },
+  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**"] },
 
   // JS/TS recommended sets (Flat-compatible)
   ...tseslint.config(
@@ -30,7 +30,7 @@ export default [
       plugins: {
         import: importPlugin,
         jsdoc: jsdocPlugin,
-  "eslint-comments": eslintComments,
+        "eslint-comments": eslintComments,
         "@typescript-eslint": tseslint.plugin,
       },
       settings: {
@@ -38,6 +38,8 @@ export default [
       },
       rules: {
         /* 1. File JSDoc required/warning */
+        "no-empty": ["warn", { allowEmptyCatch: false }],
+
         "jsdoc/require-file-overview": "warn",
         "jsdoc/require-jsdoc": [
           "warn",
@@ -64,8 +66,9 @@ export default [
             message: "Class implementation is not recommended. Please write as function-based as much as possible.",
           },
           {
-            selector:   "VariableDeclaration[kind='let']:not(ForStatement > VariableDeclaration)",
-            message: "Use of let is prohibited. If you need to branch, create a separate function and use its return value. If absolutely necessary for performance issues, explicitly use // eslint-disable-next-line.",
+            selector: "VariableDeclaration[kind='let']:not(ForStatement > VariableDeclaration)",
+            message:
+              "Use of let is prohibited. If you need to branch, create a separate function and use its return value. If absolutely necessary for performance issues, explicitly use // eslint-disable-next-line.",
           },
           // Ban `as any` and `<any>expr` assertions explicitly with guidance in English
           {
@@ -94,11 +97,11 @@ export default [
         // "import/no-relative-parent-imports": "error",
 
         /* 4. Always add block {} to if/else/for/while */
-        curly: ["warn", "all"]
+        curly: ["warn", "all"],
       },
     },
 
     // Disable conflicting Prettier rules (Flat-compatible eslint-config-prettier)
-    prettierConfig
+    prettierConfig,
   ),
 ];

@@ -14,8 +14,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --minify --sourcemap",
-    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "build": "vite build",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
