@@ -11,7 +11,7 @@ import {
   get,
   persistIndex,
   openFromIndex,
-} from "../attr/vectorlite";
+} from "../attr/state";
 import { createMemoryFileIO } from "../persist/memory";
 import { computeNumSeeds } from "./hnsw";
 import { CrushMap } from "../indexing/types";

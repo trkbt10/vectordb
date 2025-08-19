@@ -2,7 +2,7 @@
  * @file Tests for IVF strategy and utilities.
  */
 
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import { add, search, buildIVFFromStore } from "../attr/ops/core";
 
 describe("IVF basic behavior", () => {

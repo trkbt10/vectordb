@@ -1,7 +1,7 @@
 /**
  * HNSW tuning spec
  */
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import { add, buildHNSWFromStore } from "../attr/ops/core";
 import { tuneHnsw } from "../attr/ops/tune";
 

@@ -1,4 +1,4 @@
-import { createVectorLiteState, add, searchWithExpr } from "../vectorlite";
+import { createVectorLiteState, add, searchWithExpr } from "../state";
 import { createAttrIndex, setAttrs, removeId } from "../index";
 import type { FilterExpr } from "../filter/expr";
 

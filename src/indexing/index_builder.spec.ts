@@ -4,7 +4,7 @@
 
 import { writeIndexFile, writePlacementManifest } from "./index_builder";
 import { createMemoryFileIO } from "../persist/memory";
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import { decodeIndexFile } from "./formats/index_file";
 
 describe("indexing/index_builder", () => {

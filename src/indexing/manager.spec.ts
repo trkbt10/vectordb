@@ -1,7 +1,7 @@
 /**
  * @file Integration test for indexing manager (save/open)
  */
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import { saveIndexing, openIndexing } from "./runtime/manager";
 import type { CrushMap } from "./types";
 import { createMemoryFileIO } from "../persist/memory";

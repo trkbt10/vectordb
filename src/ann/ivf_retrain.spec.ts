@@ -7,7 +7,7 @@
  * - evaluateIvf returns reasonable recall on clustered data
  */
 
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import { add } from "../attr/ops/core";
 import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "../attr/ops/ivf";
 

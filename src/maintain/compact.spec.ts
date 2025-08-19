@@ -1,7 +1,7 @@
 /**
  * Compaction / Rebuild spec
  */
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import { add, remove } from "../attr/ops/core";
 import { compactStore, rebuildIndex } from "../attr/ops/maintain";
 

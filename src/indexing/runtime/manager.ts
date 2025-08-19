@@ -9,7 +9,7 @@ import { crushLocate } from "../placement/crush";
 import { isHnswVL, isIvfVL } from "../../util/guards";
 import { hnsw_deserialize } from "../../ann/hnsw";
 import { ivf_deserialize } from "../../ann/ivf";
-import { createState } from "../../attr/vectorlite/create";
+import { createState } from "../../attr/state/create";
 import { normalizeVectorInPlace } from "../../util/math";
 import { writeSegments } from "../placement/segmenter";
 import { writeIndexFile, writePlacementManifest } from "../index_builder";

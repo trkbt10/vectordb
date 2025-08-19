@@ -3,7 +3,7 @@
  */
 
 import { writeSegments } from "./placement/segmenter";
-import { createState } from "../attr/vectorlite/create";
+import { createState } from "../attr/state/create";
 import type { CrushMap } from "./types";
 import { createMemoryFileIO } from "../persist/memory";
 

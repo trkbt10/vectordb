@@ -1,4 +1,4 @@
-import { createVectorLiteState, get, getMeta, search } from "./attr/vectorlite";
+import { createVectorLiteState, get, getMeta, search } from "./attr/state";
 import { encodeWal, applyWal, type WalRecord } from "./wal";
 
 test("WAL encode/apply upsert/remove works", () => {

@@ -33,7 +33,7 @@ import {
   setMeta,
   remove,
   search,
-} from "./attr/vectorlite";
+} from "./attr/state";
 import { saveIndexing, openIndexing, rebuildIndexingFromData } from "./indexing/runtime/manager";
 import type { SaveIndexingOptions, OpenIndexingOptions, CrushMap } from "./indexing/types";
 import { planRebalance, applyRebalance } from "./indexing/placement/rebalance";
