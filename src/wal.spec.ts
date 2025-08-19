@@ -1,8 +1,9 @@
-import { createVectorLiteState, get, getMeta, search } from "./attr/state";
+import { get, getMeta, search } from "./attr/ops/core";
+import { createState } from "./attr/state/create";
 import { encodeWal, applyWal, type WalRecord } from "./wal";
 
 test("WAL encode/apply upsert/remove works", () => {
-  const db = createVectorLiteState<{ tag?: string }>({ dim: 2 });
+  const db = createState<{ tag?: string }>({ dim: 2 });
   const recs: WalRecord[] = [
     { type: "upsert", id: 42, vector: new Float32Array([1, 0]), meta: { tag: "x" } },
     { type: "setMeta", id: 42, meta: { tag: "y" } },
@@ -33,7 +34,7 @@ test("decodeWal handles concatenated WAL segments", () => {
   merged.set(wal2, wal1.length);
   merged.set(wal3, wal1.length + wal2.length);
 
-  const db = createVectorLiteState<{ tag?: string }>({ dim: 3, metric: "cosine" });
+  const db = createState<{ tag?: string }>({ dim: 3, metric: "cosine" });
   applyWal(db, merged);
 
   expect(getMeta(db, 1)).toEqual({ tag: "alpha2" });

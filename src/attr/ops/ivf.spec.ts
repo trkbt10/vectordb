@@ -4,13 +4,13 @@
  * Why: Ensure wrapper functions call into IVF module and produce reasonable outputs.
  */
 
-import { createVectorLiteState } from "../create";
+import { createState } from "../create";
 import { add } from "./core";
 import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "./ivf";
 
 describe("ops.ivf_retrain", () => {
   it("trains, reassigns and evaluates", () => {
-    const vl = createVectorLiteState({ dim: 3, metric: "cosine", strategy: "ivf", ivf: { nlist: 4, nprobe: 2 } });
+    const vl = createState({ dim: 3, metric: "cosine", strategy: "ivf", ivf: { nlist: 4, nprobe: 2 } });
     for (let i = 0; i < 40; i++) add(vl, i + 1, new Float32Array([1, 0, 0]), null);
     for (let i = 0; i < 40; i++) add(vl, 100 + i, new Float32Array([0, 1, 0]), null);
     const t = trainIvfCentroids(vl, { iters: 4, seed: 7 });

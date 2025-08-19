@@ -2,23 +2,17 @@
  * @file Tests for HNSW strategy behavior.
  */
 
-import {
-  createVectorLiteState,
-  add,
-  search,
-  remove,
-  hnswCompactAndRebuild,
-  get,
-  persistIndex,
-  openFromIndex,
-} from "../attr/state";
 import { createMemoryFileIO } from "../persist/memory";
 import { computeNumSeeds } from "./hnsw";
 import { CrushMap } from "../indexing/types";
+import { add, search, remove, get } from "../attr/ops/core";
+import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
+import { hnswCompactAndRebuild } from "../attr/ops/maintain";
+import { createState } from "../attr/state/create";
 
 test("VectorLite HNSW: searches and roundtrips", async () => {
   const dim = 4;
-  const db = createVectorLiteState<{ tag: string }>({
+  const db = createState<{ tag: string }>({
     dim,
     strategy: "hnsw",
     hnsw: { M: 8, efConstruction: 32, efSearch: 16, seed: 123 },
@@ -56,7 +50,7 @@ test("VectorLite HNSW: searches and roundtrips", async () => {
 
 test("HNSW remove + compact rebuild drops tombstones", () => {
   const dim = 3;
-  const db = createVectorLiteState<{ tag?: string }>({
+  const db = createState<{ tag?: string }>({
     dim,
     strategy: "hnsw",
     hnsw: { M: 8, efConstruction: 32, efSearch: 16, seed: 7 },
@@ -81,6 +75,3 @@ test("computeNumSeeds auto and clamping", () => {
   expect(computeNumSeeds(10, 5)).toBe(5);
   expect(computeNumSeeds(10, 100)).toBe(32);
 });
-/**
- * @file Tests for HNSW strategy behavior.
- */

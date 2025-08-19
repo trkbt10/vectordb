@@ -21,23 +21,12 @@ import type {
   UpsertOptions,
   VectorRecord,
 } from "./types";
-import {
-  createVectorLiteState,
-  size,
-  has,
-  add,
-  addMany,
-  getOne,
-  get,
-  getMeta,
-  setMeta,
-  remove,
-  search,
-} from "./attr/state";
 import { saveIndexing, openIndexing, rebuildIndexingFromData } from "./indexing/runtime/manager";
 import type { SaveIndexingOptions, OpenIndexingOptions, CrushMap } from "./indexing/types";
 import { planRebalance, applyRebalance } from "./indexing/placement/rebalance";
 import type { FileIO } from "./persist/types";
+import { get, add, addMany, getOne, getMeta, setMeta, remove, search, size, has } from "./attr/ops/core";
+import { createState } from "./attr/state/create";
 export type {
   Metric,
   VectorLiteInit,
@@ -96,7 +85,7 @@ export function createVectorLite<TMeta = unknown>(
   opts: VectorLiteOptions,
   seed?: Array<{ id: number; vector: Float32Array; meta: TMeta | null }>,
 ): VLiteClient<TMeta> {
-  const client = attachClient<TMeta>(createVectorLiteState<TMeta>(opts));
+  const client = attachClient<TMeta>(createState<TMeta>(opts));
   if (Array.isArray(seed)) {
     client.addMany(seed);
   }

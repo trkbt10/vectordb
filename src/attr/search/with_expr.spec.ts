@@ -1,9 +1,11 @@
-import { createVectorLiteState, add, searchWithExpr } from "../state";
 import { createAttrIndex, setAttrs, removeId } from "../index";
 import type { FilterExpr } from "../filter/expr";
+import { createState } from "../state/create";
+import { add } from "../ops/core";
+import { searchWithExpr } from "./with_expr";
 
 test("filter expr: equality and range with index, bruteforce", () => {
-  const db = createVectorLiteState<{ memo?: string }>({ dim: 3, metric: "cosine", strategy: "bruteforce" });
+  const db = createState<{ memo?: string }>({ dim: 3, metric: "cosine", strategy: "bruteforce" });
   add(db, 1, new Float32Array([1, 0, 0]), { memo: "a" });
   add(db, 2, new Float32Array([0.99, 0, 0]), { memo: "b" });
   add(db, 3, new Float32Array([0.5, 0, 0]), { memo: "c" });
@@ -25,7 +27,7 @@ test("filter expr: equality and range with index, bruteforce", () => {
 });
 
 test("filter expr: has_id and must_not/should", () => {
-  const db = createVectorLiteState<{ memo?: string }>({ dim: 2 });
+  const db = createState<{ memo?: string }>({ dim: 2 });
   add(db, 10, new Float32Array([1, 0]), null);
   add(db, 11, new Float32Array([0.9, 0]), null);
   add(db, 12, new Float32Array([0.8, 0]), null);
@@ -47,7 +49,7 @@ test("filter expr: has_id and must_not/should", () => {
 });
 
 test("attr index removal stays consistent", () => {
-  const db = createVectorLiteState({ dim: 2 });
+  const db = createState({ dim: 2 });
   add(db, 1, new Float32Array([1, 0]));
   add(db, 2, new Float32Array([0.9, 0]));
   const idx = createAttrIndex();
@@ -60,7 +62,7 @@ test("attr index removal stays consistent", () => {
 });
 
 test("HNSW hard-mode respects candidate ids", () => {
-  const db = createVectorLiteState<{ tag?: string }>({
+  const db = createState<{ tag?: string }>({
     dim: 3,
     strategy: "hnsw",
     hnsw: { M: 6, efConstruction: 32, efSearch: 16, seed: 7 },
@@ -79,7 +81,7 @@ test("HNSW hard-mode respects candidate ids", () => {
 });
 
 test("HNSW soft-mode bridges limited steps", () => {
-  const db = createVectorLiteState<{ tag?: string }>({
+  const db = createState<{ tag?: string }>({
     dim: 2,
     strategy: "hnsw",
     hnsw: { M: 6, efConstruction: 32, efSearch: 8, seed: 3 },

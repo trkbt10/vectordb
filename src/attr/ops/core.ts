@@ -14,35 +14,32 @@
  * This separation ensures that users can switch strategies without changing
  * their application code.
  */
-import type { SearchHit, SearchOptions, UpsertOptions, HNSWParams, IVFParams, VectorLiteOptions } from "../../../types";
+import { bf_add, bf_search } from "../../ann/bruteforce";
+import { hnsw_ensureCapacity, hnsw_add, hnsw_remove, hnsw_search } from "../../ann/hnsw";
+import { ivf_add, ivf_remove, ivf_search } from "../../ann/ivf";
 import {
-  addOrUpdate,
-  ensure as storeEnsure,
-  get as storeGet,
-  has as storeHas,
-  normalizeQuery,
-  removeById,
-  size as storeSize,
-  updateMeta as storeUpdateMeta,
-} from "../../store/store";
-import type { VectorLiteState } from "../../../types";
-import { bf_add, bf_search } from "../../../ann/bruteforce";
-import { hnsw_add, hnsw_remove, hnsw_search, hnsw_ensureCapacity } from "../../../ann/hnsw";
-import { ivf_add, ivf_remove, ivf_search } from "../../../ann/ivf";
-import { isHnswVL, isIvfVL, isBfVL } from "../../../util/guards";
-import { createVectorLiteState } from "../create";
-
+  VectorLiteState,
+  UpsertOptions,
+  SearchOptions,
+  SearchHit,
+  HNSWParams,
+  IVFParams,
+  VectorLiteOptions,
+} from "../../types";
+import { isHnswVL, isIvfVL, isBfVL } from "../../util/guards";
+import { createState } from "../state/create";
+import * as Store from "../store/store";
 /**
  *
  */
 export function size<TMeta>(vl: VectorLiteState<TMeta>) {
-  return storeSize(vl.store);
+  return Store.size(vl.store);
 }
 /**
  *
  */
 export function has<TMeta>(vl: VectorLiteState<TMeta>, id: number) {
-  return storeHas(vl.store, id);
+  return Store.has(vl.store, id);
 }
 
 /**
@@ -55,9 +52,9 @@ export function add<TMeta>(
   meta: TMeta | null = null,
   up?: UpsertOptions,
 ) {
-  const grew = storeEnsure(vl.store, 1);
+  const grew = Store.ensure(vl.store, 1);
   if (grew && isHnswVL(vl)) hnsw_ensureCapacity(vl.ann, vl.store._capacity);
-  const { created } = addOrUpdate(vl.store, id, vector, meta, up);
+  const { created } = Store.addOrUpdate(vl.store, id, vector, meta, up);
   if (created) {
     if (isHnswVL(vl)) hnsw_add(vl.ann, vl.store, id);
     else if (isIvfVL(vl)) ivf_add(vl.ann, vl.store, id);
@@ -73,7 +70,7 @@ export function addMany<TMeta>(
   rows: { id: number; vector: Float32Array; meta?: TMeta | null }[],
   up?: UpsertOptions,
 ) {
-  const grew = storeEnsure(vl.store, rows.length);
+  const grew = Store.ensure(vl.store, rows.length);
   if (grew && isHnswVL(vl)) hnsw_ensureCapacity(vl.ann, vl.store._capacity);
   for (const r of rows) add(vl, r.id, r.vector, r.meta ?? null, up);
 }
@@ -82,21 +79,21 @@ export function addMany<TMeta>(
  *
  */
 export function getOne<TMeta>(vl: VectorLiteState<TMeta>, id: number) {
-  return storeGet(vl.store, id);
+  return Store.get(vl.store, id);
 }
 export const get = getOne;
 /**
  *
  */
 export function getMeta<TMeta>(vl: VectorLiteState<TMeta>, id: number): TMeta | null {
-  const r = storeGet(vl.store, id);
+  const r = Store.get(vl.store, id);
   return r ? r.meta : null;
 }
 /**
  *
  */
 export function setMeta<TMeta>(vl: VectorLiteState<TMeta>, id: number, meta: TMeta | null): boolean {
-  return storeUpdateMeta(vl.store, id, meta);
+  return Store.updateMeta(vl.store, id, meta);
 }
 
 /**
@@ -113,7 +110,7 @@ export function remove<TMeta>(vl: VectorLiteState<TMeta>, id: number): boolean {
     ivf_remove(vl.ann, id);
     return true;
   }
-  const res = removeById(vl.store, id);
+  const res = Store.removeById(vl.store, id);
   return res !== null;
 }
 
@@ -126,7 +123,7 @@ export function search<TMeta>(
   options: SearchOptions<TMeta> = {},
 ): SearchHit<TMeta>[] {
   const k = Math.max(1, options.k ?? 5);
-  const q = normalizeQuery(vl.metric, query);
+  const q = Store.normalizeQuery(vl.metric, query);
   if (isHnswVL(vl)) return hnsw_search(vl.ann, vl.store, q, { k, filter: options.filter });
   if (isIvfVL(vl)) return ivf_search(vl.ann, vl.store, q, k, options.filter);
   if (isBfVL(vl)) return bf_search(vl.ann, vl.store, q, k, options.filter);
@@ -147,7 +144,7 @@ export function buildWithStrategy<TMeta>(
     hnsw: params?.hnsw,
     ivf: params?.ivf,
   };
-  const out = createVectorLiteState<TMeta>(opts);
+  const out = createState<TMeta>(opts);
   // IVF: leave centroid seeding to maintain module (rebuildIndex) or training step
   for (let i = 0; i < vl.store._count; i++) {
     const id = vl.store.ids[i];

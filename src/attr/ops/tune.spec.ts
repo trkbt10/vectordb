@@ -4,16 +4,16 @@
  * Why: Verify suggestions are returned and recall values are bounded.
  */
 
-import { createVectorLiteState } from "../create";
+import { createState } from "../create";
 import { add } from "./core";
 import { tuneHnsw } from "./tune";
 
 describe("ops.tune", () => {
   it("returns suggestions with bounded recall", () => {
-    const bf = createVectorLiteState({ dim: 3, metric: "cosine", strategy: "bruteforce" });
+    const bf = createState({ dim: 3, metric: "cosine", strategy: "bruteforce" });
     for (let i = 0; i < 50; i++) add(bf, i + 1, new Float32Array([1, 0, 0]), null);
     for (let i = 0; i < 50; i++) add(bf, 100 + i, new Float32Array([0, 1, 0]), null);
-    const h = createVectorLiteState({
+    const h = createState({
       dim: 3,
       metric: "cosine",
       strategy: "hnsw",
