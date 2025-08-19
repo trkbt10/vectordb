@@ -2,9 +2,8 @@
  * @file Tests for IVF strategy and utilities.
  */
 
-import { describe, it, expect } from "vitest";
-import { createVectorLiteState } from "../vectorlite/create";
-import { add, search, buildIVFFromStore } from "../vectorlite/ops/core";
+import { createVectorLiteState } from "../attr/vectorlite/create";
+import { add, search, buildIVFFromStore } from "../attr/vectorlite/ops/core";
 
 describe("IVF basic behavior", () => {
   it("returns similar results to BF on clustered data", () => {

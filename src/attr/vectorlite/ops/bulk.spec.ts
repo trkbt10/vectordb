@@ -3,7 +3,7 @@
  *
  * Why: Ensure upsertMany/removeMany aggregate results and mutate state correctly.
  */
-import { describe, it, expect } from "vitest";
+
 import { createVectorLiteState } from "../create";
 import { upsertMany, removeMany } from "./bulk";
 

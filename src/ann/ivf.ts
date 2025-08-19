@@ -14,7 +14,7 @@
  *   state's `nlist`. For different `k`, rebuild with a new state.
  * - For cosine/dot metrics we normalize centroids after recomputation.
  */
-import { CoreStore } from "../core/store";
+import { CoreStore } from "../attr/store/store";
 import { Metric, SearchHit } from "../types";
 import { getScoreAtFn } from "../util/similarity";
 

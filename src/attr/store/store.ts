@@ -6,8 +6,8 @@
  * vectors for cosine, maintains id->index mapping, and supports O(1)
  * compaction on remove.
  */
-import { Metric, UpsertOptions } from "../types";
-import { normalizeVectorInPlace } from "../util/math";
+import { Metric, UpsertOptions } from "../../types";
+import { normalizeVectorInPlace } from "../../util/math";
 
 export type CoreStore<TMeta = unknown> = {
   readonly dim: number;

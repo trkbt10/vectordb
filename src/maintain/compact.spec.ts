@@ -1,9 +1,9 @@
 /**
  * Compaction / Rebuild spec
  */
-import { createVectorLiteState } from "../vectorlite/create";
-import { add, remove } from "../vectorlite/ops/core";
-import { compactStore, rebuildIndex } from "../vectorlite/ops/maintain";
+import { createVectorLiteState } from "../attr/vectorlite/create";
+import { add, remove } from "../attr/vectorlite/ops/core";
+import { compactStore, rebuildIndex } from "../attr/vectorlite/ops/maintain";
 
 describe("compact/rebuild", () => {
   it("shrinks store capacity and rebuilds HNSW when tombstones exceed ratio", () => {

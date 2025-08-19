@@ -3,7 +3,7 @@
  *
  * Why: Validate fields are populated and suggestions can be produced.
  */
-import { describe, it, expect } from "vitest";
+
 import { createVectorLiteState } from "../create";
 import { add } from "./core";
 import { stats, diagnose } from "./stats";

@@ -1,10 +1,9 @@
 /**
  * HNSW tuning spec
  */
-import { describe, it, expect } from "vitest";
-import { createVectorLiteState } from "../vectorlite/create";
-import { add, buildHNSWFromStore } from "../vectorlite/ops/core";
-import { tuneHnsw } from "../vectorlite/ops/tune";
+import { createVectorLiteState } from "../attr/vectorlite/create";
+import { add, buildHNSWFromStore } from "../attr/vectorlite/ops/core";
+import { tuneHnsw } from "../attr/vectorlite/ops/tune";
 
 describe("tuneHnsw", () => {
   it("produces results and recall within [0,1]", () => {

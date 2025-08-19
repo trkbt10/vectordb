@@ -20,9 +20,9 @@
  * Why: Detect and optionally fix drift between primary storage and
  * secondary indices without coupling repair logic to write paths.
  */
-import type { VectorLiteState } from "../../types";
-import { isIvfVL } from "../../util/guards";
-import { ivf_add } from "../../ann/ivf";
+import type { VectorLiteState } from "../../../types";
+import { isIvfVL } from "../../../util/guards";
+import { ivf_add } from "../../../ann/ivf";
 
 /**
  *

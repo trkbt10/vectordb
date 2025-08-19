@@ -13,9 +13,9 @@
  */
 
 import { searchWithExpr } from "./with_expr";
-import type { VectorLiteState } from "../types";
+import type { VectorLiteState } from "../../types";
 import type { FilterExpr } from "../filter/expr";
-import type { SearchHit } from "../types";
+import type { SearchHit } from "../../types";
 
 export type ShardPlan = {
   shards: { name: string; ids: number[] }[];

@@ -3,7 +3,7 @@
  *
  * Why: Ensure wrapper functions call into IVF module and produce reasonable outputs.
  */
-import { describe, it, expect } from "vitest";
+
 import { createVectorLiteState } from "../create";
 import { add } from "./core";
 import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "./ivf";

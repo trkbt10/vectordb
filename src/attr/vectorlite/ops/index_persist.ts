@@ -1,9 +1,9 @@
 /**
  * @file VectorLite wrappers for separated index/data persistence
  */
-import type { VectorLiteState } from "../../types";
-import type { SaveIndexingOptions, OpenIndexingOptions } from "../../indexing/types";
-import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../../indexing/runtime/manager";
+import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../../../indexing/runtime/manager";
+import { OpenIndexingOptions, SaveIndexingOptions } from "../../../indexing/types";
+import type { VectorLiteState } from "../../../types";
 
 /** Persist the current state to separated data segments + index (includes ANN when requested). */
 export async function persistIndex<TMeta>(vl: VectorLiteState<TMeta>, opts: SaveIndexingOptions): Promise<void> {

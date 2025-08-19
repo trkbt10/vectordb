@@ -3,7 +3,7 @@
  */
 
 import { Metric, SearchHit } from "../types";
-import { CoreStore } from "../core/store";
+import { CoreStore } from "../attr/store/store";
 
 export type ANNStrategy<TMeta = unknown> = {
   readonly type: "bruteforce" | "hnsw";

@@ -9,13 +9,13 @@ import { crushLocate } from "../placement/crush";
 import { isHnswVL, isIvfVL } from "../../util/guards";
 import { hnsw_deserialize } from "../../ann/hnsw";
 import { ivf_deserialize } from "../../ann/ivf";
-import { createVectorLiteState } from "../../vectorlite/create";
+import { createVectorLiteState } from "../../attr/vectorlite/create";
 import { normalizeVectorInPlace } from "../../util/math";
 import { writeSegments } from "../placement/segmenter";
 import { writeIndexFile, writePlacementManifest } from "../index_builder";
 import { writeCatalog, readCatalog } from "../catalog";
-import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../vectorlite/format";
-import { buildHNSWFromStore, buildIVFFromStore } from "../../vectorlite/ops/core";
+import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../attr/vectorlite/format";
+import { buildHNSWFromStore, buildIVFFromStore } from "../../attr/vectorlite/ops/core";
 
 /** Save state into separated data segments and an index in the index folder. */
 export async function saveIndexing<TMeta>(vl: VectorLiteState<TMeta>, opts: SaveIndexingOptions): Promise<void> {

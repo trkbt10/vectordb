@@ -3,7 +3,7 @@
  *
  * Why: Verify suggestions are returned and recall values are bounded.
  */
-import { describe, it, expect } from "vitest";
+
 import { createVectorLiteState } from "../create";
 import { add } from "./core";
 import { tuneHnsw } from "./tune";

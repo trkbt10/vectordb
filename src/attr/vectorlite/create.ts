@@ -12,13 +12,13 @@
  * ensures clean separation of concerns and makes the codebase more maintainable
  * and testable.
  */
-import type { VectorLiteOptions } from "../types";
-import type { Metric } from "../types";
-import { createStore } from "../core/store";
-import { createBruteforceState } from "../ann/bruteforce";
-import { createHNSWState } from "../ann/hnsw";
-import { createIVFState } from "../ann/ivf";
-import type { VectorLiteState, VectorLiteAnn } from "../types";
+import type { VectorLiteOptions } from "../../types";
+import type { Metric } from "../../types";
+import { createStore } from "../store/store";
+import { createBruteforceState } from "../../ann/bruteforce";
+import { createHNSWState } from "../../ann/hnsw";
+import { createIVFState } from "../../ann/ivf";
+import type { VectorLiteState, VectorLiteAnn } from "../../types";
 
 /**
  *

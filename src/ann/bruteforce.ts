@@ -2,7 +2,7 @@
  * @file Bruteforce ANN strategy implementation.
  */
 
-import { CoreStore } from "../core/store";
+import { CoreStore } from "../attr/store/store";
 import { Metric, SearchHit } from "../types";
 import { pushTopK } from "../util/topk";
 import { getScoreAtFn } from "../util/similarity";

@@ -14,7 +14,7 @@
  * This separation ensures that users can switch strategies without changing
  * their application code.
  */
-import type { SearchHit, SearchOptions, UpsertOptions, HNSWParams, IVFParams, VectorLiteOptions } from "../../types";
+import type { SearchHit, SearchOptions, UpsertOptions, HNSWParams, IVFParams, VectorLiteOptions } from "../../../types";
 import {
   addOrUpdate,
   ensure as storeEnsure,
@@ -24,12 +24,12 @@ import {
   removeById,
   size as storeSize,
   updateMeta as storeUpdateMeta,
-} from "../../core/store";
-import type { VectorLiteState } from "../../types";
-import { bf_add, bf_search } from "../../ann/bruteforce";
-import { hnsw_add, hnsw_remove, hnsw_search, hnsw_ensureCapacity } from "../../ann/hnsw";
-import { ivf_add, ivf_remove, ivf_search } from "../../ann/ivf";
-import { isHnswVL, isIvfVL, isBfVL } from "../../util/guards";
+} from "../../store/store";
+import type { VectorLiteState } from "../../../types";
+import { bf_add, bf_search } from "../../../ann/bruteforce";
+import { hnsw_add, hnsw_remove, hnsw_search, hnsw_ensureCapacity } from "../../../ann/hnsw";
+import { ivf_add, ivf_remove, ivf_search } from "../../../ann/ivf";
+import { isHnswVL, isIvfVL, isBfVL } from "../../../util/guards";
 import { createVectorLiteState } from "../create";
 
 /**

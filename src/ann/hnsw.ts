@@ -14,7 +14,7 @@
  * speed improvements while maintaining high recall rates.
  */
 
-import { CoreStore, getByIndex, getIndex } from "../core/store";
+import { CoreStore, getByIndex, getIndex } from "../attr/store/store";
 import { HNSWParams, Metric, SearchHit } from "../types";
 import { createReader, createWriter } from "../util/bin";
 import { getScoreAtFn } from "../util/similarity";

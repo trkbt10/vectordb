@@ -1,5 +1,5 @@
 /** Maintain ops smoke test */
-import { describe, it, expect } from "vitest";
+
 import { createVectorLiteState } from "../create";
 import { add, remove } from "./core";
 import { hnswCompactAndRebuild, rebuildIndex } from "./maintain";

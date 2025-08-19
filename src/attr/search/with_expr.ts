@@ -13,16 +13,16 @@
  * specific criteria (metadata, attributes, ID ranges, etc.).
  */
 
-import type { VectorLiteState } from "../types";
-import type { SearchHit } from "../types";
-import { normalizeQuery } from "../core/store";
+import type { VectorLiteState } from "../../types";
+import type { SearchHit } from "../../types";
+import { normalizeQuery } from "../store/store";
 import { compilePredicate, preselectCandidates, type FilterExpr } from "../filter/expr";
 import type { AttrIndexReader, Scalar, Range } from "../filter/expr";
-import type { AttrIndex } from "../attr/index";
-import { getScoreAtFn } from "../util/similarity";
-import { pushTopK } from "../util/topk";
-import { createBitMask, maskSet } from "../util/bitset";
-import { hnsw_search, HNSWState } from "../ann/hnsw";
+import type { AttrIndex } from "../index";
+import { getScoreAtFn } from "../../util/similarity";
+import { pushTopK } from "../../util/topk";
+import { createBitMask, maskSet } from "../../util/bitset";
+import { hnsw_search, HNSWState } from "../../ann/hnsw";
 
 export type SearchWithExprOptions = {
   k?: number;

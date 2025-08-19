@@ -1,5 +1,5 @@
 import { createVectorLiteState, add, searchWithExpr } from "../vectorlite";
-import { createAttrIndex, setAttrs, removeId } from "../attr/index";
+import { createAttrIndex, setAttrs, removeId } from "../index";
 import type { FilterExpr } from "../filter/expr";
 
 test("filter expr: equality and range with index, bruteforce", () => {

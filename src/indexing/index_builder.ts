@@ -5,7 +5,7 @@ import type { VectorLiteState } from "../types";
 import type { IndexEntry } from "./types";
 import { encodeIndexFile } from "./formats/index_file";
 import type { ResolveIndexIO } from "./types";
-import { encodeMetric, encodeStrategy } from "../vectorlite/format";
+import { encodeMetric, encodeStrategy } from "../attr/vectorlite/format";
 import { isHnswVL, isIvfVL } from "../util/guards";
 import { hnsw_serialize } from "../ann/hnsw";
 import { ivf_serialize } from "../ann/ivf";

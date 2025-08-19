@@ -12,7 +12,7 @@
  * keeping internal modules properly encapsulated. This design enables better
  * tree-shaking and allows users to import only what they need.
  */
-export type { VectorLiteState } from "../types";
+export type { VectorLiteState } from "../../types";
 
 export { createVectorLiteState } from "./create";
 

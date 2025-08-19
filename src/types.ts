@@ -46,6 +46,12 @@ export type SearchHit<TMeta> = {
   meta: TMeta | null;
 };
 
+/** Result returned by get()/getOne(): vector and meta for an id. */
+export type VectorRecord<TMeta> = {
+  vector: Float32Array;
+  meta: TMeta | null;
+};
+
 /** Public construction options. */
 export type VectorLiteOptions = {
   dim: number;
@@ -74,10 +80,10 @@ export type IVFParams = {
 // ---------------------------------------------------------------------------
 // VectorLite state types (moved from src/vectorlite/state.ts)
 
-import type { CoreStore } from "./core/store";
 import type { BruteforceState } from "./ann/bruteforce";
 import type { HNSWState } from "./ann/hnsw";
 import type { IVFState } from "./ann/ivf";
+import { CoreStore } from "./attr/store/store";
 
 export type VectorLiteAnn = BruteforceState | HNSWState | IVFState;
 

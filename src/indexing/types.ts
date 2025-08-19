@@ -20,23 +20,21 @@ export type LocateResult = { pg: number; primaries: string[] };
 export type ResolveDataIO = (targetKey: string) => FileIO;
 export type ResolveIndexIO = () => FileIO;
 
-export type SaveIndexingOptions = {
+export type IndexingBaseOptions = {
   baseName: string;
   indexDir?: string; // default '.vlindex'
   crush: CrushMap;
   resolveDataIO: ResolveDataIO;
   resolveIndexIO: ResolveIndexIO;
+};
+
+export type SaveIndexingOptions = IndexingBaseOptions & {
   segmented?: boolean;
   segmentBytes?: number;
   includeAnn?: boolean;
 };
 
-export type OpenIndexingOptions = {
-  baseName: string;
-  indexDir?: string;
-  crush: CrushMap;
-  resolveDataIO: ResolveDataIO;
-  resolveIndexIO: ResolveIndexIO;
+export type OpenIndexingOptions = IndexingBaseOptions & {
   rebuildIfNeeded?: boolean;
 };
 

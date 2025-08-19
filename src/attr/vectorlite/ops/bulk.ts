@@ -12,8 +12,8 @@
  * datasets by minimizing function call overhead and enabling better
  * resource allocation strategies.
  */
-import type { VectorLiteState } from "../../types";
-import type { UpsertOptions } from "../../types";
+import type { VectorLiteState } from "../../../types";
+import type { UpsertOptions } from "../../../types";
 import { add, remove } from "./core";
 
 /**

@@ -1,8 +1,8 @@
 /**
  * Rule-based Alerts spec
  */
-import { createVectorLiteState } from "../vectorlite/create";
-import { add, remove } from "../vectorlite/ops/core";
+import { createVectorLiteState } from "../attr/vectorlite/create";
+import { add, remove } from "../attr/vectorlite/ops/core";
 import {
   registerRules,
   clearRules,

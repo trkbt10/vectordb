@@ -1,5 +1,5 @@
 /** Core ops smoke test (module-local) */
-import { describe, it, expect } from "vitest";
+
 import { createVectorLiteState } from "../create";
 import { add, size, search } from "./core";
 

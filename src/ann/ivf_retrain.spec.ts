@@ -7,10 +7,9 @@
  * - evaluateIvf returns reasonable recall on clustered data
  */
 
-import { describe, it, expect } from "vitest";
-import { createVectorLiteState } from "../vectorlite/create";
-import { add } from "../vectorlite/ops/core";
-import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "../vectorlite/ops/ivf";
+import { createVectorLiteState } from "../attr/vectorlite/create";
+import { add } from "../attr/vectorlite/ops/core";
+import { trainIvfCentroids, reassignIvfLists, evaluateIvf } from "../attr/vectorlite/ops/ivf";
 
 describe("IVF retrain/evaluate", () => {
   it("trains, reassigns, and evaluates with good recall", () => {
