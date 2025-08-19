@@ -1,21 +1,22 @@
-
 /**
  * @file Tests for HNSW strategy behavior.
  */
 
 import {
   createVectorLiteState,
-  deserializeVectorLite,
   add,
   search,
-  serialize,
   remove,
   hnswCompactAndRebuild,
   get,
+  persistIndex,
+  openFromIndex,
 } from "../vectorlite";
+import { createMemoryFileIO } from "../persist/memory";
 import { computeNumSeeds } from "./hnsw";
+import { CrushMap } from "../indexing/types";
 
-test("VectorLite HNSW: searches and roundtrips", () => {
+test("VectorLite HNSW: searches and roundtrips", async () => {
   const dim = 4;
   const db = createVectorLiteState<{ tag: string }>({
     dim,
@@ -29,8 +30,26 @@ test("VectorLite HNSW: searches and roundtrips", () => {
   const hits = search(db, new Float32Array([0.95, 0, 0, 0]), { k: 2 });
   expect(hits.length).toBe(2);
 
-  const buf = serialize(db);
-  const db2 = deserializeVectorLite<{ tag: string }>(buf);
+  // roundtrip through separated index/data
+  const crush: CrushMap = { pgs: 8, replicas: 1, targets: [{ key: "a" }, { key: "b" }] };
+  const dataStores: Record<string, ReturnType<typeof createMemoryFileIO>> = {
+    a: createMemoryFileIO(),
+    b: createMemoryFileIO(),
+  };
+  const indexStore = createMemoryFileIO();
+  await persistIndex(db, {
+    baseName: "hnsw_spec",
+    crush,
+    resolveDataIO: (k) => dataStores[k],
+    resolveIndexIO: () => indexStore,
+    includeAnn: false,
+  });
+  const db2 = await openFromIndex<{ tag: string }>({
+    baseName: "hnsw_spec",
+    crush,
+    resolveDataIO: (k) => dataStores[k],
+    resolveIndexIO: () => indexStore,
+  });
   const hits2 = search(db2, new Float32Array([0.95, 0, 0, 0]), { k: 2 });
   expect(hits2.length).toBe(2);
 });

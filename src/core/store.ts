@@ -66,10 +66,8 @@ export function ensure<T>(s: CoreStore<T>, extra = 1): boolean {
   if (s._count + extra <= s._capacity) {
     return false;
   }
-  let newCap = s._capacity;
-  while (newCap < s._count + extra) {
-    newCap <<= 1;
-  }
+  const grow = (c: number): number => (c >= s._count + extra ? c : grow(c << 1));
+  const newCap = grow(s._capacity);
   const ids2 = new Uint32Array(newCap);
   ids2.set(s.ids.subarray(0, s._count));
   const data2 = new Float32Array(newCap * s.dim);

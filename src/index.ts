@@ -17,7 +17,6 @@ import type { VectorLiteOptions } from "./types";
 import type { VectorLiteState } from "./types";
 import {
   createVectorLiteState,
-  deserializeVectorLite,
   size,
   has,
   add,
@@ -28,10 +27,9 @@ import {
   setMeta,
   remove,
   search,
-  buildHNSWFromStore,
-  buildIVFFromStore,
 } from "./vectorlite";
-
+import { saveIndexing, openIndexing, rebuildIndexingFromData } from "./indexing/manager";
+import type { SaveIndexingOptions, OpenIndexingOptions, CrushMap } from "./indexing/types";
 export type {
   Metric,
   VectorLiteInit,
@@ -44,6 +42,7 @@ export type {
   VectorLiteAnn,
   VectorLiteState,
 } from "./types";
+export type { SaveIndexingOptions, OpenIndexingOptions, CrushMap };
 
 // Internal helper to attach client methods to an existing state
 function attachClient<TMeta>(state: VectorLiteState<TMeta>) {
@@ -72,12 +71,13 @@ export function createVectorLite<TMeta = unknown>(opts: VectorLiteOptions): VLit
 
 export const vlite = {
   create: createVectorLite,
-  buildHNSWFromStore,
-  buildIVFFromStore,
+  // Indexing manager: CRUSH mapping + IO injection
+  indexing: {
+    save: saveIndexing,
+    open: openIndexing,
+    rebuild: rebuildIndexingFromData,
+  },
   from<TMeta = unknown>(state: VectorLiteState<TMeta>): VLiteClient {
     return attachClient<TMeta>(state);
-  },
-  open<TMeta = unknown>(buf: ArrayBuffer): VLiteClient {
-    return attachClient<TMeta>(deserializeVectorLite<TMeta>(buf));
   },
 };

@@ -55,19 +55,27 @@ const skey = (v: Scalar) => typeof v + ':' + String(v)
 const ensureSorted = (e: { arr: NumEntry[]; dirty: boolean }) => { if (!e.dirty) return; e.arr.sort((a,b)=> a.v - b.v || a.id - b.id); e.dirty = false }
 
 function lowerBound(arr: NumEntry[], x: number, strict: boolean): number {
+  // eslint-disable-next-line no-restricted-syntax -- binary search requires mutable indices for performance
   let l=0,r=arr.length; while(l<r){ const m=(l+r)>>1; if (arr[m].v > x || (!strict && arr[m].v===x)) r=m; else l=m+1 };
-  if (strict) { let i=l; while (i<arr.length && arr[i].v<=x) i++; return i } return l
+  if (strict) { // eslint-disable-next-line no-restricted-syntax -- post-adjust index forward
+    let i=l; while (i<arr.length && arr[i].v<=x) i++; return i } return l
 }
 function upperBound(arr: NumEntry[], x: number, strict: boolean): number {
+  // eslint-disable-next-line no-restricted-syntax -- binary search requires mutable indices for performance
   let l=0,r=arr.length; while(l<r){ const m=(l+r)>>1; if (arr[m].v < x || (!strict && arr[m].v===x)) l=m+1; else r=m };
-  if (strict) { let i=l; while (i>0 && arr[i-1].v>=x) i--; return i } return l
+  if (strict) { // eslint-disable-next-line no-restricted-syntax -- post-adjust index backward
+    let i=l; while (i>0 && arr[i-1].v>=x) i--; return i } return l
 }
 
-function addEq(c: BasicAttrContainer, key: string, v: Scalar, id: number) { let m = c.eqMap.get(key); if (!m) c.eqMap.set(key, m = new Map()); let s = m.get(skey(v)); if (!s) m.set(skey(v), s = new Set()); s.add(id>>>0) }
+function addEq(c: BasicAttrContainer, key: string, v: Scalar, id: number) { // eslint-disable-next-line no-restricted-syntax -- map slot initialization needs mutation
+  let m = c.eqMap.get(key); if (!m) c.eqMap.set(key, m = new Map()); // eslint-disable-next-line no-restricted-syntax -- set slot initialization needs mutation
+  let s = m.get(skey(v)); if (!s) m.set(skey(v), s = new Set()); s.add(id>>>0) }
 function delEq(c: BasicAttrContainer, key: string, v: Scalar, id: number) { const m = c.eqMap.get(key); if (!m) return; const s = m.get(skey(v)); if (!s) return; s.delete(id>>>0); if (s.size===0) m.delete(skey(v)) }
-function addExists(c: BasicAttrContainer, key: string, id: number) { let s = c.existsMap.get(key); if (!s) c.existsMap.set(key, s = new Set()); s.add(id>>>0) }
+function addExists(c: BasicAttrContainer, key: string, id: number) { // eslint-disable-next-line no-restricted-syntax -- set slot initialization needs mutation
+  let s = c.existsMap.get(key); if (!s) c.existsMap.set(key, s = new Set()); s.add(id>>>0) }
 function delExists(c: BasicAttrContainer, key: string, id: number) { const s = c.existsMap.get(key); if (!s) return; s.delete(id>>>0); if (s.size===0) c.existsMap.delete(key) }
-function addNum(c: BasicAttrContainer, key: string, v: number, id: number) { let e = c.numMap.get(key); if (!e) c.numMap.set(key, e = { arr: [], dirty: false }); e.arr.push({ v, id: id>>>0 }); e.dirty = true }
+function addNum(c: BasicAttrContainer, key: string, v: number, id: number) { // eslint-disable-next-line no-restricted-syntax -- map slot initialization needs mutation
+  let e = c.numMap.get(key); if (!e) c.numMap.set(key, e = { arr: [], dirty: false }); e.arr.push({ v, id: id>>>0 }); e.dirty = true }
 function delNum(c: BasicAttrContainer, key: string, v: number, id: number) { const e = c.numMap.get(key); if (!e) return; const uid = id>>>0; e.arr = e.arr.filter(x => !(x.id===uid && x.v===v)) }
 
 function addOrRemoveValue(c: BasicAttrContainer, mode: 'add' | 'del', key: string, val: AttrValue, uid: number) {
@@ -124,9 +132,12 @@ export function basic_exists(c: BasicAttrContainer, key: string): Set<number> | 
  */
 export function basic_range(c: BasicAttrContainer, key: string, r: Range): Set<number> | null {
   const e = c.numMap.get(key); if (!e) return null; ensureSorted(e); const arr = e.arr; if (arr.length===0) return new Set()
+  // eslint-disable-next-line no-restricted-syntax -- computed lower bound index
   let lo = 0; if (r.gt!==undefined || r.gte!==undefined) { const x = r.gt ?? r.gte!; const strict = r.gt!==undefined; lo = lowerBound(arr, x, strict) }
+  // eslint-disable-next-line no-restricted-syntax -- computed upper bound index
   let ro = arr.length; if (r.lt!==undefined || r.lte!==undefined) { const x = r.lt ?? r.lte!; const strict = r.lt!==undefined; ro = upperBound(arr, x, strict) }
-  if (lo<0) lo=0; if (ro>arr.length) ro=arr.length; if (lo>ro) return new Set(); const out = new Set<number>(); for (let i=lo;i<ro;i++) out.add(arr[i].id); return out
+  if (lo<0) lo=0; if (ro>arr.length) ro=arr.length; if (lo>ro) return new Set(); const out = new Set<number>();
+  for (let i=lo;i<ro;i++) out.add(arr[i].id); return out
 }
 
 import { createBasicIndex } from './strategies/basic'

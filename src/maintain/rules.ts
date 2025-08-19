@@ -58,6 +58,7 @@ function computeStatsView<TMeta>(vl: VectorLiteState<TMeta>): StatsView {
   const base = { n: vl.store._count, dim: vl.dim, strategy: vl.strategy, metric: vl.metric as Metric }
   if (isHnswVL(vl)) {
     // avgDeg across all layers / nodes (rough indicator)
+    // eslint-disable-next-line no-restricted-syntax -- accumulating counter for readability and performance
     let edges = 0
     for (let l = 0; l <= vl.ann.maxLevel; l++) {
       const layer = vl.ann.links[l] || []
@@ -76,6 +77,7 @@ function computeStatsView<TMeta>(vl: VectorLiteState<TMeta>): StatsView {
 
 function hnswTombstoneRatio<TMeta>(vl: VectorLiteState<TMeta>): number | null {
   if (!isHnswVL(vl)) return null
+  // eslint-disable-next-line no-restricted-syntax -- accumulating counter for readability and performance
   let dead = 0
   for (let i = 0; i < vl.store._count; i++) if (vl.ann.tombstone[i] === 1) dead++
   const n = Math.max(1, vl.store._count)

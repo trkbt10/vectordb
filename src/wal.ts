@@ -81,9 +81,11 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
     parts.push(rec)
   }
   // concat
+  // eslint-disable-next-line no-restricted-syntax -- accumulate output size before allocation
   let total = 0
   for (const p of parts) total += p.length
   const out = new Uint8Array(total)
+  // eslint-disable-next-line no-restricted-syntax -- track write offset while concatenating parts
   let off = 0
   for (const p of parts) { out.set(p, off); off += p.length }
   return out
@@ -95,6 +97,7 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
 export function decodeWal(u8: Uint8Array): WalRecord[] {
   if (u8.length < 8) throw new Error('wal too short')
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength)
+  // eslint-disable-next-line no-restricted-syntax -- track parse offset while decoding
   let off = 0
   // allow multiple concatenated WAL segments (each starts with header)
   function readHeader(at: number): number {
@@ -119,6 +122,7 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
     const id = dv.getUint32(off, true); off += 4
     const metaLen = dv.getUint32(off, true); off += 4
     const vecLen = dv.getUint32(off, true); off += 4
+    // eslint-disable-next-line no-restricted-syntax -- mutable meta during decode loop
     let meta: unknown | null = null
     if (metaLen > 0) {
       const mb = u8.subarray(off, off + metaLen); off += metaLen

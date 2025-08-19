@@ -15,7 +15,6 @@
 export type { VectorLiteState } from '../types'
 
 export { createVectorLiteState } from './create'
-export { serialize, deserializeVectorLite } from './serialize'
 
 export {
   size,
@@ -37,5 +36,6 @@ export { stats, diagnose } from './ops/stats'
 export { checkConsistency, repairConsistency } from './ops/consistency'
 export { trainIvfCentroids, reassignIvfLists, evaluateIvf } from './ops/ivf'
 export { tuneHnsw } from './ops/tune'
+export { persistIndex, openFromIndex, rebuildFromData } from './ops/index_persist'
 
 export { searchWithExpr } from '../search/with_expr'
