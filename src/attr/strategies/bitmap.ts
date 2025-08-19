@@ -6,7 +6,7 @@
  */
 import type { AttrIndex, Attrs } from "../index";
 export type AttrValue = string | number | boolean | (string | number)[] | null;
-import type { Scalar } from "../../filter/expr";
+import type { Scalar } from "../filter/expr";
 
 export type BitmapAttrContainer = {
   data: Map<number, Attrs>;

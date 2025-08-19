@@ -15,7 +15,7 @@
  * maintained in memory for fast access.
  */
 import type { AttrIndex, Attrs, AttrValue } from "../index";
-import type { Range, Scalar } from "../../filter/expr";
+import type { Range, Scalar } from "../filter/expr";
 
 type NumEntry = { v: number; id: number };
 

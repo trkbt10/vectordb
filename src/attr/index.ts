@@ -14,7 +14,7 @@
  * real-world applications where vectors have associated metadata (tags, timestamps,
  * categories, etc.) that users want to filter by.
  */
-import type { Range, Scalar } from "../filter/expr";
+import type { Range, Scalar } from "./filter/expr";
 
 export type AttrValue = string | number | boolean | (string | number)[] | null;
 export type Attrs = Record<string, AttrValue>;
