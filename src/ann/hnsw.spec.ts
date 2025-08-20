@@ -5,7 +5,7 @@
 import { createMemoryFileIO } from "../persist/memory";
 import { computeNumSeeds } from "./hnsw";
 import { CrushMap } from "../indexing/types";
-import { add, search, remove, get } from "../attr/ops/core";
+import { add, search, remove, getOne } from "../attr/ops/core";
 import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
 import { hnswCompactAndRebuild } from "../attr/ops/maintain";
 import { createState } from "../attr/state/create";
@@ -64,7 +64,7 @@ test("HNSW remove + compact rebuild drops tombstones", () => {
   expect(removedHit.id).not.toBe(1);
   const removed = hnswCompactAndRebuild(db);
   expect(removed).toBe(1);
-  expect(get(db, 1)).toBeNull();
+  expect(getOne(db, 1)).toBeNull();
 });
 
 test("computeNumSeeds auto and clamping", () => {

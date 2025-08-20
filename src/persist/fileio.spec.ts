@@ -4,7 +4,7 @@
 import path from "node:path";
 import { mkdir, rm, stat, readdir } from "node:fs/promises";
 
-import { createVectorLite, vlite } from "../index";
+import { create as createClient, createCluster } from "../index";
 import { createNodeFileIO } from "./node";
 
 async function fileExists(p: string): Promise<boolean> {
@@ -24,13 +24,13 @@ describe("persist/FileIO path isolation", () => {
     await mkdir(outRoot, { recursive: true });
 
     // create small DB
-    const db = createVectorLite<{ tag?: string }>({ dim: 2, metric: "cosine", strategy: "bruteforce" });
-    db.add(1, new Float32Array([1, 0]), { tag: "a" });
-    db.add(2, new Float32Array([0, 1]), { tag: "b" });
-    db.add(3, new Float32Array([0.5, 0.5]), null);
+    const db = createClient<{ tag?: string }>({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    db.set(1, new Float32Array([1, 0]), { tag: "a" });
+    db.set(2, new Float32Array([0, 1]), { tag: "b" });
+    db.set(3, new Float32Array([0.5, 0.5]), null);
 
     // bind env with prefixed IO, shards>1 to fan out data dirs
-    const { index, db: dbEnv } = vlite<{ tag?: string }>(
+    const { index, db: dbEnv } = createCluster<{ tag?: string }>(
       {
         index: createNodeFileIO(outRoot),
         data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
@@ -80,4 +80,3 @@ describe("persist/FileIO path isolation", () => {
     }
   });
 });
-

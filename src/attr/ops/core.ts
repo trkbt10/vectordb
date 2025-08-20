@@ -81,7 +81,6 @@ export function addMany<TMeta>(
 export function getOne<TMeta>(vl: VectorStoreState<TMeta>, id: number) {
   return Store.get(vl.store, id);
 }
-export const get = getOne;
 /**
  *
  */

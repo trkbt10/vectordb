@@ -1,7 +1,7 @@
 /**
  * @file Unit tests for Write-Ahead Log (WAL) functionality
  */
-import { get, getMeta, search } from "./attr/ops/core";
+import { getOne, getMeta, search } from "./attr/ops/core";
 import { createState } from "./attr/state/create";
 import { encodeWal, applyWal, type WalRecord } from "./wal";
 
@@ -13,12 +13,12 @@ test("WAL encode/apply upsert/remove works", () => {
   ];
   const wal = encodeWal(recs);
   applyWal(db, wal);
-  const r1 = get(db, 42);
+  const r1 = getOne(db, 42);
   expect(r1?.meta).toEqual({ tag: "y" });
   // remove
   const wal2 = encodeWal([{ type: "remove", id: 42 }]);
   applyWal(db, wal2);
-  expect(get(db, 42)).toBeNull();
+  expect(getOne(db, 42)).toBeNull();
   // sanity: add a neighbor and search
   applyWal(db, encodeWal([{ type: "upsert", id: 1, vector: new Float32Array([1, 0]), meta: null }]));
   const hit = search(db, new Float32Array([1, 0]), { k: 1 })[0];
