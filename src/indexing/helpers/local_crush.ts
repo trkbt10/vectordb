@@ -2,7 +2,7 @@
  * @file Helpers for local CRUSH-like environment with directory sharding
  */
 import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "../types";
-import { createPrefixedNodeFileIO } from "../../storage/node";
+import { createNodeFileIO } from "../../storage/node";
 import { join as joinPath } from "node:path";
 
 export type LocalCrushEnv = {
@@ -21,7 +21,7 @@ export type LocalCrushEnv = {
 export function createLocalCrushEnv(baseDir: string, shards = 4, pgs = 64, replicas = 1): LocalCrushEnv {
   const targets = Array.from({ length: Math.max(1, shards | 0) }, (_, i) => ({ key: String(i) }));
   const crush: CrushMap = { pgs: Math.max(1, pgs | 0), replicas: Math.max(1, replicas | 0), targets };
-  const resolveDataIO: ResolveDataIO = (key: string) => createPrefixedNodeFileIO(joinPath(baseDir, "data", key));
-  const resolveIndexIO: ResolveIndexIO = () => createPrefixedNodeFileIO(joinPath(baseDir, ".vlindex"));
+  const resolveDataIO: ResolveDataIO = (key: string) => createNodeFileIO(joinPath(baseDir, "data", key));
+  const resolveIndexIO: ResolveIndexIO = () => createNodeFileIO(joinPath(baseDir, ".vlindex"));
   return { crush, resolveDataIO, resolveIndexIO };
 }
