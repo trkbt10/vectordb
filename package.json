@@ -1,5 +1,5 @@
 {
-  "name": "yazawa",
+  "name": "vectordb",
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
@@ -14,18 +14,36 @@
     "./client": {
       "import": "./dist/client.js",
       "types": "./dist/client.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli.js",
+      "types": "./dist/cli.d.ts"
+    },
+    "./storage/*": {
+      "import": "./dist/storage/*.js",
+      "types": "./dist/storage/*.d.ts"
     }
   },
   "packageManager": "bun@1.2.20",
   "sideEffects": false,
+  "bin": {
+    "vectordb": "./bin/vectordb.cjs"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && npm run types",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "test": "bun test",
+    "test:cov": "bun test --coverage",
     "cli": "bun run src/cli/main.tsx"
   },
   "devDependencies": {

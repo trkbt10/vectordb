@@ -5,7 +5,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
 import { connect } from "../src/client/index";
-import { createPrefixedNodeFileIO } from "../src/persist/node";
+import { createPrefixedNodeFileIO } from "../src/storage/node";
 
 describe("indexing/e2e CRUD + search", () => {
   it("performs CRUD and search with filter, then persists and opens back", async () => {

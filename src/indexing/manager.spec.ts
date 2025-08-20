@@ -4,7 +4,7 @@
 import { createState } from "../attr/state/create";
 import { saveIndexing, openIndexing } from "./runtime/manager";
 import type { CrushMap } from "./types";
-import { createMemoryFileIO } from "../persist/memory";
+import { createMemoryFileIO } from "../storage/memory";
 
 describe("indexing/manager", () => {
   it("saves to segments and opens via index + CRUSH", async () => {

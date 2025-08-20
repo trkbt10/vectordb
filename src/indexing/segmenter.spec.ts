@@ -5,7 +5,7 @@
 import { writeSegments } from "./placement/segmenter";
 import { createState } from "../attr/state/create";
 import type { CrushMap } from "./types";
-import { createMemoryFileIO } from "../persist/memory";
+import { createMemoryFileIO } from "../storage/memory";
 
 describe("indexing/segmenter", () => {
   it("writes segments and returns pointers/manifest", async () => {

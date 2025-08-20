@@ -3,7 +3,7 @@
  */
 import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../indexing/runtime/manager";
 import type { SaveIndexingOptions, IndexingBaseOptions, OpenIndexingOptions } from "../indexing/types";
-import type { FileIO } from "../persist/types";
+import type { FileIO } from "../storage/types";
 import type { VectorStoreState } from "../types";
 import { planRebalance, applyRebalance, type MovePlan } from "../indexing/placement/rebalance";
 

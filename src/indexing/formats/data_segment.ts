@@ -1,8 +1,8 @@
 /**
  * @file Data segment binary format (vectors + metadata)
  */
-import type { FileIO } from "../../persist/types";
-import { toUint8 } from "../../persist/types";
+import type { FileIO } from "../../storage/types";
+import { toUint8 } from "../../storage/types";
 
 // Simple segmented data file format for vector rows
 // Header: MAGIC u32 ('VLDT'), VERSION u32 (1)

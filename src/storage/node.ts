@@ -1,33 +1,17 @@
 /**
- * @file Node.js file system persistence adapter for VectorDB
- *
- * This module provides file I/O operations specifically for Node.js environments,
- * enabling VectorDB to persist vector databases to disk. It implements:
- *
- * - Snapshot persistence: Save and load complete database states
- * - Write-Ahead Logging (WAL): Append-only log for durability and crash recovery
- * - Atomic writes: Use temp file + rename pattern for safe updates
- * - FileIO interface: Consistent API that can be swapped with other adapters (e.g., OPFS)
- *
- * The module is used by VectorDB when running in Node.js to provide durable
- * storage capabilities, ensuring vector data survives process restarts and
- * enabling incremental updates through the WAL mechanism.
+ * @file Node.js file system storage adapter for VectorDB
  */
 import { writeFile, readFile, rename, mkdir, rm } from "node:fs/promises";
 import { dirname, join as joinPath } from "node:path";
 import type { FileIO } from "./types";
 import { toUint8 } from "./types";
 
-/**
- *
- */
+/** Save bytes to a Node file. Why: simple snapshot writer. */
 export async function saveToFileNode(buf: ArrayBuffer, path: string) {
   await writeFile(path, new Uint8Array(buf));
 }
 
-/**
- *
- */
+/** Load bytes from a Node file. Why: simple snapshot reader. */
 export async function loadFromFileNode(path: string): Promise<ArrayBuffer> {
   const u8 = await readFile(path);
   const out = new Uint8Array(u8.byteLength);
@@ -35,21 +19,19 @@ export async function loadFromFileNode(path: string): Promise<ArrayBuffer> {
   return out.buffer;
 }
 
-/** Append data to a file (WAL) via append flag. */
+/** Append bytes to a Node file (WAL). Why: durability for incremental updates. */
 export async function appendToFileNode(buf: Uint8Array, path: string): Promise<void> {
   await writeFile(path, buf, { flag: "a" as unknown as undefined });
 }
 
-/** Atomic snapshot: write to temp file and rename over destination. */
+/** Atomic write via temp + rename. Why: crash-safe snapshot updates. */
 export async function saveAtomicToFileNode(buf: ArrayBuffer, path: string): Promise<void> {
   const tmp = `${path}.tmp`;
   await writeFile(tmp, new Uint8Array(buf));
   await rename(tmp, path);
 }
 
-/**
- *
- */
+/** Raw Node FileIO without path prefixing. Why: plug into custom resolvers. */
 export function createNodeRawFileIO(): FileIO {
   return {
     async read(path: string) {
@@ -79,7 +61,7 @@ export function createNodeRawFileIO(): FileIO {
   };
 }
 
-/** Create a Node FileIO that prefixes all paths with baseDir and ensures directories exist. */
+/** Prefixed Node FileIO. Why: keep all artifacts under a base directory. */
 export function createNodeFileIO(baseDir: string): FileIO {
   async function ensureDir(p: string) {
     await mkdir(dirname(p), { recursive: true });
@@ -120,5 +102,4 @@ export function createNodeFileIO(baseDir: string): FileIO {
   };
 }
 
-// Backward-compatible alias for older name
 export const createPrefixedNodeFileIO = createNodeFileIO;

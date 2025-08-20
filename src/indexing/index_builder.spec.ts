@@ -3,7 +3,7 @@
  */
 
 import { writeIndexFile, writePlacementManifest } from "./index_builder";
-import { createMemoryFileIO } from "../persist/memory";
+import { createMemoryFileIO } from "../storage/memory";
 import { createState } from "../attr/state/create";
 import { decodeIndexFile } from "./formats/index_file";
 

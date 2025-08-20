@@ -1,8 +1,8 @@
 /**
  * @file Index file binary format (pointers to data segments + optional ANN)
  */
-import type { FileIO } from "../../persist/types";
-import { toUint8 } from "../../persist/types";
+import type { FileIO } from "../../storage/types";
+import { toUint8 } from "../../storage/types";
 import type { IndexEntry } from "../types";
 import { createReader, createWriter } from "../../util/bin";
 

@@ -1,7 +1,7 @@
 /**
  * @file Public types for indexing manager and mapping
  */
-import type { FileIO } from "../persist/types";
+import type { FileIO } from "../storage/types";
 
 export type CrushTarget = {
   key: string; // logical storage key (e.g., 's3a', 'local-a')

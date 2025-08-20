@@ -2,7 +2,7 @@
  * @file Tests for HNSW strategy behavior.
  */
 
-import { createMemoryFileIO } from "../persist/memory";
+import { createMemoryFileIO } from "../storage/memory";
 import { computeNumSeeds } from "./hnsw";
 import { CrushMap } from "../indexing/types";
 import { add, search, remove, getOne } from "../attr/ops/core";

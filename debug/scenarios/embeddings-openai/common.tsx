@@ -9,8 +9,8 @@ import React, { useEffect, useState } from "react";
 
 import { createAttrIndex } from "../../../src/attr/index";
 import { connect } from "../../../src/client/index";
-import { createNodeFileIO } from "../../../src/persist/node";
-import { createMemoryFileIO } from "../../../src/persist/memory";
+import { createNodeFileIO } from "../../../src/storage/node";
+import { createMemoryFileIO } from "../../../src/storage/memory";
 import { DOCS } from "./DOCS";
 
 import { Row, Section } from "./components";

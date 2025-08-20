@@ -4,8 +4,8 @@
 import path from "node:path";
 import { mkdir, rm, stat, readdir } from "node:fs/promises";
 
-import { connect } from "../client/index";
-import { createNodeFileIO } from "./node";
+import { connect } from "../src/client/index";
+import { createNodeFileIO } from "../src/storage/node";
 
 async function fileExists(p: string): Promise<boolean> {
   try {

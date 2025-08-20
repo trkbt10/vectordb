@@ -3,7 +3,7 @@
  */
 
 import { DataSegmentWriter, DataSegmentReader, encodeRow, decodeRow } from "./data_segment";
-import { createMemoryFileIO } from "../../persist/memory";
+import { createMemoryFileIO } from "../../storage/memory";
 
 describe("indexing/formats/data_segment", () => {
   it("encodes and decodes a row", () => {

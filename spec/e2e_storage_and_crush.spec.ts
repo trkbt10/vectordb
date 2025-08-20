@@ -4,7 +4,7 @@
  */
 // use test globals from runner
 import { connect } from "../src/index";
-import type { FileIO } from "../src/persist/types";
+import type { FileIO } from "../src/storage/types";
 
 function createRecordingIO(initial?: Record<string, Uint8Array | ArrayBuffer>) {
   const store = new Map<string, Uint8Array>();

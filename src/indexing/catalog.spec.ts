@@ -3,7 +3,7 @@
  */
 
 import { writeCatalog, readCatalog } from "./catalog";
-import { createMemoryFileIO } from "../persist/memory";
+import { createMemoryFileIO } from "../storage/memory";
 
 describe("indexing/catalog", () => {
   it("writes and reads catalog.json", async () => {

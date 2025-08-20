@@ -1,7 +1,7 @@
 /**
  * @file Unit tests for in-memory file I/O operations
  */
-import { createMemoryFileIO } from "./memory";
+import { createMemoryFileIO } from "../storage/memory";
 
 test("Memory FileIO write/read/append/atomicWrite", async () => {
   const io = createMemoryFileIO();
