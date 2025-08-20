@@ -3,7 +3,7 @@
  */
 
 import type { FilterExpr } from "../../../src/attr/filter/expr";
-import type { Doc } from "../../../spec/__mocks__/DOCS";
+import type { Doc } from "./DOCS";
 
 export type Meta = {
   title: string;
@@ -38,14 +38,6 @@ export type SearchQuery = {
   expr?: FilterExpr;
 };
 
-export type AppStatus =
-  | "init"
-  | "embedding"
-  | "indexing"
-  | "querying"
-  | "saving"
-  | "reloading"
-  | "done"
-  | "error";
+export type AppStatus = "init" | "embedding" | "indexing" | "querying" | "saving" | "reloading" | "done" | "error";
 
 export type AppStrategy = "bruteforce" | "hnsw" | "ivf";

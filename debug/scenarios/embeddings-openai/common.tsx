@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import { createAttrIndex } from "../../../src/attr/index";
 import { create, createCluster } from "../../../src/index";
 import { createNodeFileIO } from "../../../src/persist/node";
-import { DOCS } from "../../../spec/__mocks__/DOCS";
+import { DOCS } from "./DOCS";
 
 import { Row, Section } from "./components";
 import {
