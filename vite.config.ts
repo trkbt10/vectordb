@@ -4,16 +4,28 @@
 
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    dts({
+      entryRoot: "src",
+      outDir: "dist",
+      include: ["src"],
+      exclude: ["**/*.spec.*", "spec", "tests", "debug", "node_modules", "dist"],
+      tsconfigPath: "tsconfig.json",
+      // Generate d.ts alongside built entries
+      rollupTypes: false,
+    }),
+  ],
   build: {
     outDir: "dist",
     lib: {
       entry: {
         index: "src/index.ts",
-        client: "src/client/index.ts",
-        cli: "src/cli/main.tsx",
+        "client/index": "src/client/index.ts",
+        "cli/index": "src/cli/main.tsx",
         "storage/node": "src/storage/node.ts",
         "storage/memory": "src/storage/memory.ts",
         "storage/opfs": "src/storage/opfs.ts",

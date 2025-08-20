@@ -1,26 +1,30 @@
 {
   "name": "vectordb",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./client": {
-      "import": "./dist/client.js",
-      "types": "./dist/client.d.ts"
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js",
+      "require": "./dist/client/index.cjs"
     },
     "./cli": {
-      "import": "./dist/cli.js",
-      "types": "./dist/cli.d.ts"
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js",
+      "require": "./dist/cli/index.cjs"
     },
     "./storage/*": {
+      "types": "./dist/storage/*.d.ts",
       "import": "./dist/storage/*.js",
-      "types": "./dist/storage/*.d.ts"
+      "require": "./dist/storage/*.cjs"
     }
   },
   "packageManager": "bun@1.2.20",
@@ -34,13 +38,12 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vite build && npm run types",
+    "build": "vite build",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "test": "bun test",
     "test:cov": "bun test --coverage",
     "cli": "bun run src/cli/main.tsx"
@@ -58,7 +61,8 @@
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.1"
+    "typescript-eslint": "^8.39.1",
+    "vite-plugin-dts": "^4.5.4"
   },
   "dependencies": {
     "eslint-plugin-eslint-comments": "^3.2.0",
