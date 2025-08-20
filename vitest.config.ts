@@ -1,7 +1,7 @@
 /**
  * @file Vitest testing framework configuration
  *
- * This configuration sets up the Vitest test runner for the VectorLite
+ * This configuration sets up the Vitest test runner for the VectorDB
  * project, providing a fast and efficient testing environment. It configures:
  * - Global test utilities availability
  * - Node.js test environment for file system operations

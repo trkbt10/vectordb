@@ -53,6 +53,8 @@ export default [
         "no-restricted-syntax": [
           "warn",
           { selector: "ImportExpression", message: "dynamic import() is prohibited" },
+          { selector: "TSImportType", message: "type import() (TS import type expression) is prohibited" },
+
           {
             selector: "TSInterfaceDeclaration",
             message: "Please use type instead of interface",
@@ -122,18 +124,36 @@ export default [
 
         /* 5. Forbid loading specific test libraries */
         // ES Module imports
-    "no-restricted-imports": [
+        "no-restricted-imports": [
           "error",
           {
             paths: [
-      { name: "bun:test", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-      { name: "vitest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-      { name: "@jest/globals", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-      { name: "jest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-      { name: "mocha", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              {
+                name: "bun:test",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "vitest",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "@jest/globals",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "jest",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "mocha",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
             ],
             patterns: [
-      { group: ["vitest/*", "jest/*", "mocha/*"], message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              {
+                group: ["vitest/*", "jest/*", "mocha/*"],
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
             ],
           },
         ],
@@ -158,12 +178,20 @@ export default [
           "error",
           { object: "jest", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "jest", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
-          { object: "jest", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          {
+            object: "jest",
+            property: "spyOn",
+            message: "Mock APIs are prohibited. Prefer DI or simple fakes instead.",
+          },
           { object: "vi", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           // Bun's bun:test mock helpers
-          { object: "mock", property: "module", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          {
+            object: "mock",
+            property: "module",
+            message: "Mock APIs are prohibited. Prefer DI or simple fakes instead.",
+          },
         ],
       },
     },

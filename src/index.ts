@@ -1,8 +1,9 @@
 /**
- * @file Public entry for Yazawa (VectorDB)
+ * @file Public entrypoint (single canonical import)
  * @remarks
- * Exposes the stable, documented API surface for consumers. Internal or
- * advanced types should be imported from their specific submodules instead.
+ * This module is the only public entrypoint consumers should import from.
+ * It aggregates the DB client and indexing/cluster APIs. Internals remain
+ * organized under src/client/* and src/indexing/*.
  */
 
 /**
@@ -13,23 +14,31 @@
  * @public
  */
 export type { VectorDB } from "./client/types";
-export { create, fromState as from } from "./client/create";
 /**
  * Construction options for VectorDB (dimensions, metric, strategy, etc.)
  * @public
  */
 export type { VectorDBOptions } from "./types";
 /**
- * Query types for VectorDB.search()/find()/findK()
+ * Search result types
  * @public
  */
-export type { SearchOptions, SearchHit } from "./types";
+export type { SearchHit } from "./types";
+/**
+ * Filter-expression types for VectorDB.find/findMany
+ * @public
+ */
+export type { FilterExpr } from "./attr/filter/expr";
+export type { SearchWithExprOptions } from "./attr/search/with_expr";
+export type { FindOptions, FindManyOptions } from "./client/types";
 
 /**
  * Cluster API (persistence + placement via CRUSH)
- * - createCluster: bind IO adapters and expose db/index helpers
- * - ClusterOptions: configure segmentation, shards, replicas, etc.
+ * - createClient: bind IO adapters and expose db/index helpers
+ * - ClientOptions: configure segmentation, shards, replicas, etc.
  * @public
  */
-export type { ClusterOptions } from "./client/cluster";
-export { createCluster } from "./client/cluster";
+export type { ClientOptions } from "./client/index";
+export { connect } from "./client/index";
+// Provide both abbreviated and non-abbreviated type names for ergonomics.
+export type { VectorDB as VectorDatabase } from "./client/types";

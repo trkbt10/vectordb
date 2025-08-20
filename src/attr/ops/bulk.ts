@@ -12,7 +12,7 @@
  * datasets by minimizing function call overhead and enabling better
  * resource allocation strategies.
  */
-import { VectorStoreState, UpsertOptions } from "../../types";
+import { VectorStoreState, UpsertOptions, RowInput } from "../../types";
 import { add, remove } from "./core";
 
 /**
@@ -20,7 +20,7 @@ import { add, remove } from "./core";
  */
 export function upsertMany<TMeta>(
   vl: VectorStoreState<TMeta>,
-  rows: { id: number; vector: Float32Array; meta?: TMeta | null }[],
+  rows: RowInput<TMeta>[],
   opts?: UpsertOptions & { mode?: "best_effort" | "all_or_nothing" },
 ) {
   const res: { ok: number; failed: number; duplicates: number[]; errors: { id: number; reason: string }[] } = {

@@ -17,15 +17,7 @@
 import { bf_add, bf_search } from "../../ann/bruteforce";
 import { hnsw_ensureCapacity, hnsw_add, hnsw_remove, hnsw_search } from "../../ann/hnsw";
 import { ivf_add, ivf_remove, ivf_search } from "../../ann/ivf";
-import {
-  VectorStoreState,
-  UpsertOptions,
-  SearchOptions,
-  SearchHit,
-  HNSWParams,
-  IVFParams,
-  VectorDBOptions,
-} from "../../types";
+import { VectorStoreState, UpsertOptions, SearchOptions, SearchHit, HNSWParams, IVFParams, VectorDBOptions, RowInput } from "../../types";
 import { isHnswVL, isIvfVL, isBfVL } from "../../util/guards";
 import { createState } from "../state/create";
 import * as Store from "../store/store";
@@ -65,11 +57,7 @@ export function add<TMeta>(
 /**
  *
  */
-export function addMany<TMeta>(
-  vl: VectorStoreState<TMeta>,
-  rows: { id: number; vector: Float32Array; meta?: TMeta | null }[],
-  up?: UpsertOptions,
-) {
+export function addMany<TMeta>(vl: VectorStoreState<TMeta>, rows: RowInput<TMeta>[], up?: UpsertOptions) {
   const grew = Store.ensure(vl.store, rows.length);
   if (grew && isHnswVL(vl)) hnsw_ensureCapacity(vl.ann, vl.store._capacity);
   for (const r of rows) add(vl, r.id, r.vector, r.meta ?? null, up);

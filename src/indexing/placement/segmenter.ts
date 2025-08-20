@@ -47,7 +47,7 @@ export async function writeSegments<TMeta>(
       writers.get(pg) ??
       (() => {
         const name = `${base}.pg${pg}.part0`;
-        const s = { writer: new DataSegmentWriter(name), size: 8, part: 0, targetKey };
+        const s: SegWriter = { writer: new DataSegmentWriter(name), size: 8, part: 0, targetKey };
         writers.set(pg, s);
         return s;
       })();

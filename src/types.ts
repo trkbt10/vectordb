@@ -21,12 +21,6 @@
  */
 export type Metric = "cosine" | "l2" | "dot";
 
-/** Options for VectorDB construction. */
-export type VectorDBInit = {
-  dim: number;
-  metric?: Metric; // default: 'cosine'
-  capacity?: number; // initial capacity; doubles on growth
-};
 
 /** Controls add() behavior when id exists. */
 export type UpsertOptions = {
@@ -51,6 +45,15 @@ export type VectorRecord<TMeta> = {
   vector: Float32Array;
   meta: TMeta | null;
 };
+
+/** Input vector shape for writes (meta optional). */
+export type VectorInput<TMeta> = {
+  vector: Float32Array;
+  meta?: TMeta | null;
+};
+
+/** Input row shape for writes (id + vector + optional meta). */
+export type RowInput<TMeta> = { id: number } & VectorInput<TMeta>;
 
 /** Public construction options. */
 export type VectorDBOptions = {

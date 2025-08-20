@@ -10,11 +10,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     lib: {
-      entry: {
-        index: "src/index.ts",
-        db: "src/db.ts",
-        cluster: "src/cluster.ts",
-      },
+      entry: { index: "src/index.ts", client: "src/client/index.ts" },
       formats: ["cjs", "es"],
     },
     rollupOptions: {

@@ -110,7 +110,7 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
     // and comparable search behavior with in-memory operations.
     if (vl0.metric === "cosine") normalizeVectorInPlace(vec);
     vl0.store.data.set(vec, i * vl0.dim);
-    vl0.store.metas[i] = row.meta as TMeta | null;
+    vl0.store.metas[i] = (row.meta as TMeta | null) ?? null;
     vl0.store.pos.set(e.id >>> 0, i);
     vl0.store._count++;
   }
