@@ -1,7 +1,7 @@
-# VectorDB (WIP)
+# vector-db (WIP)
 
-![CI](https://github.com/trkbt10/vectordb/actions/workflows/test.yml/badge.svg)
-![Coverage](https://codecov.io/gh/trkbt10/vectordb/graph/badge.svg)
+![CI](https://github.com/trkbt10/vector-db/actions/workflows/test.yml/badge.svg)
+![Coverage](https://codecov.io/gh/trkbt10/vector-db/graph/badge.svg)
 
 Minimal, dependency‑free vector database with pluggable ANN strategies (bruteforce, HNSW, IVF), attribute filtering, and a clean persistence model (index/data split with CRUSH placement). Runs in Node.js, browsers (OPFS), Electron, and Tauri.
 
@@ -17,33 +17,33 @@ Minimal, dependency‑free vector database with pluggable ANN strategies (brutef
 ## Install
 
 ```bash
-npm install vectordb
+npm install vcdb
 # or
-pnpm add vectordb
+pnpm add vcdb
 # or
-yarn add vectordb
+yarn add vcdb
 ```
 
 CLI (via npx or global install):
 
 ```bash
-npx vectordb          # run once without installing
+npx vcdb          # run once without installing
 # or
-npm install -g vectordb
-vectordb              # launch the interactive CLI
+npm install -g vcdb
+vcdb              # launch the interactive CLI
 ```
 
 ## Quick Start (API)
 
 ```ts
-import { connect } from "vectordb";
-import { createNodeFileIO } from "vectordb/storage/node";
+import { connect } from "vcdb";
+import { createNodeFileIO } from "vcdb/storage/node";
 
 // Open existing by name ("db"); if missing, create then save
 const client = await connect<{ tag?: string }>({
   storage: {
-    index: createNodeFileIO("./.vectordb"),
-    data: createNodeFileIO("./.vectordb/data"),
+    index: createNodeFileIO("./.vcdb"),
+    data: createNodeFileIO("./.vcdb/data"),
   },
   database: { dim: 3, metric: "cosine", strategy: "bruteforce" },
   index: { name: "db", shards: 1, segmented: true },
@@ -63,15 +63,15 @@ await client.index.saveState(client.state, { baseName: "db" });
 
 Import per environment:
 
-- Node.js: `import { createNodeFileIO } from "vectordb/storage/node"`
-- Memory: `import { createMemoryFileIO } from "vectordb/storage/memory"`
-- OPFS (browser): `import { saveToOPFS, loadFromOPFS } from "vectordb/storage/opfs"`
+- Node.js: `import { createNodeFileIO } from "vcdb/storage/node"`
+- Memory: `import { createMemoryFileIO } from "vcdb/storage/memory"`
+- OPFS (browser): `import { saveToOPFS, loadFromOPFS } from "vcdb/storage/opfs"`
 - S3: implement a `FileIO` using the AWS SDK (see example below)
 
 All adapters implement the same `FileIO` interface:
 
 ```ts
-import type { FileIO } from "vectordb/storage/types";
+import type { FileIO } from "vcdb/storage/types";
 ```
 
 ## Concepts
@@ -88,8 +88,8 @@ This example shows how to split data segments across S3 using CRUSH (shards/repl
 Client (Node.js or server):
 
 ```ts
-import { connect } from "vectordb";
-import type { FileIO } from "vectordb/storage/types";
+import { connect } from "vcdb";
+import type { FileIO } from "vcdb/storage/types";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({ region: process.env.AWS_REGION });
