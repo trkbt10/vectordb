@@ -1,5 +1,5 @@
 {
-  "name": "vectordb",
+  "name": "vector-db",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.cjs",
@@ -30,7 +30,7 @@
   "packageManager": "bun@1.2.20",
   "sideEffects": false,
   "bin": {
-    "vectordb": "bin/vectordb.cjs"
+    "vector-db": "bin/vector-db.cjs"
   },
   "files": [
     "dist",
