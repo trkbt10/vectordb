@@ -204,10 +204,3 @@ export function applyWalWithIndex<TMeta>(
     index.setAttrs(r.id, projector(meta));
   }
 }
-/**
- * WAL (Write-Ahead Log) for idempotent upserts/removals/meta changes.
- *
- * Why: Provide durable, append-only change recording that can be applied to a
- * fresh in-memory instance and optionally projected into attribute indices
- * without coupling to persistence backends.
- */
