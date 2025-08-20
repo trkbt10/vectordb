@@ -30,7 +30,7 @@ function App() {
   useEffect(() => {
     if (state.selectedTemplate) {
       const initialStats: ShardStats = {};
-      state.selectedTemplate.map.targets.forEach((target) => {
+      state.selectedTemplate!.map.targets.forEach((target) => {
         initialStats[target.key] = { count: 0, percentage: 0 };
       });
       setState((prev) => ({ ...prev, stats: initialStats }));
@@ -44,7 +44,7 @@ function App() {
     const interval = setInterval(() => {
       // Generate random ID
       const id = Math.floor(Math.random() * 1000000);
-      const result = crushLocate(id, state.selectedTemplate.map);
+      const result = crushLocate(id, state.selectedTemplate!.map);
       const shard = result.primaries[0] || "unknown";
 
       const access: ShardAccess = {
@@ -113,11 +113,12 @@ function App() {
     );
   }
 
+  const tpl = state.selectedTemplate!;
   const currentAccess = state.accesses[state.accesses.length - 1];
 
   return (
     <Box padding={1} flexDirection="column">
-      <MapInfo template={state.selectedTemplate} />
+      <MapInfo template={tpl} />
       
       <Box marginTop={2} flexDirection="row" gap={4}>
         <Box flexDirection="column" width="60%">

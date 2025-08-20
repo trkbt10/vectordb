@@ -8,8 +8,9 @@ import path from "node:path";
 import React, { useEffect, useState } from "react";
 
 import { createAttrIndex } from "../../../src/attr/index";
-import { create, createCluster } from "../../../src/index";
+import { connect } from "../../../src/client/index";
 import { createNodeFileIO } from "../../../src/persist/node";
+import { createMemoryFileIO } from "../../../src/persist/memory";
 import { DOCS } from "./DOCS";
 
 import { Row, Section } from "./components";
@@ -63,10 +64,22 @@ export function App({ strategy }: { strategy: AppStrategy }) {
 
         setStatus("indexing");
         setMessage("Indexing documents and attributes");
-        const db = create<Meta>({ dim: d0, metric, strategy, hnsw: hnswParams, ivf: ivfParams });
-        const dbBF = create<Meta>({ dim: d0, metric, strategy: "bruteforce" });
-        const dbHNSW = create<Meta>({ dim: d0, metric, strategy: "hnsw", hnsw: hnswParams });
-        const dbIVF = create<Meta>({ dim: d0, metric, strategy: "ivf", ivf: ivfParams });
+        const db = await connect<Meta>({
+          storage: { index: createMemoryFileIO(), data: createMemoryFileIO() },
+          database: { dim: d0, metric, strategy, hnsw: hnswParams, ivf: ivfParams },
+        });
+        const dbBF = await connect<Meta>({
+          storage: { index: createMemoryFileIO(), data: createMemoryFileIO() },
+          database: { dim: d0, metric, strategy: "bruteforce" },
+        });
+        const dbHNSW = await connect<Meta>({
+          storage: { index: createMemoryFileIO(), data: createMemoryFileIO() },
+          database: { dim: d0, metric, strategy: "hnsw", hnsw: hnswParams },
+        });
+        const dbIVF = await connect<Meta>({
+          storage: { index: createMemoryFileIO(), data: createMemoryFileIO() },
+          database: { dim: d0, metric, strategy: "ivf", ivf: ivfParams },
+        });
         const idx = createAttrIndex(attrStrategy);
 
         for (let i = 0; i < DOCS.length; i++) {
@@ -80,10 +93,10 @@ export function App({ strategy }: { strategy: AppStrategy }) {
             year: d.year,
           };
 
-          db.set(d.id, embedding, meta);
-          dbBF.set(d.id, embedding, meta);
-          dbHNSW.set(d.id, embedding, meta);
-          dbIVF.set(d.id, embedding, meta);
+          db.set(d.id, { vector: embedding, meta });
+          dbBF.set(d.id, { vector: embedding, meta });
+          dbHNSW.set(d.id, { vector: embedding, meta });
+          dbIVF.set(d.id, { vector: embedding, meta });
           idx.setAttrs(d.id, { category: d.category, tags: d.tags, author: d.author, year: d.year });
         }
 
@@ -95,7 +108,10 @@ export function App({ strategy }: { strategy: AppStrategy }) {
           const [qv] = await embedOpenAI([q], key);
           const base = new Float32Array(qv);
           const hs = runSearch(db, idx, strategy, base, expr, { hnswFilterMode, hnswBridge, hnswSeeds });
-          results.push({ q, results: hs.map((h) => ({ id: h.id, title: h.meta?.title ?? "", score: h.score })) });
+          results.push({
+            q,
+            results: hs.map((h) => ({ id: h.id, title: (h.meta as Meta | null)?.title ?? "", score: h.score })),
+          });
         }
         setHits(results);
 
@@ -119,35 +135,40 @@ export function App({ strategy }: { strategy: AppStrategy }) {
         // Create cluster environment with file persistence
         const indexRoot = outPath;
         const dataRoot = path.join(outPath, "data");
-        const { index } = createCluster<Meta>(
-          {
+        const { index } = await connect<Meta>({
+          storage: {
             index: createNodeFileIO(indexRoot),
             data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
           },
-          {
+          index: {
+            name: "db",
             shards: 1,
             segmented: true,
             segmentBytes: 1 << 15,
             includeAnn: false,
           },
-        );
+          onMissing: async ({ index }) => (await index.openState({ baseName: "db" })) as any,
+        });
 
         // Save the database
-        await index.save(db, { baseName: "db" });
+        await index.saveState(db.state, { baseName: "db" });
 
         // Reload from disk
         const db2State = await index.openState({ baseName: "db" });
-        const { db: dbFactory } = createCluster<Meta>({
-          index: createNodeFileIO(indexRoot),
-          data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+        const db2 = await connect<Meta>({
+          storage: {
+            index: createNodeFileIO(indexRoot),
+            data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+          },
+          index: { name: "db" },
+          onMissing: async ({ index }) => (await index.openState({ baseName: "db" })) as any,
         });
-        const db2 = dbFactory.from(db2State);
 
         const [qv1] = await embedOpenAI(["生成AIの実務活用と埋め込み検索"], key);
-        const h2 = db2.search(new Float32Array(qv1), { k: 3 });
+        const h2 = db2.findMany(new Float32Array(qv1), { k: 3 });
         results.push({
           q: "Reload sanity",
-          results: h2.map((h) => ({ id: h.id, title: h.meta?.title ?? "", score: h.score })),
+          results: h2.map((h: any) => ({ id: h.id, title: (h.meta as any)?.title ?? "", score: h.score })),
         });
         setHits(results);
 

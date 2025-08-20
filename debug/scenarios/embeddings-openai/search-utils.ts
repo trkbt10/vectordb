@@ -3,31 +3,28 @@
  */
 
 import type { AttrIndex } from "../../../src/attr/index";
-import { compilePredicate } from "../../../src/attr/filter/expr";
 import type { FilterExpr } from "../../../src/attr/filter/expr";
-import type { VLiteClient } from "../../../src/index";
+import type { VectorDB } from "../../../src/index";
 import type { EvalItem } from "./types";
 
 export function runSearch<TMeta>(
-  vl: VLiteClient<TMeta>,
+  vl: VectorDB<TMeta>,
   idx: AttrIndex | null,
   strategy: "bruteforce" | "hnsw" | "ivf",
   q: Float32Array,
   expr?: FilterExpr,
   opts?: { hnswFilterMode?: "soft" | "hard"; hnswSeeds?: "auto" | number; hnswBridge?: number },
 ) {
-  const searchOpts: Parameters<typeof vl.search>[1] = { k: 5 };
-  if (expr) {
-    const pred = compilePredicate(expr);
-    searchOpts.filter = (id, meta) => pred(id, meta, idx ? idx.getAttrs(id) : undefined);
-  }
-  return vl.search(q, searchOpts);
+  const searchOpts: Parameters<typeof vl.findMany>[1] = expr
+    ? { k: 5, expr, exprOpts: { index: idx, hnsw: { mode: opts?.hnswFilterMode, seeds: opts?.hnswSeeds, bridgeBudget: opts?.hnswBridge } } }
+    : { k: 5 };
+  return vl.findMany(q, searchOpts);
 }
 
 export function evaluateRecall<TMeta>(
-  dbBF: VLiteClient<TMeta>,
-  dbHNSW: VLiteClient<TMeta>,
-  dbIVF: VLiteClient<TMeta>,
+  dbBF: VectorDB<TMeta>,
+  dbHNSW: VectorDB<TMeta>,
+  dbIVF: VectorDB<TMeta>,
   queries: string[],
   embeddings: Float32Array[],
 ): EvalItem[] {
@@ -36,21 +33,21 @@ export function evaluateRecall<TMeta>(
 
   queries.forEach((q, idx) => {
     const base = embeddings[idx];
-    const bf = dbBF.search(base, { k });
-    const hs = dbHNSW.search(base, { k });
-    const iv = dbIVF.search(base, { k });
-    const bfIds = bf.map((x) => x.id);
-    const hnswIds = hs.map((x) => x.id);
-    const ivfIds = iv.map((x) => x.id);
+    const bf = dbBF.findMany(base, { k });
+    const hs = dbHNSW.findMany(base, { k });
+    const iv = dbIVF.findMany(base, { k });
+    const bfIds = bf.map((x: { id: number }) => x.id);
+    const hnswIds = hs.map((x: { id: number }) => x.id);
+    const ivfIds = iv.map((x: { id: number }) => x.id);
     const bfSet = new Set(bfIds);
     const hsSet = new Set(hnswIds);
     const ivfSet = new Set(ivfIds);
-    const inter = bfIds.filter((id) => hsSet.has(id));
-    const missing = bfIds.filter((id) => !hsSet.has(id));
-    const extra = hnswIds.filter((id) => !bfSet.has(id));
+    const inter = bfIds.filter((id: number) => hsSet.has(id));
+    const missing = bfIds.filter((id: number) => !hsSet.has(id));
+    const extra = hnswIds.filter((id: number) => !bfSet.has(id));
     const rNum = inter.length / k;
     const recall = `${inter.length}/${k} (${rNum.toFixed(2)})`;
-    const interI = bfIds.filter((id) => ivfSet.has(id));
+    const interI = bfIds.filter((id: number) => ivfSet.has(id));
     const rINum = interI.length / k;
     const ivfRecall = `${interI.length}/${k} (${rINum.toFixed(2)})`;
     evalOut.push({
