@@ -1,4 +1,4 @@
-# VectorDB
+# VectorDB (WIP)
 
 ![CI](https://github.com/trkbt10/vectordb/actions/workflows/test.yml/badge.svg)
 ![Coverage](https://codecov.io/gh/trkbt10/vectordb/graph/badge.svg)
@@ -152,11 +152,11 @@ const client = await connect<{ tag?: string }>({
   database: { dim: 128, metric: "cosine", strategy: "hnsw", hnsw: { M: 16, efSearch: 50 } },
   index: {
     name: "products",
-    shards: 3,          // number of CRUSH targets
-    replicas: 2,        // write replicas per segment
-    pgs: 64,            // placement groups (higher → smoother distribution)
-    segmented: true,    // write segment files
-    includeAnn: true,   // persist ANN when saving
+    shards: 3, // number of CRUSH targets
+    replicas: 2, // write replicas per segment
+    pgs: 64, // placement groups (higher → smoother distribution)
+    segmented: true, // write segment files
+    includeAnn: true, // persist ANN when saving
   },
 });
 
@@ -173,6 +173,7 @@ await client.index.saveState(client.state, { baseName: "products" });
 Alternative: If you prefer presigned URLs, front your S3 with Lambda/API Gateway that returns signed GET/PUT/DELETE URLs, then implement a FileIO that fetches those URLs.
 
 Notes:
+
 - CRUSH uses `shards`, `replicas`, and `pgs` to place segments across `storage.data(targetKey)` destinations.
 - Index files typically live in a single place (one FileIO) while data segments fan out.
 - For read paths, `index.openState({ baseName })` resolves segment locations via manifest, falling back to CRUSH if needed.
