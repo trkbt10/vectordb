@@ -9,7 +9,7 @@
  */
 import { createState } from "./create";
 
-describe("vectorlite/create", () => {
+describe("VectorDB/create", () => {
   it("creates bruteforce by default with cosine metric", () => {
     const vl = createState({ dim: 3 });
     expect(vl.dim).toBe(3);

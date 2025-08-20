@@ -8,8 +8,7 @@ import path from "node:path";
 import React, { useEffect, useState } from "react";
 
 import { createAttrIndex } from "../../../src/attr/index";
-import { createVectorLite, vlite } from "../../../src/index";
-import type { VLiteClient } from "../../../src/index";
+import { create, createCluster } from "../../../src/index";
 import { createNodeFileIO } from "../../../src/persist/node";
 import { DOCS } from "../../../spec/__mocks__/DOCS";
 
@@ -64,10 +63,10 @@ export function App({ strategy }: { strategy: AppStrategy }) {
 
         setStatus("indexing");
         setMessage("Indexing documents and attributes");
-        const db = createVectorLite<Meta>({ dim: d0, metric, strategy, hnsw: hnswParams, ivf: ivfParams });
-        const dbBF = createVectorLite<Meta>({ dim: d0, metric, strategy: "bruteforce" });
-        const dbHNSW = createVectorLite<Meta>({ dim: d0, metric, strategy: "hnsw", hnsw: hnswParams });
-        const dbIVF = createVectorLite<Meta>({ dim: d0, metric, strategy: "ivf", ivf: ivfParams });
+        const db = create<Meta>({ dim: d0, metric, strategy, hnsw: hnswParams, ivf: ivfParams });
+        const dbBF = create<Meta>({ dim: d0, metric, strategy: "bruteforce" });
+        const dbHNSW = create<Meta>({ dim: d0, metric, strategy: "hnsw", hnsw: hnswParams });
+        const dbIVF = create<Meta>({ dim: d0, metric, strategy: "ivf", ivf: ivfParams });
         const idx = createAttrIndex(attrStrategy);
 
         for (let i = 0; i < DOCS.length; i++) {
@@ -81,10 +80,10 @@ export function App({ strategy }: { strategy: AppStrategy }) {
             year: d.year,
           };
 
-          db.add(d.id, embedding, meta);
-          dbBF.add(d.id, embedding, meta);
-          dbHNSW.add(d.id, embedding, meta);
-          dbIVF.add(d.id, embedding, meta);
+          db.set(d.id, embedding, meta);
+          dbBF.set(d.id, embedding, meta);
+          dbHNSW.set(d.id, embedding, meta);
+          dbIVF.set(d.id, embedding, meta);
           idx.setAttrs(d.id, { category: d.category, tags: d.tags, author: d.author, year: d.year });
         }
 
@@ -116,31 +115,34 @@ export function App({ strategy }: { strategy: AppStrategy }) {
         setMessage("Saving snapshot and reloading");
         const outPath = path.join(process.cwd(), ".tmp", "emb-openai-out", strategy);
         await mkdir(outPath, { recursive: true });
-        
-        // Create vlite environment with file persistence
+
+        // Create cluster environment with file persistence
         const indexRoot = outPath;
         const dataRoot = path.join(outPath, "data");
-        const { index } = vlite<Meta>({
-          index: createNodeFileIO(indexRoot),
-          data: (key: string) => createNodeFileIO(path.join(dataRoot, key))
-        }, {
-          shards: 1,
-          segmented: true,
-          segmentBytes: 1 << 15,
-          includeAnn: false
-        });
-        
+        const { index } = createCluster<Meta>(
+          {
+            index: createNodeFileIO(indexRoot),
+            data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+          },
+          {
+            shards: 1,
+            segmented: true,
+            segmentBytes: 1 << 15,
+            includeAnn: false,
+          },
+        );
+
         // Save the database
         await index.save(db, { baseName: "db" });
-        
+
         // Reload from disk
         const db2State = await index.openState({ baseName: "db" });
-        const { db: dbFactory } = vlite<Meta>({
+        const { db: dbFactory } = createCluster<Meta>({
           index: createNodeFileIO(indexRoot),
-          data: (key: string) => createNodeFileIO(path.join(dataRoot, key))
+          data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
         });
         const db2 = dbFactory.from(db2State);
-        
+
         const [qv1] = await embedOpenAI(["生成AIの実務活用と埋め込み検索"], key);
         const h2 = db2.search(new Float32Array(qv1), { k: 3 });
         results.push({
@@ -160,7 +162,7 @@ export function App({ strategy }: { strategy: AppStrategy }) {
 
   return (
     <Box flexDirection="column">
-      <Text color="magentaBright">VectorLite × OpenAI Embeddings Demo</Text>
+      <Text color="magentaBright">VectorDB × OpenAI Embeddings Demo</Text>
       <Text color="gray">Cached fetch + friendly Ink UI</Text>
 
       <Section title="Environment">

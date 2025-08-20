@@ -1,9 +1,9 @@
 /**
- * @file VectorLite instance creation and initialization
+ * @file VectorDB instance creation and initialization
  *
- * This module handles the creation of new VectorLite instances with proper
+ * This module handles the creation of new VectorDB instances with proper
  * initialization of all components. It provides:
- * - Factory function for creating VectorLite state with chosen strategy
+ * - Factory function for creating VectorDB state with chosen strategy
  * - Validation of configuration parameters (dimensions, metrics, strategies)
  * - Proper initialization of storage and ANN strategy components
  * - Type-safe construction with compile-time guarantees

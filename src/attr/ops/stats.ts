@@ -1,8 +1,8 @@
 /**
- * @file Statistics and diagnostics for VectorLite instances
+ * @file Statistics and diagnostics for VectorDB instances
  *
  * This module provides observability tools for understanding the state and
- * performance characteristics of VectorLite indices. It offers read-only
+ * performance characteristics of VectorDB indices. It offers read-only
  * statistics gathering, performance diagnostics, and actionable suggestions
  * without modifying the underlying data structures. This separation ensures
  * that monitoring and debugging operations have zero impact on the runtime
@@ -48,15 +48,15 @@ export function stats<TMeta>(vl: VectorStoreState<TMeta>): StatsOut {
     // eslint-disable-next-line no-restricted-syntax -- Performance: counting total edges in HNSW
     let edges = 0;
     const nodes = vl.store._count;
-     
+
     for (let l = 0; l <= levels; l++) {
       const layer = h.links[l] || [];
-       
+
       for (let i = 0; i < layer.length; i++) edges += layer[i]?.length || 0;
     }
     // eslint-disable-next-line no-restricted-syntax -- Performance: counting tombstones
     let dead = 0;
-     
+
     for (let i = 0; i < nodes; i++) if (h.tombstone[i] === 1) dead++;
     const tomb = nodes ? dead / nodes : 0;
     out.hnsw = { levels, avgDeg: nodes ? edges / Math.max(1, nodes) : 0, tombstoneRatio: tomb };

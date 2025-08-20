@@ -1,7 +1,7 @@
 /**
  * @file Core vector database operations
  *
- * This module implements the fundamental operations for VectorLite, providing
+ * This module implements the fundamental operations for VectorDB, providing
  * the essential CRUD and search functionality. Key operations include:
  * - Vector insertion with automatic index updates
  * - Vector retrieval by ID with metadata

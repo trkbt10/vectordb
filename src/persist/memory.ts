@@ -2,7 +2,7 @@
  * @file In-memory file system implementation for testing and development
  *
  * This module provides a fully in-memory implementation of the FileIO interface,
- * enabling VectorLite to run without any file system dependencies. Features:
+ * enabling VectorDB to run without any file system dependencies. Features:
  * - Complete FileIO compatibility for seamless testing
  * - Isolated storage that doesn't affect the real file system
  * - Support for pre-populating files for test scenarios

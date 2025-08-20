@@ -1,5 +1,5 @@
 /**
- * @file Parameter tuning and optimization for VectorLite indices
+ * @file Parameter tuning and optimization for VectorDB indices
  *
  * This module provides automated parameter tuning capabilities for optimizing
  * the recall/latency trade-offs in vector search indices. It performs grid

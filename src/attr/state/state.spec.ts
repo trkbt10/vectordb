@@ -5,7 +5,7 @@
  */
 import { createState } from "./create";
 
-describe("vectorlite/state", () => {
+describe("VectorDB/state", () => {
   it("exposes expected keys", () => {
     const vl = createState({ dim: 3, strategy: "bruteforce" });
     expect(typeof vl.dim).toBe("number");

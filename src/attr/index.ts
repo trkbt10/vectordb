@@ -8,7 +8,7 @@
  * - Integration with filter expressions for query optimization
  * - Type-safe attribute operations with proper null handling
  *
- * The attribute index allows VectorLite to efficiently combine vector similarity
+ * The attribute index allows VectorDB to efficiently combine vector similarity
  * search with traditional database-style filtering, dramatically reducing the
  * search space before expensive similarity calculations. This is crucial for
  * real-world applications where vectors have associated metadata (tags, timestamps,
@@ -45,7 +45,7 @@ export type AttrIndex = {
 
 /**
  * Create an attribute index instance with a given strategy.
- * 
+ *
  * @param strategy - The indexing strategy to use:
  *   - "basic": In-memory hash maps, suitable for small to medium datasets
  *   - "bitmap": Bitmap-based indexing for memory-efficient operations
@@ -61,4 +61,3 @@ export function createAttrIndex(strategy: "basic" | "bitmap" = "basic"): AttrInd
       throw new Error(`Unsupported attribute index strategy: ${String(strategy)}. Use 'basic' | 'bitmap'.`);
   }
 }
-

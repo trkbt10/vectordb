@@ -10,7 +10,7 @@ import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
 import { hnswCompactAndRebuild } from "../attr/ops/maintain";
 import { createState } from "../attr/state/create";
 
-test("VectorLite HNSW: searches and roundtrips", async () => {
+test("VectorDB HNSW: searches and roundtrips", async () => {
   const dim = 4;
   const db = createState<{ tag: string }>({
     dim,

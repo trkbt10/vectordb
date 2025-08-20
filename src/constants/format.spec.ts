@@ -5,7 +5,7 @@
  */
 import { encodeMetric, decodeMetric, encodeStrategy, decodeStrategy, METRIC_CODES, STRATEGY_CODES } from "./format";
 
-describe("vectorlite/format", () => {
+describe("VectorDB/format", () => {
   it("metric encode/decode roundtrip", () => {
     for (const code of Object.values(METRIC_CODES)) {
       const m = decodeMetric(code);

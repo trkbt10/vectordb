@@ -2,7 +2,7 @@
  * @file IVF retraining and evaluation wrappers around ann/ivf.
  *
  * Why:
- * - Provide a thin, public VectorLite ops layer that delegates to `ann/ivf`.
+ * - Provide a thin, public VectorDB ops layer that delegates to `ann/ivf`.
  * - Centralize strategy-guarding: if `vl.strategy !== 'ivf'`, return safe no-op
  *   results rather than throwing, keeping call sites simple and consistent.
  * - Keep policy and orchestration (operator-triggered training/evaluation) out

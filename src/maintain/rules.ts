@@ -1,7 +1,7 @@
 /**
- * @file Rule-based monitoring and alerting system for VectorLite operations
+ * @file Rule-based monitoring and alerting system for VectorDB operations
  *
- * This module provides a flexible framework for monitoring VectorLite instances
+ * This module provides a flexible framework for monitoring VectorDB instances
  * and generating operational alerts based on configurable rules. Key features:
  *
  * - Performance monitoring: Detect when bruteforce search becomes inefficient
@@ -13,7 +13,7 @@
  * - Extensible rule system: Register custom rules to monitor application-specific
  *   metrics and generate alerts based on your requirements
  *
- * The rule system operates in a read-only manner, analyzing VectorLite state
+ * The rule system operates in a read-only manner, analyzing VectorDB state
  * without making modifications. This allows safe monitoring in production
  * environments where operators can review alerts and decide on actions.
  *

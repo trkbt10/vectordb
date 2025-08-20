@@ -1,15 +1,15 @@
 /**
- * @file Node.js file system persistence adapter for VectorLite
+ * @file Node.js file system persistence adapter for VectorDB
  *
  * This module provides file I/O operations specifically for Node.js environments,
- * enabling VectorLite to persist vector databases to disk. It implements:
+ * enabling VectorDB to persist vector databases to disk. It implements:
  *
  * - Snapshot persistence: Save and load complete database states
  * - Write-Ahead Logging (WAL): Append-only log for durability and crash recovery
  * - Atomic writes: Use temp file + rename pattern for safe updates
  * - FileIO interface: Consistent API that can be swapped with other adapters (e.g., OPFS)
  *
- * The module is used by VectorLite when running in Node.js to provide durable
+ * The module is used by VectorDB when running in Node.js to provide durable
  * storage capabilities, ensuring vector data survives process restarts and
  * enabling incremental updates through the WAL mechanism.
  */

@@ -1,8 +1,8 @@
 /**
- * @file Core type definitions for the VectorLite system
+ * @file Core type definitions for the VectorDB system
  *
  * This module defines the fundamental types and interfaces used throughout the
- * VectorLite vector database. It includes:
+ * VectorDB vector database. It includes:
  * - Metric types for similarity/distance calculations
  * - Configuration options for database initialization
  * - Search parameters and result types
@@ -10,7 +10,7 @@
  * - IVF (Inverted File) index parameters
  * - Common interfaces for vector operations
  *
- * These types form the public API contract for VectorLite, ensuring type safety
+ * These types form the public API contract for VectorDB, ensuring type safety
  * and consistency across all modules.
  */
 
@@ -21,8 +21,8 @@
  */
 export type Metric = "cosine" | "l2" | "dot";
 
-/** Options for VectorLite construction. */
-export type VectorLiteInit = {
+/** Options for VectorDB construction. */
+export type VectorDBInit = {
   dim: number;
   metric?: Metric; // default: 'cosine'
   capacity?: number; // initial capacity; doubles on growth
@@ -61,7 +61,7 @@ export type VectorDBOptions = {
   hnsw?: HNSWParams;
   ivf?: IVFParams;
 };
-// Backward-compatible alias for internal callers; prefer VectorDBOptions
+// Backward-compatible alias for external callers; prefer VectorDBOptions
 export type VectorLiteOptions = VectorDBOptions;
 
 /** HNSW algorithm parameters. */
@@ -80,7 +80,7 @@ export type IVFParams = {
 };
 
 // ---------------------------------------------------------------------------
-// VectorLite state types (moved from src/vectorlite/state.ts)
+// VectorDB state types (moved from src/VectorDB/state.ts)
 
 import type { BruteforceState } from "./ann/bruteforce";
 import type { HNSWState } from "./ann/hnsw";

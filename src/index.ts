@@ -19,6 +19,11 @@ export { create, fromState as from } from "./client/create";
  * @public
  */
 export type { VectorDBOptions } from "./types";
+/**
+ * Query types for VectorDB.search()/find()/findK()
+ * @public
+ */
+export type { SearchOptions, SearchHit } from "./types";
 
 /**
  * Cluster API (persistence + placement via CRUSH)

@@ -1,8 +1,8 @@
 /**
- * @file Browser Origin Private File System (OPFS) persistence adapter for VectorLite
+ * @file Browser Origin Private File System (OPFS) persistence adapter for VectorDB
  *
  * This module provides file I/O operations for browser environments using the
- * modern OPFS API, enabling VectorLite to persist data in web applications. It offers:
+ * modern OPFS API, enabling VectorDB to persist data in web applications. It offers:
  *
  * - Browser-native persistence: Store vector databases directly in the browser's
  *   private file system for durability across sessions
@@ -13,7 +13,7 @@
  * - Fallback strategies: Gracefully handles browsers that don't support certain
  *   OPFS features (e.g., keepExistingData for appends)
  *
- * This adapter enables VectorLite to work as a fully persistent vector database
+ * This adapter enables VectorDB to work as a fully persistent vector database
  * in browser environments, making it suitable for offline-first applications,
  * PWAs, and client-side ML applications that need durable vector storage.
  */

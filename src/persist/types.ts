@@ -8,7 +8,7 @@
  * - Append operations for write-ahead logging (WAL)
  * - Type conversions between ArrayBuffer and Uint8Array
  *
- * The abstraction allows VectorLite to work seamlessly across environments
+ * The abstraction allows VectorDB to work seamlessly across environments
  * while maintaining consistent persistence semantics and enabling features
  * like crash recovery and transactional guarantees.
  */

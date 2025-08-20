@@ -1,7 +1,7 @@
 /**
- * @file Maintenance operations for VectorLite indices and storage
+ * @file Maintenance operations for VectorDB indices and storage
  *
- * This module provides explicit maintenance operations for optimizing VectorLite
+ * This module provides explicit maintenance operations for optimizing VectorDB
  * performance and storage efficiency. It includes compaction (removing tombstoned
  * entries), full index rebuilds, IVF retraining, and capacity management. All
  * operations are designed to be explicitly invoked by operators rather than
@@ -37,7 +37,7 @@ export function hnswCompactAndRebuild<TMeta>(vl: VectorStoreState<TMeta>): numbe
   if (n === 0) return 0;
   // eslint-disable-next-line no-restricted-syntax -- Performance: counting alive vectors for compaction
   let alive = 0;
-   
+
   for (let i = 0; i < n; i++) {
     if (!h.tombstone[i]) alive++;
   }
@@ -81,7 +81,7 @@ export function compactStore<TMeta>(
     const n = vl.store._count;
     // eslint-disable-next-line no-restricted-syntax -- Performance: counting dead vectors
     let dead = 0;
-     
+
     for (let i = 0; i < n; i++) if (h.tombstone[i] === 1) dead++;
     if (n > 0 && dead / n > ratio) rebuilt = hnswCompactAndRebuild(vl);
   }

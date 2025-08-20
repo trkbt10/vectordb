@@ -1,5 +1,5 @@
 /**
- * @file VectorLite wrappers for separated index/data persistence
+ * @file VectorDB wrappers for separated index/data persistence
  */
 
 import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../../indexing/runtime/manager";

@@ -1,8 +1,8 @@
 /**
- * @file Binary I/O utilities for VectorLite serialization
+ * @file Binary I/O utilities for VectorDB serialization
  *
  * This module provides low-level binary reading and writing capabilities used
- * throughout VectorLite for efficient data serialization. Key features:
+ * throughout VectorDB for efficient data serialization. Key features:
  *
  * - Little-endian format: Consistent byte ordering across platforms for
  *   interoperability between different architectures
@@ -13,7 +13,7 @@
  * - Zero dependencies: Pure JavaScript implementation using native ArrayBuffer
  *   and DataView APIs for maximum compatibility
  *
- * Used internally by VectorLite's persistence layer to serialize:
+ * Used internally by VectorDB's persistence layer to serialize:
  * - Vector data and metadata
  * - Index structures (HNSW graphs, IVF clusters)
  * - Write-Ahead Log (WAL) entries

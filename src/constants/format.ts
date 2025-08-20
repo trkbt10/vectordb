@@ -1,7 +1,7 @@
 /**
  * @file Binary serialization format definitions and codecs
  *
- * This module defines the binary format specification for VectorLite persistence,
+ * This module defines the binary format specification for VectorDB persistence,
  * ensuring consistent and type-safe serialization across versions. Features:
  * - Magic number (VLIT) for file format identification
  * - Version number for forward compatibility

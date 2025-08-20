@@ -28,7 +28,7 @@ async function ensureDir(p: string) {
 
 /**
  * Cache-aware fetch that returns raw bytes.
- * - Namespaced directory under os.tmpdir(): vectorlite-cache/<namespace>/
+ * - Namespaced directory under os.tmpdir(): VectorDB-cache/<namespace>/
  * - Key derived from method+url+body+keyHint (headers are ignored to avoid leaking secrets).
  * - Stored as <hash>.bin
  */
@@ -48,7 +48,7 @@ export async function cachedFetchBytes(
   }
   const key = `v1|${method}|${url}|${bodyStr}|${keyHint ?? ""}`;
   const h = hashKey(key);
-  const dir = path.join(os.tmpdir(), "vectorlite-cache", namespace);
+  const dir = path.join(os.tmpdir(), "VectorDB-cache", namespace);
   const file = path.join(dir, `${h}.bin`);
 
   try {

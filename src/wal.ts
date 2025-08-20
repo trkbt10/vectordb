@@ -2,7 +2,7 @@
  * @file Write-Ahead Log (WAL) implementation for crash recovery
  *
  * This module implements a Write-Ahead Log system that ensures durability
- * and crash recovery for VectorLite operations. Key features:
+ * and crash recovery for VectorDB operations. Key features:
  * - Binary log format with magic number and version for validation
  * - Support for all mutation operations (upsert, remove, setMeta)
  * - Efficient binary encoding with little-endian format
@@ -158,7 +158,7 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
   return out;
 }
 
-/** Apply a WAL buffer to a VectorLite instance (idempotent upserts). */
+/** Apply a WAL buffer to a VectorDB instance (idempotent upserts). */
 export function applyWal<TMeta>(vl: VectorStoreState<TMeta>, walBytes: Uint8Array): void {
   const records = decodeWal(walBytes);
   for (const r of records) {

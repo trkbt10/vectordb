@@ -1,5 +1,5 @@
 /**
- * @file Consistency checking and repair operations for VectorLite
+ * @file Consistency checking and repair operations for VectorDB
  *
  * This module provides tools to detect and fix inconsistencies between the primary
  * vector store and secondary indices (IVF, HNSW). These inconsistencies can arise

@@ -1,6 +1,6 @@
 # OpenAI Embeddings Scenario
 
-This scenario demonstrates using OpenAI embeddings with VectorLite for semantic search.
+This scenario demonstrates using OpenAI embeddings with VectorDB for semantic search.
 
 ## File Structure
 
@@ -22,16 +22,19 @@ The code has been organized into modular files:
 ### Prerequisites
 
 Set your OpenAI API key:
+
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
 
 ### Run Bruteforce Strategy
+
 ```bash
 bun run --env-file=.env debug/scenarios/embeddings-openai/run-bruteforce.tsx
 ```
 
 ### Run HNSW Strategy
+
 ```bash
 bun run --env-file=.env debug/scenarios/embeddings-openai/run-hnsw.tsx
 ```
