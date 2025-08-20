@@ -4,9 +4,13 @@
  */
 import type { ClientWithDatabase } from "../../../client/index";
 
+export type OpenInput =
+  | { kind: "folder"; indexRoot: string; dataRoot: string; name: string }
+  | { kind: "config"; path: string };
+
 export type Step =
-  | { id: "form"; indexRoot: string; dataRoot: string }
-  | { id: "loading"; indexRoot: string; dataRoot: string }
+  | { id: "form" }
+  | { id: "loading"; input: OpenInput }
   | { id: "ready"; ctx: ClusterCtx }
   | { id: "error"; msg: string };
 
@@ -14,4 +18,3 @@ export type ClusterCtx = {
   name: string;
   client: ClientWithDatabase<unknown>;
 };
-
