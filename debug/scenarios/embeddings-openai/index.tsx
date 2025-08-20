@@ -1,7 +1,19 @@
 /**
- * @file Entrypoint for OpenAI embeddings debug scenarios.
+ * @file Entry point for OpenAI embeddings scenario
  */
 
-// Barrel for types and runners so that DOCS.tsx can import types
-export type { Doc } from "./common";
-export { runBruteforce, runHNSW } from "./common";
+import { render } from "ink";
+import React from "react";
+import { App } from "./common";
+
+export function runBruteforce() {
+  render(<App strategy="bruteforce" />);
+}
+
+export function runHNSW() {
+  render(<App strategy="hnsw" />);
+}
+
+export function runIVF() {
+  render(<App strategy="ivf" />);
+}

@@ -36,11 +36,20 @@ function hasOPFSNavigator(x: unknown): x is NavigatorWithOPFS {
 }
 
 /**
+ * Retrieve and validate `navigator` with OPFS support from globalThis.
+ * Throws a consistent error message when not available.
+ */
+function requireOPFSNavigator(): NavigatorWithOPFS {
+  const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
+  if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+  return nav;
+}
+
+/**
  *
  */
 export async function saveToOPFS(buf: ArrayBuffer, fileName = "vectordb.vlite") {
-  const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-  if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+  const nav = requireOPFSNavigator();
   const root = await nav.storage.getDirectory();
   const handle = await root.getFileHandle(fileName, { create: true });
   const w = await handle.createWritable();
@@ -52,8 +61,7 @@ export async function saveToOPFS(buf: ArrayBuffer, fileName = "vectordb.vlite") 
  *
  */
 export async function loadFromOPFS(fileName = "vectordb.vlite"): Promise<ArrayBuffer> {
-  const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-  if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+  const nav = requireOPFSNavigator();
   const root = await nav.storage.getDirectory();
   const handle = await root.getFileHandle(fileName);
   const file = await handle.getFile();
@@ -62,8 +70,7 @@ export async function loadFromOPFS(fileName = "vectordb.vlite"): Promise<ArrayBu
 
 /** Save WAL fully to OPFS (overwrite). */
 export async function saveWalToOPFS(buf: Uint8Array, fileName = "vectordb.vlite.wal") {
-  const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-  if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+  const nav = requireOPFSNavigator();
   const root = await nav.storage.getDirectory();
   const handle = await root.getFileHandle(fileName, { create: true });
   const w = await handle.createWritable();
@@ -82,8 +89,7 @@ export async function deleteFromOPFS(_fileName: string) {
 
 /** Load WAL from OPFS; returns empty if not found. */
 export async function loadWalFromOPFS(fileName = "vectordb.vlite.wal"): Promise<Uint8Array> {
-  const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-  if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+  const nav = requireOPFSNavigator();
   const root = await nav.storage.getDirectory();
   try {
     const fh = await root.getFileHandle(fileName, { create: false });
@@ -99,8 +105,7 @@ export async function loadWalFromOPFS(fileName = "vectordb.vlite.wal"): Promise<
 export function createOPFSFileIO(): FileIO {
   return {
     async read(fileName: string) {
-      const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-      if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+      const nav = requireOPFSNavigator();
       const root = await nav.storage.getDirectory();
       const handle = await root.getFileHandle(fileName);
       const file = await handle.getFile();
@@ -108,8 +113,7 @@ export function createOPFSFileIO(): FileIO {
       return new Uint8Array(buf);
     },
     async write(fileName: string, data) {
-      const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-      if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+      const nav = requireOPFSNavigator();
       const root = await nav.storage.getDirectory();
       const handle = await root.getFileHandle(fileName, { create: true });
       const w = await handle.createWritable();
@@ -118,8 +122,7 @@ export function createOPFSFileIO(): FileIO {
     },
     async append(fileName: string, data) {
       // Try keepExistingData if supported, otherwise read+concat+write
-      const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-      if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+      const nav = requireOPFSNavigator();
       const root = await nav.storage.getDirectory();
       const handle = await root.getFileHandle(fileName, { create: true });
       try {
@@ -143,8 +146,7 @@ export function createOPFSFileIO(): FileIO {
     },
     async atomicWrite(fileName: string, data) {
       // OPFS createWritable is atomic on close
-      const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-      if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+      const nav = requireOPFSNavigator();
       const root = await nav.storage.getDirectory();
       const handle = await root.getFileHandle(fileName, { create: true });
       const w = await handle.createWritable();

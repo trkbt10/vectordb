@@ -34,6 +34,7 @@ export function createState<TMeta = unknown>(opts: VectorLiteOptions): VectorSto
     throw new Error(`Unsupported strategy: ${String(strategy)}. Use 'bruteforce' | 'hnsw' | 'ivf'.`);
   }
   const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024);
+  // eslint-disable-next-line no-restricted-syntax -- Strategy pattern: ANN instance depends on strategy type
   let ann: ANNs;
   if (strategy === "hnsw") {
     ann = createHNSWState(opts.hnsw ?? {}, metric, store._capacity);

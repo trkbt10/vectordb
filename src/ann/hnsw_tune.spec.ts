@@ -16,8 +16,11 @@ describe("tuneHnsw", () => {
       for (let i = 0; i < dim; i++) v[i] = b[i] + (Math.random() * 2 - 1) * 0.05;
       return v;
     }
+    // eslint-disable-next-line no-restricted-syntax -- Test setup: ID counter for test data
     let id = 1;
+     
     for (let i = 0; i < 60; i++) add(bf, id++, jit(base1), null);
+     
     for (let i = 0; i < 60; i++) add(bf, id++, jit(base2), null);
     const h = buildHNSWFromStore(bf, { M: 8, efSearch: 32 });
     const qs = [jit(base1), jit(base2)];

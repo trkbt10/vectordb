@@ -37,6 +37,7 @@ export function upsertMany<TMeta>(
         res.ok++;
       } catch (e: unknown) {
         res.failed++;
+        // eslint-disable-next-line no-restricted-syntax -- Error handling: extracting error message
         let reason = "";
         if (typeof e === "object" && e !== null && "message" in e) {
           const msg = (e as { message?: unknown }).message;

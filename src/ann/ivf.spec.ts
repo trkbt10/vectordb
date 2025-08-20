@@ -32,6 +32,7 @@ describe("IVF basic behavior", () => {
 
     function recall(a: number[], b: number[]) {
       const sb = new Set(b);
+      // eslint-disable-next-line no-restricted-syntax -- Test utility: counting matches for recall
       let m = 0;
       for (const x of a) if (sb.has(x)) m++;
       return m / a.length;

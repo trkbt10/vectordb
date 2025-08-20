@@ -31,6 +31,7 @@ describe("indexing/segmenter", () => {
     });
     expect(res.entries.length).toBe(5);
     // Ensure at least one segment file exists on the designated target according to manifest
+    // eslint-disable-next-line no-restricted-syntax -- Test: tracking if any segment exists
     let any = false;
     for (const seg of res.manifest.segments) {
       const io = stores[seg.targetKey];

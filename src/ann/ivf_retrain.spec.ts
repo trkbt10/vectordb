@@ -23,9 +23,13 @@ describe("IVF retrain/evaluate", () => {
       for (let i = 0; i < dim; i++) v[i] = base[i] + (Math.random() * 2 - 1) * eps;
       return v;
     }
+    // eslint-disable-next-line no-restricted-syntax -- Test setup: ID counter for test data
     let id = 1;
+     
     for (let i = 0; i < 40; i++) add(vl, id++, jitter(e1, 0.05), null);
+     
     for (let i = 0; i < 40; i++) add(vl, id++, jitter(e2, 0.05), null);
+     
     for (let i = 0; i < 40; i++) add(vl, id++, jitter(e3, 0.05), null);
 
     const t = trainIvfCentroids(vl, { iters: 12, seed: 123 });

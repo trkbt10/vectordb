@@ -50,6 +50,7 @@ export function tuneHnsw<TMeta>(
   const results: HnswTuneResult[] = [];
   for (const M of MList) {
     // Build candidate HNSW state if M differs
+    // eslint-disable-next-line no-restricted-syntax -- Performance: candidate HNSW state for tuning
     let cand =
       M === vl.ann.M
         ? (vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState })
@@ -67,7 +68,9 @@ export function tuneHnsw<TMeta>(
     const origEf = hnswCand.ann.efSearch;
     for (const ef of efList) {
       hnswCand.ann.efSearch = ef;
+      // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating recall scores
       let sumR = 0;
+      // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating latency measurements
       let sumL = 0;
       for (const q of queries) {
         const t0 = Date.now();
@@ -75,6 +78,7 @@ export function tuneHnsw<TMeta>(
         const dt = Date.now() - t0;
         sumL += dt;
         const truth = bfTopK(q, k);
+        // eslint-disable-next-line no-restricted-syntax -- Performance: counting intersection for recall
         let inter = 0;
         for (const h of got) if (truth.has(h.id)) inter++;
         sumR += inter / k;

@@ -49,6 +49,7 @@ describe("indexing/rebalance", () => {
     // Ensure at least one planned source no longer has the file
     if (plan.length > 0) {
       const first = plan[0];
+      // eslint-disable-next-line no-restricted-syntax -- Test: tracking deletion status
       let deleted = false;
       try {
         await env.resolveDataIO(first.from).read(`${first.name}.data`);

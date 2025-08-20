@@ -299,6 +299,7 @@ export function ivf_evaluate<TMeta>(
     const dt = Date.now() - t0;
     sumLatency += dt;
     const truth = new Set(bfTopK(q, k));
+    // eslint-disable-next-line no-restricted-syntax -- Performance: counting intersection for recall calculation
     let inter = 0;
     for (const h of hits) {
       if (truth.has(h.id)) inter++;

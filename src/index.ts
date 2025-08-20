@@ -133,7 +133,7 @@ export function vlite<
         opts: VectorLiteOptions,
         seed?: Array<{ id: number; vector: Float32Array; meta: TMeta | null }>,
       ): VLiteClient<TMeta> {
-        return createVectorLite<TMeta>(opts, seed);
+        return seed ? createVectorLite<TMeta>(opts, seed) : createVectorLite<TMeta>(opts);
       },
       /** Attach client helpers to an existing state. */
       from(state: VectorStoreState<TMeta>): VLiteClient<TMeta> {

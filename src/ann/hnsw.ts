@@ -404,7 +404,7 @@ export function hnsw_serialize(h: HNSWState, store: CoreStore<unknown>): ArrayBu
     const offsets = new Uint32Array(n + 1);
     // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating edge offsets
     let total = 0;
-    // eslint-disable-next-line no-restricted-syntax -- Performance: iterating through nodes
+     
     for (let i = 0; i < n; i++) {
       const deg = layer[i] ? layer[i].length : 0;
       offsets[i] = total;

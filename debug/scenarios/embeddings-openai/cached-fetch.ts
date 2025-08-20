@@ -68,7 +68,7 @@ export async function cachedFetchBytes(
 }
 
 /** Convenience wrapper for JSON APIs. */
-export async function cachedFetchJSON<T = any>(
+export async function cachedFetchJSON<T = unknown>(
   namespace: string,
   url: string,
   init: RequestInit = {},
