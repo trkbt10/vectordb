@@ -11,7 +11,7 @@ import prettierConfig from "eslint-config-prettier";
 
 export default [
   // Ignore patterns
-  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**"] },
+  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**", "*.ts"] },
 
   // JS/TS recommended sets (Flat-compatible)
   ...tseslint.config(
@@ -66,7 +66,11 @@ export default [
             message: "Class implementation is not recommended. Please write as function-based as much as possible.",
           },
           {
-            selector: "VariableDeclaration[kind='let']:not(ForStatement > VariableDeclaration)",
+            selector:
+              "VariableDeclaration[kind='let']" +
+              ":not(ForStatement > VariableDeclaration)" +
+              ":not(ForInStatement > VariableDeclaration)" +
+              ":not(ForOfStatement > VariableDeclaration)",
             message:
               "Use of let is prohibited. If you need to branch, create a separate function and use its return value. If absolutely necessary for performance issues, explicitly use // eslint-disable-next-line.",
           },
@@ -80,6 +84,23 @@ export default [
             selector: "TSTypeAssertion TSAnyKeyword",
             message:
               "Avoid using 'as any'. Code using 'as any' may indicate incorrect type definitions or a misunderstanding; review it carefully. Resolve this by using appropriate type guards or correct typings instead.",
+          },
+          // Forbid mocking APIs from Vitest/Jest/Bun at AST level
+          {
+            selector:
+              "CallExpression[callee.object.name='vi'][callee.property.name=/^(mock|fn|spyOn|restoreAllMocks|resetAllMocks)$/]",
+            message: "Mock APIs (vi.mock/fn/spyOn/...) are prohibited. Prefer DI or simple fakes instead.",
+          },
+          {
+            selector:
+              "CallExpression[callee.object.name='jest'][callee.property.name=/^(mock|fn|spyOn|restoreAllMocks|resetAllMocks)$/]",
+            message: "Mock APIs (jest.mock/fn/spyOn/...) are prohibited. Prefer DI or simple fakes instead.",
+          },
+          // Bun's bun:test mock helper (import { mock } from 'bun:test')
+          {
+            selector:
+              "CallExpression[callee.object.name='mock'][callee.property.name=/^(module|object|replace|restore|reset)$/]",
+            message: "Mock APIs (bun:test mock.*) are prohibited. Prefer DI or simple fakes instead.",
           },
         ],
         "@typescript-eslint/consistent-type-definitions": ["error", "type"],
@@ -97,7 +118,84 @@ export default [
         // "import/no-relative-parent-imports": "error",
 
         /* 4. Always add block {} to if/else/for/while */
-        curly: ["warn", "all"],
+        curly: ["warn", "multi-or-nest"],
+
+        /* 5. Forbid loading specific test libraries */
+        // ES Module imports
+    "no-restricted-imports": [
+          "error",
+          {
+            paths: [
+      { name: "bun:test", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+      { name: "vitest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+      { name: "@jest/globals", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+      { name: "jest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+      { name: "mocha", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+            ],
+            patterns: [
+      { group: ["vitest/*", "jest/*", "mocha/*"], message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+            ],
+          },
+        ],
+        // CommonJS requires
+        "no-restricted-modules": [
+          "error",
+          {
+            paths: ["bun:test", "vitest", "@jest/globals", "jest", "mocha"],
+            patterns: ["vitest/*", "jest/*", "mocha/*"],
+          },
+        ],
+
+        /* 6. Forbid mocking APIs from common test libraries */
+        // Ban global access to jest / vi (Vitest)
+        "no-restricted-globals": [
+          "error",
+          { name: "jest", message: "Using Jest global is prohibited in this repository." },
+          { name: "vi", message: "Using Vitest global is prohibited in this repository." },
+        ],
+        // Ban specific mocking helpers
+        "no-restricted-properties": [
+          "error",
+          { object: "jest", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          { object: "jest", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          { object: "jest", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          { object: "vi", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          { object: "vi", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          { object: "vi", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          // Bun's bun:test mock helpers
+          { object: "mock", property: "module", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+        ],
+      },
+    },
+
+    // Tests-only: allow global test APIs so imports are unnecessary
+    {
+      files: [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "spec/**/*.ts",
+        "spec/**/*.tsx",
+        "spec/**/*.js",
+        "spec/**/*.jsx",
+      ],
+      languageOptions: {
+        globals: {
+          // Core
+          describe: "readonly",
+          it: "readonly",
+          test: "readonly",
+          expect: "readonly",
+          // Lifecycle
+          beforeAll: "readonly",
+          afterAll: "readonly",
+          beforeEach: "readonly",
+          afterEach: "readonly",
+          // Suites/bench (Vitest-compatible)
+          suite: "readonly",
+          bench: "readonly",
+        },
       },
     },
 

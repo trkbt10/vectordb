@@ -1,6 +1,6 @@
 /**
  * @file Vitest testing framework configuration
- * 
+ *
  * This configuration sets up the Vitest test runner for the VectorLite
  * project, providing a fast and efficient testing environment. It configures:
  * - Global test utilities availability

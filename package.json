@@ -1,5 +1,5 @@
 {
-  "name": "vectorlite",
+  "name": "yazawa",
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
@@ -10,8 +10,17 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./db": {
+      "import": "./dist/db.js",
+      "types": "./dist/db.d.ts"
+    },
+    "./cluster": {
+      "import": "./dist/cluster.js",
+      "types": "./dist/cluster.d.ts"
     }
   },
+  "packageManager": "bun@1.2.20",
   "sideEffects": false,
   "scripts": {
     "build": "vite build",
@@ -20,13 +29,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test",
-    "debug:wal": "bun run debug/scenarios/wal/index.ts",
-    "debug:kvs": "bun run debug/scenarios/kvs/index.ts",
-    "debug:filter": "bun run debug/scenarios/filter/index.ts",
-    "debug:openai": "bun run debug/scenarios/embeddings-openai/bruteforce.tsx",
-    "debug:openai:bf": "bun run debug/scenarios/embeddings-openai/bruteforce.tsx",
-    "debug:openai:hnsw": "bun run debug/scenarios/embeddings-openai/hnsw.tsx"
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

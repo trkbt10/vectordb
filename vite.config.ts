@@ -1,12 +1,5 @@
 /**
- * @file Vite build configuration for library bundling
- * 
- * This configuration sets up Vite to build VectorLite as a distributable
- * library with support for both CommonJS and ES modules. It handles:
- * - TypeScript compilation and bundling
- * - React plugin integration for development tools
- * - External dependency management
- * - Optimized production builds with minification
+ * @file Vite build configuration
  */
 
 import { defineConfig } from "vite";
@@ -17,12 +10,15 @@ export default defineConfig({
   build: {
     outDir: "dist",
     lib: {
-      entry: "src/index.ts",
-      fileName: "index",
+      entry: {
+        index: "src/index.ts",
+        db: "src/db.ts",
+        cluster: "src/cluster.ts",
+      },
       formats: ["cjs", "es"],
     },
     rollupOptions: {
-      external: ["ink", "react"],
+      external: ["ink", "react", /node:.+/],
     },
   },
 });
