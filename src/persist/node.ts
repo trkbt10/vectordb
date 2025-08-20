@@ -50,7 +50,7 @@ export async function saveAtomicToFileNode(buf: ArrayBuffer, path: string): Prom
 /**
  *
  */
-export function createNodeFileIO(): FileIO {
+export function createNodeRawFileIO(): FileIO {
   return {
     async read(path: string) {
       const u8 = await readFile(path);
@@ -80,7 +80,7 @@ export function createNodeFileIO(): FileIO {
 }
 
 /** Create a Node FileIO that prefixes all paths with baseDir and ensures directories exist. */
-export function createPrefixedNodeFileIO(baseDir: string): FileIO {
+export function createNodeFileIO(baseDir: string): FileIO {
   async function ensureDir(p: string) {
     await mkdir(dirname(p), { recursive: true });
   }
@@ -119,3 +119,6 @@ export function createPrefixedNodeFileIO(baseDir: string): FileIO {
     },
   };
 }
+
+// Backward-compatible alias for older name
+export const createPrefixedNodeFileIO = createNodeFileIO;
