@@ -313,7 +313,9 @@ export function ivf_evaluate<TMeta>(
 function nearestCentroid<TMeta>(h: IVFState, store: CoreStore<TMeta>, vec: Float32Array): number {
   const dim = store.dim;
   const scoreAt = getScoreAtFn(h.metric);
+  // eslint-disable-next-line no-restricted-syntax -- Algorithmic accumulator for best centroid
   let best = -1;
+  // eslint-disable-next-line no-restricted-syntax -- Algorithmic accumulator for best score
   let bestScore = -Infinity;
   const baseC = h.centroids;
   const count = Math.max(1, h.centroidCount);
@@ -398,6 +400,7 @@ export function ivf_search<TMeta>(
       const base = at * dim;
       const s = scoreAt(store.data, base, q, dim);
       // simple insert sort for k (small k)
+      // eslint-disable-next-line no-restricted-syntax -- Insert position accumulator for small-k
       let ins = out.length;
       for (let j = 0; j < out.length; j++) {
         if (s > out[j]!.score) {

@@ -64,6 +64,7 @@ export function searchParallel<TMeta>(
       : { has_id: { values: shard.ids } };
     const res = searchWithExpr(vl, q, expr, { k });
     for (const h of res) {
+      // eslint-disable-next-line no-restricted-syntax -- Insert position accumulator for small-k
       let ins = out.length;
       for (let i = 0; i < out.length; i++) {
         if (h.score > out[i]!.score) {

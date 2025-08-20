@@ -32,6 +32,3 @@ describe("tuneHnsw", () => {
     }
   });
 });
-/**
- * @file Tests for HNSW tuning utilities.
- */

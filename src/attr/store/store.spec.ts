@@ -23,6 +23,3 @@ test("store: cosine normalization on addOrUpdate", () => {
   const g = get(s, 1)!;
   expect(Math.abs(g.vector[0] - 1) < 1e-6).toBeTruthy();
 });
-/**
- * @file Tests for core store structure and behavior.
- */

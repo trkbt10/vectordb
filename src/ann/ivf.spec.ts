@@ -41,6 +41,3 @@ describe("IVF basic behavior", () => {
     expect(recall(bf2, ivf2)).toBeGreaterThanOrEqual(0.6);
   });
 });
-/**
- * @file Tests for IVF strategy and utilities.
- */

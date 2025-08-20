@@ -241,6 +241,7 @@ export function preselectCandidates(expr: FilterExpr, idx: AttrIndexReader | nul
   }
   // should: union
   if (b.should && b.should.length) {
+    // eslint-disable-next-line no-restricted-syntax -- Accumulator for union of "should" clauses
     let u: CandidateSet | null = null;
     for (const e of b.should) u = unionInto(u, preselectCandidates(e, idx));
     cur = cur ? intersectInto(cur, u) : u;

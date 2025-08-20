@@ -55,7 +55,10 @@ describe("persist/FileIO path isolation", () => {
         try {
           const files = await readdir(full);
           for (const f of files) if (f.endsWith(".data")) dataFiles.push(path.join(full, f));
-        } catch {}
+        } catch (e) {
+          // ignore read errors for missing shard directories
+          void e;
+        }
       }
       expect(dataFiles.length).toBeGreaterThan(0);
 

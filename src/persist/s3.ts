@@ -72,12 +72,9 @@ export function createS3FileIO(opts: PresignedS3IOOptions): FileIO {
     },
     async append(key: string, data: Uint8Array | ArrayBuffer): Promise<void> {
       // S3 has no native append; emulate with read+concat+write
-      let prev = new Uint8Array();
-      try {
-        prev = new Uint8Array(await this.read(key));
-      } catch {
-        // treat as new object if not found or read fails
-      }
+      const prev = await this.read(key)
+        .then((buf) => new Uint8Array(buf))
+        .catch(() => new Uint8Array());
       const next = toUint8(data);
       const merged = new Uint8Array(prev.length + next.length);
       merged.set(prev, 0);

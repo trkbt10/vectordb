@@ -14,6 +14,3 @@ test("bitmap strategy: eq/exists work; range unsupported", () => {
   expect(Array.from(idx.exists("flag") ?? [])).toEqual([12]);
   expect(idx.range("price", { gte: 0, lt: 100 })).toBeNull();
 });
-/**
- * @file Tests for bitmap attribute strategy.
- */

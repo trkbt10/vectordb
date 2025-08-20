@@ -44,6 +44,3 @@ describe("IVF retrain/evaluate", () => {
     expect(ev.recall).toBeGreaterThan(0.6);
   });
 });
-/**
- * @file Tests for IVF retraining and evaluation wrappers.
- */
