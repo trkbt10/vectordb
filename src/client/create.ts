@@ -10,7 +10,7 @@
  * - VLiteClient forwards operations to core (add/remove/search), no copies
  */
 import type { VectorDB } from "./types";
-import type { SearchOptions, UpsertOptions, VectorLiteOptions, VectorStoreState } from "../types";
+import type { SearchOptions, UpsertOptions, VectorDBOptions, VectorStoreState } from "../types";
 import { add, remove, search, size, has, getOne as coreGet } from "../attr/ops/core";
 import { upsertMany } from "../attr/ops/bulk";
 import { createState } from "../attr/state/create";
@@ -83,7 +83,7 @@ export function fromState<TMeta>(state: VectorStoreState<TMeta>): VectorDB<TMeta
  * Responsibility: Optionally seeds initial rows before returning the client.
  */
 export function create<TMeta = unknown>(
-  opts: VectorLiteOptions,
+  opts: VectorDBOptions,
   seed?: Array<{ id: number; vector: Float32Array; meta: TMeta | null }>,
 ): VectorDB<TMeta> {
   const client = fromState<TMeta>(createState<TMeta>(opts));

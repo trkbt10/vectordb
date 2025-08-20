@@ -12,7 +12,7 @@ import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../indexing
 import { planRebalance, applyRebalance } from "../indexing/placement/rebalance";
 import type { SaveIndexingOptions, IndexingBaseOptions, OpenIndexingOptions } from "../indexing/types";
 import type { FileIO } from "../persist/types";
-import type { VectorLiteOptions, VectorStoreState } from "../types";
+import type { VectorDBOptions, VectorStoreState } from "../types";
 import { create, fromState } from "./create";
 import type { VectorDB } from "./types";
 
@@ -64,7 +64,7 @@ export function createCluster<
   }
   return {
     db: {
-      create(opts: VectorLiteOptions, seed?: Array<{ id: number; vector: Float32Array; meta: TMeta | null }>): VectorDB<TMeta> {
+      create(opts: VectorDBOptions, seed?: Array<{ id: number; vector: Float32Array; meta: TMeta | null }>): VectorDB<TMeta> {
         return create<TMeta>(opts, seed);
       },
       from(state: VectorStoreState<TMeta>): VectorDB<TMeta> {

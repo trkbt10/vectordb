@@ -14,6 +14,11 @@
  */
 export type { VectorDB } from "./client/types";
 export { create, fromState as from } from "./client/create";
+/**
+ * Construction options for VectorDB (dimensions, metric, strategy, etc.)
+ * @public
+ */
+export type { VectorDBOptions } from "./types";
 
 /**
  * Cluster API (persistence + placement via CRUSH)

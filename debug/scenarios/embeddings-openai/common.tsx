@@ -114,15 +114,15 @@ export function App({ strategy }: { strategy: AppStrategy }) {
 
         setStatus("saving");
         setMessage("Saving snapshot and reloading");
-        const outPath = path.join(process.cwd(), "debug", "emb-openai-out", strategy);
+        const outPath = path.join(process.cwd(), ".tmp", "emb-openai-out", strategy);
         await mkdir(outPath, { recursive: true });
         
         // Create vlite environment with file persistence
-        const indexPath = path.join(outPath, "index.json");
-        const dataPath = path.join(outPath, "data");
+        const indexRoot = outPath;
+        const dataRoot = path.join(outPath, "data");
         const { index } = vlite<Meta>({
-          index: createNodeFileIO(indexPath),
-          data: (key: string) => createNodeFileIO(path.join(dataPath, key))
+          index: createNodeFileIO(indexRoot),
+          data: (key: string) => createNodeFileIO(path.join(dataRoot, key))
         }, {
           shards: 1,
           segmented: true,
@@ -136,8 +136,8 @@ export function App({ strategy }: { strategy: AppStrategy }) {
         // Reload from disk
         const db2State = await index.openState({ baseName: "db" });
         const { db: dbFactory } = vlite<Meta>({
-          index: createNodeFileIO(indexPath),
-          data: (key: string) => createNodeFileIO(path.join(dataPath, key))
+          index: createNodeFileIO(indexRoot),
+          data: (key: string) => createNodeFileIO(path.join(dataRoot, key))
         });
         const db2 = dbFactory.from(db2State);
         

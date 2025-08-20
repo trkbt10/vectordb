@@ -53,7 +53,7 @@ export type VectorRecord<TMeta> = {
 };
 
 /** Public construction options. */
-export type VectorLiteOptions = {
+export type VectorDBOptions = {
   dim: number;
   metric?: Metric;
   capacity?: number;
@@ -61,6 +61,8 @@ export type VectorLiteOptions = {
   hnsw?: HNSWParams;
   ivf?: IVFParams;
 };
+// Backward-compatible alias for internal callers; prefer VectorDBOptions
+export type VectorLiteOptions = VectorDBOptions;
 
 /** HNSW algorithm parameters. */
 export type HNSWParams = {
