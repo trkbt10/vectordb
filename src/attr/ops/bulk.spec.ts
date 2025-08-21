@@ -35,7 +35,7 @@ describe("ops.bulk", () => {
       [
         { id: 1, vector: new Float32Array([1, 0]), meta: null },
         // invalid vector length to trigger error
-        { id: 2, vector: new Float32Array([1, 0, 0]), meta: null } as any,
+        { id: 2, vector: new Float32Array([1, 0, 0]), meta: null },
       ],
       { mode: "all_or_nothing" },
     );
