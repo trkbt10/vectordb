@@ -35,13 +35,12 @@ export function createState<TMeta = unknown>(opts: VectorDBOptions): VectorStore
   }
   const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024);
   // eslint-disable-next-line no-restricted-syntax -- Strategy pattern: ANN instance depends on strategy type
-  let ann: ANNs;
+  let ann: ANNs = createBruteforceState(metric);
   if (strategy === "hnsw") {
     ann = createHNSWState(opts.hnsw ?? {}, metric, store._capacity);
-  } else if (strategy === "ivf") {
+  }
+  if (strategy === "ivf") {
     ann = createIVFState(opts.ivf ?? {}, metric, dim);
-  } else {
-    ann = createBruteforceState(metric);
   }
   return { dim, metric, store, strategy, ann };
 }

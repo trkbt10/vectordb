@@ -115,8 +115,14 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
     vl0.store._count++;
   }
   if (ann && ann.length > 0) {
-    if (isHnswVL(vl0)) hnsw_deserialize(vl0.ann, vl0.store, ann.slice().buffer as ArrayBuffer);
-    else if (isIvfVL(vl0)) ivf_deserialize(vl0.ann, vl0.store, ann.slice().buffer as ArrayBuffer);
+    if (isHnswVL(vl0)) {
+      hnsw_deserialize(vl0.ann, vl0.store, ann.slice().buffer as ArrayBuffer);
+      return finalize(vl0);
+    }
+    if (isIvfVL(vl0)) {
+      ivf_deserialize(vl0.ann, vl0.store, ann.slice().buffer as ArrayBuffer);
+      return finalize(vl0);
+    }
     return finalize(vl0);
   }
   if (opts.rebuildIfNeeded !== false) {

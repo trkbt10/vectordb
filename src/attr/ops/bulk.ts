@@ -38,12 +38,10 @@ export function upsertMany<TMeta>(
       } catch (e: unknown) {
         res.failed++;
         // eslint-disable-next-line no-restricted-syntax -- Error handling: extracting error message
-        let reason = "";
+        let reason = String(e);
         if (typeof e === "object" && e !== null && "message" in e) {
           const msg = (e as { message?: unknown }).message;
           reason = typeof msg === "string" ? msg : String(msg);
-        } else {
-          reason = String(e);
         }
         res.errors.push({ id: r.id, reason });
       }
@@ -65,7 +63,7 @@ export function removeMany<TMeta>(vl: VectorStoreState<TMeta>, ids: number[], op
   for (const id of ids) {
     const ok = remove(vl, id);
     if (ok) res.ok++;
-    else if (!opts?.ignoreMissing) res.missing.push(id);
+    if (!ok && !opts?.ignoreMissing) res.missing.push(id);
   }
   return res;
 }

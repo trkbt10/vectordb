@@ -47,11 +47,16 @@ export function add<TMeta>(
   const grew = Store.ensure(vl.store, 1);
   if (grew && isHnswVL(vl)) hnsw_ensureCapacity(vl.ann, vl.store._capacity);
   const { created } = Store.addOrUpdate(vl.store, id, vector, meta, up);
-  if (created) {
-    if (isHnswVL(vl)) hnsw_add(vl.ann, vl.store, id);
-    else if (isIvfVL(vl)) ivf_add(vl.ann, vl.store, id);
-    else if (isBfVL(vl)) bf_add();
+  if (!created) return;
+  if (isHnswVL(vl)) {
+    hnsw_add(vl.ann, vl.store, id);
+    return;
   }
+  if (isIvfVL(vl)) {
+    ivf_add(vl.ann, vl.store, id);
+    return;
+  }
+  if (isBfVL(vl)) bf_add();
 }
 
 /**

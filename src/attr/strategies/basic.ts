@@ -51,8 +51,9 @@ function lowerBound(arr: NumEntry[], x: number, strict: boolean): number {
     r = arr.length;
   while (l < r) {
     const m = (l + r) >> 1;
-    if (arr[m].v > x || (!strict && arr[m].v === x)) r = m;
-    else l = m + 1;
+    const cond = arr[m].v > x || (!strict && arr[m].v === x);
+    if (cond) r = m;
+    if (!cond) l = m + 1;
   }
   if (strict) {
     // eslint-disable-next-line no-restricted-syntax -- Performance-critical: post-adjustment requires mutable index
@@ -68,8 +69,9 @@ function upperBound(arr: NumEntry[], x: number, strict: boolean): number {
     r = arr.length;
   while (l < r) {
     const m = (l + r) >> 1;
-    if (arr[m].v < x || (!strict && arr[m].v === x)) l = m + 1;
-    else r = m;
+    const cond = arr[m].v < x || (!strict && arr[m].v === x);
+    if (cond) l = m + 1;
+    if (!cond) r = m;
   }
   if (strict) {
     // eslint-disable-next-line no-restricted-syntax -- Performance-critical: post-adjustment requires mutable index

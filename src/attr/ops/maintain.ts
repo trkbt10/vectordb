@@ -90,7 +90,8 @@ export function compactStore<TMeta>(
   if (typeof opts?.capacity === "number") {
     resizeCapacity(vl.store, opts.capacity);
     shrunk = true;
-  } else if (opts?.shrink) {
+  }
+  if (opts?.shrink && typeof opts?.capacity !== "number") {
     shrinkToFit(vl.store);
     shrunk = true;
   }
@@ -129,7 +130,8 @@ function rebuildHnsw<TMeta>(vl: VectorStoreState<TMeta>, params: HNSWParams | un
   if (isHnswVL(vl)) {
     if (!ids) {
       for (let i = 0; i < vl.store._count; i++) hnsw_add(vl.ann, vl.store, vl.store.ids[i]);
-    } else {
+    }
+    if (ids) {
       for (const id of ids) hnsw_add(vl.ann, vl.store, id);
     }
   }
@@ -144,7 +146,8 @@ function rebuildIvf<TMeta>(vl: VectorStoreState<TMeta>, params: IVFParams | unde
     const newI = createIVFState(next, vl.metric, vl.dim);
     vl.strategy = "ivf";
     vl.ann = newI;
-  } else if (old && typeof next.nprobe === "number") {
+  }
+  if (!needRecreate && old && typeof next.nprobe === "number") {
     old.nprobe = Math.max(1, Math.min(old.nlist, next.nprobe));
   }
   if (!isIvfVL(vl)) return 0;

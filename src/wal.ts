@@ -151,9 +151,9 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
       off += vecLen;
       const vector = new Float32Array(vb.buffer.slice(vb.byteOffset, vb.byteOffset + vb.byteLength));
       out.push({ type: "upsert", id, vector, meta });
-    } else {
-      throw new Error("wal decode error: unknown type or missing vector");
+      continue;
     }
+    throw new Error("wal decode error: unknown type or missing vector");
   }
   return out;
 }

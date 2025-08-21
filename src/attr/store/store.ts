@@ -186,11 +186,10 @@ export function removeById<T>(
     s.pos.delete(uid);
     s._count--;
     return { movedId, movedFrom: last, movedTo: at };
-  } else {
-    s.pos.delete(uid);
-    s._count--;
-    return {};
   }
+  s.pos.delete(uid);
+  s._count--;
+  return {};
 }
 
 /**

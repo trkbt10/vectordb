@@ -166,7 +166,8 @@ export function ivf_trainCentroids<TMeta>(
             acc += diff * diff;
           }
           s = -acc;
-        } else if (ivf.metric === "dot" || ivf.metric === "cosine") {
+        }
+        if (ivf.metric === "dot" || ivf.metric === "cosine") {
           // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
           let acc = 0;
            
@@ -224,7 +225,8 @@ export function ivf_reassignLists<TMeta>(ivf: IVFState, store: CoreStore<TMeta>)
           acc += diff * diff;
         }
         s = -acc;
-      } else {
+      }
+      if (ivf.metric !== "l2") {
         // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
         let acc = 0;
          
@@ -266,7 +268,8 @@ export function ivf_evaluate<TMeta>(
           acc += diff * diff;
         }
         s = -acc;
-      } else {
+      }
+      if (ivf.metric !== "l2") {
         // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
         let acc = 0;
          

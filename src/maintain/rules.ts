@@ -92,7 +92,7 @@ export function evaluateRules<TMeta>(vl: VectorStoreState<TMeta>): Alert[] {
     const res = (r as Rule<TMeta>)({ vl, stats });
     if (res == null) continue;
     if (Array.isArray(res)) out.push(...res);
-    else out.push(res);
+    if (!Array.isArray(res)) out.push(res);
   }
   return out;
 }
@@ -134,13 +134,14 @@ export function ruleIvfImbalance<TMeta>(factor = 2): Rule<TMeta> {
       const arr = stats.ivf.listSizeHist;
       if (arr.length === 0) return null;
       const avg = arr.reduce((x, y) => x + y, 0) / arr.length;
-      for (const x of arr)
+      for (const x of arr) {
         if (x > factor * avg)
           return {
             code: "ivf.imbalance",
             severity: "info",
             message: "IVF list imbalance; consider retraining centroids.",
           };
+      }
     }
     return null;
   };

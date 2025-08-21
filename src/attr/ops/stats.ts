@@ -61,7 +61,9 @@ export function stats<TMeta>(vl: VectorStoreState<TMeta>): StatsOut {
     const tomb = nodes ? dead / nodes : 0;
     out.hnsw = { levels, avgDeg: nodes ? edges / Math.max(1, nodes) : 0, tombstoneRatio: tomb };
     out.deletedRatio = tomb;
-  } else if (isIvfVL(vl)) {
+    return out;
+  }
+  if (isIvfVL(vl)) {
     const lists = vl.ann.lists;
     const sizes = lists.map((a) => a.length);
     out.ivf = { nlist: vl.ann.nlist, nprobe: vl.ann.nprobe, listSizeHist: sizes };
