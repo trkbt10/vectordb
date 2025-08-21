@@ -24,4 +24,15 @@ describe("ops.ivf_retrain", () => {
     expect(ev.recall).toBeGreaterThanOrEqual(0);
     expect(ev.recall).toBeLessThanOrEqual(1);
   });
+
+  it("no-ops when strategy is not IVF", () => {
+    const bf = createState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
+    add(bf, 1, new Float32Array([1, 0]));
+    const t = trainIvfCentroids(bf, { iters: 1 });
+    expect(t.updated).toBe(0);
+    const r = reassignIvfLists(bf);
+    expect(r.moved).toBe(0);
+    const ev = evaluateIvf(bf, [new Float32Array([1, 0])], 1);
+    expect(ev).toEqual({ recall: 0, latency: 0 });
+  });
 });

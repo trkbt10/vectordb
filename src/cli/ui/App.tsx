@@ -1,46 +1,56 @@
 /**
- * @file Root CLI app (menu + routing)
+ * @file Root CLI app (router + global shortcuts)
  */
-import React, { useMemo, useState } from "react";
-import { Box, Text } from "ink";
-import SelectInput from "ink-select-input";
-import { DatabaseView } from "./DatabaseView";
-
-type Screen = { id: "menu" } | { id: "database" };
+import React from "react";
+import { Box, Text, useInput } from "ink";
+import { NavigationProvider, Router, createRoute, useNavigation } from "./routing";
+import { Home } from "./features/home/components/Home";
+import { DatabaseView } from "./features/database-viewer/components/DatabaseView";
+import { DefaultWizard } from "./features/database-wizard/components/DefaultWizard";
+import { Help } from "./features/help/components/Help";
+import { Settings } from "./features/settings/components/Settings";
 
 /**
- * Root CLI application (menu + routing)
+ * Root application component that wires NavigationProvider and routes.
  */
 export function App() {
-  // Default to database view; menu remains available via back
-  const [screen, setScreen] = useState<Screen>({ id: "database" });
-
-  type Choice = { label: string; value: string };
-  const items: Choice[] = useMemo(
-    () => [
-      { label: "Open Database (FS)", value: "open" },
-      { label: "Exit", value: "exit" },
-    ],
-    [],
+  return (
+    <NavigationProvider initialPath="/home">
+      <AppWithRoutes />
+    </NavigationProvider>
   );
+}
 
-  if (screen.id === "database") {
-    return <DatabaseView onExit={() => setScreen({ id: "menu" })} />;
-  }
+/**
+ * Internal component providing route definitions and global shortcuts.
+ */
+function AppWithRoutes() {
+  const { navigate, goBack } = useNavigation();
+  useInput((input, key) => {
+    if (key.ctrl && input === "c") return; // allow default exit
+    if (input === "q") process.exit(0);
+    if (input === "h") navigate("/home");
+    if (input === "b") goBack();
+    if (input === "?") navigate("/help");
+  });
+
+  const routes = [
+    createRoute("/home", Home, {}),
+    createRoute("/database", DatabaseView as React.ComponentType, { onExit: () => navigate("/home") }),
+    createRoute("/wizard", DefaultWizard, { onDone: () => navigate("/database") }),
+    createRoute("/help", Help, { onBack: () => goBack() }),
+    createRoute("/settings", Settings, { onBack: () => goBack() }),
+  ];
 
   return (
     <Box flexDirection="column">
-      <Text color="magentaBright">VectorDB CLI</Text>
-      <Text color="gray">Inspect, search, edit, rebuild</Text>
-      <Box marginTop={1}>
-        <SelectInput
-          items={items}
-          onSelect={(i: Choice) => {
-            if (i.value === "open") setScreen({ id: "database" });
-            if (i.value === "exit") process.exit(0);
-          }}
-        />
+      <Box>
+        <Text color="magentaBright">VectorDB CLI</Text>
       </Box>
+      <Text color="gray">────────────────────────────────────────────────────────</Text>
+      <Router routes={routes} />
+      <Text color="gray">────────────────────────────────────────────────────────</Text>
+      <Text color="gray">Shortcuts: h=Home  b=Back  ?=Help  q=Quit</Text>
     </Box>
   );
 }

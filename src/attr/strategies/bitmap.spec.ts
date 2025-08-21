@@ -13,4 +13,10 @@ test("bitmap strategy: eq/exists work; range unsupported", () => {
   expect(Array.from(idx.eq("tag", "b") ?? [])).toEqual([10, 11]);
   expect(Array.from(idx.exists("flag") ?? [])).toEqual([12]);
   expect(idx.range("price", { gte: 0, lt: 100 })).toBeNull();
+  // null value still marks existence
+  idx.setAttrs(13, { flag: null });
+  expect((idx.exists("flag") ?? new Set()).has(13)).toBe(true);
+  // removal updates indices
+  idx.removeId(10);
+  expect(idx.eq("tag", "a")).toBeNull();
 });

@@ -3,6 +3,8 @@
  */
 
 import { encodeIndexFile, decodeIndexFile } from "./index_file";
+import { saveIndexFile, loadIndexFile } from "./index_file";
+import { createMemoryFileIO } from "../../storage/memory";
 
 describe("indexing/formats/index_file", () => {
   it("encodes and decodes header and entries", () => {
@@ -17,5 +19,17 @@ describe("indexing/formats/index_file", () => {
     expect(dec.entries.length).toBe(2);
     expect(dec.entries[0].id).toBe(1);
     expect(dec.entries[1].ptr.segment).toBe("base.pg1.part0");
+  });
+
+  it("saveIndexFile and loadIndexFile roundtrip via FileIO", async () => {
+    const io = createMemoryFileIO();
+    const header = { metricCode: 0, dim: 2, count: 1, strategyCode: 2, hasAnn: false };
+    const entries = [{ id: 7, ptr: { segment: "seg.z", offset: 8, length: 16 } }];
+    const bytes = encodeIndexFile(header, entries);
+    await saveIndexFile(io, "dbx.index", bytes);
+    const got = await loadIndexFile(io, "dbx.index");
+    const dec = decodeIndexFile(got);
+    expect(dec.header.dim).toBe(2);
+    expect(dec.entries[0].id).toBe(7);
   });
 });

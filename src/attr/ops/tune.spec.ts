@@ -10,6 +10,8 @@
 import { createState } from "../state/create";
 import { add } from "./core";
 import { tuneHnsw } from "./tune";
+import { isHnswVL } from "../../util/guards";
+// Avoid mocking; test only functional paths
 
 describe("ops.tune", () => {
   it("returns suggestions with bounded recall", () => {
@@ -32,5 +34,22 @@ describe("ops.tune", () => {
       expect(r.recall).toBeGreaterThanOrEqual(0);
       expect(r.recall).toBeLessThanOrEqual(1);
     }
+  });
+
+  it("builds candidate when M differs and returns suggestions", () => {
+    const base = createState({
+      dim: 2,
+      metric: "cosine",
+      strategy: "hnsw",
+      hnsw: { M: 4, efConstruction: 8, efSearch: 4 },
+    });
+    for (let i = 0; i < 20; i++) add(base, i + 1, new Float32Array([i % 2, (i + 1) % 2]));
+    const qs = [new Float32Array([1, 0]), new Float32Array([0, 1])];
+    // First, ensure path when M differs is exercised
+    if (!isHnswVL(base)) throw new Error("expected HNSW state");
+    const res1 = tuneHnsw(base, { M: [base.ann.M + 1], efSearch: [base.ann.efSearch] }, qs, 3);
+    expect(res1.length).toBeGreaterThan(0);
+    const res2 = tuneHnsw(base, { M: [base.ann.M + 2], efSearch: [base.ann.efSearch] }, qs, 2);
+    expect(res2.length).toBeGreaterThan(0);
   });
 });

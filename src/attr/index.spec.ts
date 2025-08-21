@@ -25,3 +25,9 @@ test("bitmap strategy: eq/exists work; range unsupported", () => {
   expect(Array.from(idx.exists("flag") ?? [])).toEqual([12]);
   expect(idx.range("price", { gte: 0, lt: 100 })).toBeNull();
 });
+
+test("throws on unsupported strategy name", () => {
+  // @ts-expect-error: intentionally passing invalid strategy to hit error branch
+  expect(() => createAttrIndex("unknown"))
+    .toThrow(/Unsupported attribute index strategy/);
+});

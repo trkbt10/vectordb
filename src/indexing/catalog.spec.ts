@@ -23,4 +23,16 @@ describe("indexing/catalog", () => {
     const cat = await readCatalog("missing", { resolveIndexIO });
     expect(cat).toBeNull();
   });
+
+  it("returns null when catalog JSON lacks version", async () => {
+    const io = createMemoryFileIO();
+    const resolveIndexIO = () => io;
+    await io.atomicWrite("bad.catalog.json", new TextEncoder().encode(JSON.stringify({}))); // wrong name
+    await io.atomicWrite(
+      "dbbad.catalog.json",
+      new TextEncoder().encode(JSON.stringify({ dim: 2, metricCode: 0, strategyCode: 1 })),
+    );
+    const cat = await readCatalog("dbbad", { resolveIndexIO });
+    expect(cat).toBeNull();
+  });
 });
