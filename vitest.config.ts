@@ -14,11 +14,13 @@ export default defineConfig({
     globals: true,
     environment: "node",
     setupFiles: [],
+    poolOptions: { threads: { minThreads: 1, maxThreads: 1 } },
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
       reportsDirectory: "coverage",
-      include: ["src/**/*.{ts,tsx}"]
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/cli/**/*.tsx"],
     },
   },
 });

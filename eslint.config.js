@@ -11,7 +11,7 @@ import prettierConfig from "eslint-config-prettier";
 
 export default [
   // Ignore patterns
-  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**", "*.ts"] },
+  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**", "*.ts", "coverage/**", "bin/**"] },
 
   // JS/TS recommended sets (Flat-compatible)
   ...tseslint.config(

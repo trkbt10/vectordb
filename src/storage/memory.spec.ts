@@ -19,4 +19,7 @@ test("Memory FileIO write/read/append/atomicWrite", async () => {
   await io.atomicWrite("snap", new Uint8Array([9]));
   const r2 = await io.read("snap");
   expect(Array.from(r2)).toEqual([9]);
+  // delete and verify
+  await io.del!("snap");
+  await expect(io.read("snap")).rejects.toThrow();
 });

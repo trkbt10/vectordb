@@ -10,6 +10,7 @@ import {
   ruleLargeDatasetBF,
   ruleHnswLowDegree,
   ruleHnswTombstone,
+  ruleIvfImbalance,
 } from "./rules";
 
 describe("rules engine", () => {
@@ -36,5 +37,22 @@ describe("rules engine", () => {
     registerRules([ruleHnswLowDegree(0), ruleHnswTombstone(0.3)]);
     const alerts = evaluateRules(vl);
     expect(alerts.some((a) => a.code === "hnsw.tombstone-high")).toBe(true);
+  });
+
+  it("emits alert for IVF imbalance", () => {
+    const vl = createState({ dim: 2, metric: "cosine", strategy: "ivf", ivf: { nlist: 3, nprobe: 1 } });
+    // Seed centroids
+    for (const v of [new Float32Array([1, 0]), new Float32Array([0, 1]), new Float32Array([-1, 0])]) {
+      add(vl, vl.store._count + 1, v, null);
+    }
+    // Skew many points toward first centroid to create imbalance
+    for (let i = 0; i < 20; i++) add(vl, 100 + i, new Float32Array([1, i * 1e-3]), null);
+    clearRules();
+    // low degree rule included but not necessary here
+    registerRules([ruleHnswLowDegree(0)]);
+    clearRules();
+    registerRules([ruleIvfImbalance(2)]);
+    const alerts = evaluateRules(vl);
+    expect(alerts.some((a: { code: string }) => a.code === "ivf.imbalance")).toBe(true);
   });
 });

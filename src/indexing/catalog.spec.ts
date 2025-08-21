@@ -16,4 +16,11 @@ describe("indexing/catalog", () => {
     expect(cat!.metricCode).toBe(0);
     expect(cat!.strategyCode).toBe(1);
   });
+
+  it("returns null when catalog missing or read fails", async () => {
+    const io = createMemoryFileIO();
+    const resolveIndexIO = () => io;
+    const cat = await readCatalog("missing", { resolveIndexIO });
+    expect(cat).toBeNull();
+  });
 });
