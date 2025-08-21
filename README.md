@@ -1,7 +1,7 @@
 # vector-db (WIP)
 
-![CI](https://github.com/trkbt10/vector-db/actions/workflows/test.yml/badge.svg)
-![Coverage](https://codecov.io/gh/trkbt10/vector-db/graph/badge.svg)
+![CI](https://github.com/trkbt10/vector-db/actions/workflows/test.yml/badge.svg?branch=main)
+![Coverage](https://codecov.io/gh/trkbt10/vector-db/graph/badge.svg?branch=main)
 
 Minimal, dependency‑free vector database with pluggable ANN strategies (bruteforce, HNSW, IVF), attribute filtering, and a clean persistence model (index/data split with CRUSH placement). Runs in Node.js, browsers (OPFS), Electron, and Tauri.
 
@@ -73,13 +73,6 @@ All adapters implement the same `FileIO` interface:
 ```ts
 import type { FileIO } from "vcdb/storage/types";
 ```
-
-## Concepts
-
-- Vector store state is in‑memory; the client is a thin facade around it
-- `connect()` prefers opening an existing snapshot; only creates when absent
-- Persistence uses separate index and data stores; CRUSH decides data placement
-- ANN artifacts can be rebuilt from data if index files are missing
 
 ### Example: CRUSH + S3 (AWS SDK) + Lambda frontend
 
