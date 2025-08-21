@@ -11,7 +11,7 @@ import prettierConfig from "eslint-config-prettier";
 
 export default [
   // Ignore patterns
-  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**", "*.ts", "coverage/**", "bin/**"] },
+  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**", "coverage/**", "bin/**"] },
 
   // JS/TS recommended sets (Flat-compatible)
   ...tseslint.config(
@@ -104,6 +104,12 @@ export default [
               "CallExpression[callee.object.name='mock'][callee.property.name=/^(module|object|replace|restore|reset)$/]",
             message: "Mock APIs (bun:test mock.*) are prohibited. Prefer DI or simple fakes instead.",
           },
+          // Discourage else / else-if; prefer guard clause and separate function with early return
+          {
+            selector: "IfStatement[alternate]",
+            message:
+              "Avoid else / else if blocks. Prefer guard clauses with early return and extract complex conditions into separate functions.",
+          },
         ],
         "@typescript-eslint/consistent-type-definitions": ["error", "type"],
 
@@ -116,11 +122,10 @@ export default [
           },
         ],
 
-        // /* 3. Prohibit relative parent import (../../ etc.) */
-        // "import/no-relative-parent-imports": "error",
-
         /* 4. Always add block {} to if/else/for/while */
         curly: ["warn", "multi-or-nest"],
+        // Prefer guard clauses to else/else-if
+        "no-else-return": ["warn", { allowElseIf: false }],
 
         /* 5. Forbid loading specific test libraries */
         // ES Module imports
@@ -128,32 +133,14 @@ export default [
           "error",
           {
             paths: [
-              {
-                name: "bun:test",
-                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
-              },
-              {
-                name: "vitest",
-                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
-              },
-              {
-                name: "@jest/globals",
-                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
-              },
-              {
-                name: "jest",
-                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
-              },
-              {
-                name: "mocha",
-                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
-              },
+              { name: "bun:test", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              { name: "vitest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              { name: "@jest/globals", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              { name: "jest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              { name: "mocha", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
             ],
             patterns: [
-              {
-                group: ["vitest/*", "jest/*", "mocha/*"],
-                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
-              },
+              { group: ["vitest/*", "jest/*", "mocha/*"], message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
             ],
           },
         ],
@@ -178,21 +165,28 @@ export default [
           "error",
           { object: "jest", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "jest", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
-          {
-            object: "jest",
-            property: "spyOn",
-            message: "Mock APIs are prohibited. Prefer DI or simple fakes instead.",
-          },
+          { object: "jest", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           // Bun's bun:test mock helpers
-          {
-            object: "mock",
-            property: "module",
-            message: "Mock APIs are prohibited. Prefer DI or simple fakes instead.",
-          },
+          { object: "mock", property: "module", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
         ],
+
+        // Warn on @ts-expect-error outside tests
+        "@typescript-eslint/ban-ts-comment": [
+          "warn",
+          { "ts-expect-error": true },
+        ],
+      },
+    },
+
+    // Allow vitest config to import from `vitest/config`
+    {
+      files: ["vitest.config.ts", "vitest.config.js"],
+      rules: {
+        "no-restricted-imports": "off",
+        "no-restricted-modules": "off",
       },
     },
 
@@ -224,6 +218,9 @@ export default [
           suite: "readonly",
           bench: "readonly",
         },
+      },
+      rules: {
+        "@typescript-eslint/ban-ts-comment": "off",
       },
     },
 

@@ -1,7 +1,7 @@
 /**
  * @file Schema validation specs for WizardSchema and FlowSchema
  */
-import { validateWizardSchema, validateFlowSchema } from "../src/cli/ui/database/wizard/validate";
+import { validateWizardSchema, validateFlowSchema } from "../src/cli/ui/features/database-wizard/components/validate";
 
 // Use Vitest globals (configured in vitest.config.ts)
 
@@ -70,4 +70,3 @@ describe("FlowSchema validation", () => {
     expect(res.ok).toBe(false);
   });
 });
-
