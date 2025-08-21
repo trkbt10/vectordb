@@ -5,8 +5,10 @@ import React, { useEffect, useState } from "react";
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { createNodeFileIO } from "../../storage/node";
+import { createMemoryFileIO } from "../../storage/memory";
+import { createOPFSFileIO } from "../../storage/opfs";
 import { connect } from "../../index";
-import { DatabaseForm } from "./database/DatabaseForm";
+import { DatabaseEntry } from "./database/DatabaseEntry";
 import { LoadingScreen } from "./database/LoadingScreen";
 import { ErrorScreen } from "./database/ErrorScreen";
 import { ClusterMenu } from "./database/ClusterMenu";
@@ -38,19 +40,29 @@ export function DatabaseView({ onExit }: { onExit: () => void }) {
               const raw = await readFile(input.path, "utf8");
               type Cfg = {
                 name?: string;
-                indexRoot: string;
-                dataRoot: string;
+                indexRoot?: string; // deprecated in favor of storage.type
+                dataRoot?: string;  // deprecated in favor of storage.type
+                storage?: { type: "node" | "memory" | "opfs" } & { indexRoot?: string; dataRoot?: string };
                 database?: { dim: number; metric: "cosine" | "l2" | "dot"; strategy: "bruteforce" | "hnsw" | "ivf" } & Record<string, unknown>;
                 index?: Record<string, unknown>;
               };
               const cfg: Cfg = JSON.parse(raw) as Cfg;
-              if (!cfg.indexRoot) throw new Error("config.indexRoot is required");
-              if (!cfg.dataRoot) throw new Error("config.dataRoot is required");
               const name = cfg.name || clientName;
-              const storage = {
-                index: createNodeFileIO(cfg.indexRoot),
-                data: (key: string) => createNodeFileIO(path.join(cfg.dataRoot, key)),
-              };
+              const storageKind = cfg.storage?.type ?? "node";
+              const storage = storageKind === "memory"
+                ? { index: createMemoryFileIO(), data: () => createMemoryFileIO() }
+                : storageKind === "opfs"
+                ? { index: createOPFSFileIO(), data: () => createOPFSFileIO() }
+                : (() => {
+                    const idxRoot = cfg.storage?.indexRoot ?? cfg.indexRoot;
+                    const datRoot = cfg.storage?.dataRoot ?? cfg.dataRoot;
+                    if (!idxRoot) throw new Error("config.indexRoot or storage.indexRoot is required for node storage");
+                    if (!datRoot) throw new Error("config.dataRoot or storage.dataRoot is required for node storage");
+                    return {
+                      index: createNodeFileIO(idxRoot),
+                      data: (key: string) => createNodeFileIO(path.join(datRoot, key)),
+                    };
+                  })();
               const hasDb = !!cfg.database;
               return await connect<Record<string, unknown>>({
                 storage,
@@ -70,7 +82,7 @@ export function DatabaseView({ onExit }: { onExit: () => void }) {
 
   if (step.id === "form") {
     return (
-      <DatabaseForm onSubmit={(input: OpenInput) => setStep({ id: "loading", input })} onExit={onExit} />
+      <DatabaseEntry onSubmit={(input: OpenInput) => setStep({ id: "loading", input })} onExit={onExit} />
     );
   }
 

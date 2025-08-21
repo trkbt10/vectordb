@@ -12,7 +12,8 @@ type Screen = { id: "menu" } | { id: "database" };
  * Root CLI application (menu + routing)
  */
 export function App() {
-  const [screen, setScreen] = useState<Screen>({ id: "menu" });
+  // Default to database view; menu remains available via back
+  const [screen, setScreen] = useState<Screen>({ id: "database" });
 
   type Choice = { label: string; value: string };
   const items: Choice[] = useMemo(
