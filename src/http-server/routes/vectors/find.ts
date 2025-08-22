@@ -13,7 +13,10 @@ type SearchBody = { vector: number[]; expr?: unknown };
 export async function find(c: Context, { client }: RouteContext) {
   const body = await c.req.json<SearchBody>();
   const vec = toNumberArray(body?.vector);
-  const expr = body?.expr as FilterExpr | undefined;
+  const expr = ((): FilterExpr | undefined => {
+    const v = body?.expr;
+    return v && typeof v === "object" ? (v as FilterExpr) : undefined;
+  })();
   if (!vec) {
     return c.json({ error: { message: "vector:number[] required" } }, 400);
   }

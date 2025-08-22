@@ -25,7 +25,7 @@ export async function postCreate(c: Context, { client }: RouteContext) {
   }
   const id = single.id;
   const vec = single.vector;
-  const meta = (single.meta ?? null) as Record<string, unknown> | null;
+  const meta = single.meta ?? null;
   if (await client.has(id)) {
     throw httpError(409, "Conflict: id already exists (insert-only)");
   }
@@ -65,7 +65,7 @@ async function bulkInsert(
       continue;
     }
     const vector = normalizeVector(vec);
-    const meta = (r?.meta ?? null) as Record<string, unknown> | null;
+    const meta = r?.meta ?? null;
     prepared.push({ id, vector, meta });
     createdIds.push(id);
   }

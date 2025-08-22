@@ -4,11 +4,11 @@
 import { connect, type VectorDB } from "../client";
 import type { AppConfig } from "./types";
 import { createAsyncLock } from "../util/async_lock";
-import type { StorageConfig } from "../client/indexing";
+// no unused types
 
 /** Create a client from an AppConfig (storage + DB + index). */
 export async function createClientFromConfig(config: AppConfig): Promise<VectorDB<Record<string, unknown>>> {
-  const storage = config.storage as StorageConfig | undefined;
+  const storage = config.storage;
   if (!storage) {
     throw new Error("config.storage is required and must be a concrete StorageConfig (FileIOs). No implicit resolution.");
   }
@@ -16,7 +16,7 @@ export async function createClientFromConfig(config: AppConfig): Promise<VectorD
   const database = config.database;
   const name = config.name;
   if (!name) {
-    throw new Error("config.name is required; no implicit defaults");
+    throw new Error("name is required");
   }
 
   // WAL + lock + afterWrite policy based on config
@@ -26,8 +26,6 @@ export async function createClientFromConfig(config: AppConfig): Promise<VectorD
     storage,
     database,
     index: { ...(index ?? {}), name },
-    wal: config.server?.wal,
     lock,
-    autoSave: config.server?.autoSave,
   });
 }

@@ -15,7 +15,7 @@ import { ensureNumericId } from "../../common/params";
 export async function patchMeta(c: Context, { client }: RouteContext) {
   const id = ensureNumericId(c, "id");
   const body = await c.req.json<{ meta: Record<string, unknown> | null }>();
-  const meta = (body?.meta ?? null) as Record<string, unknown> | null;
+  const meta = body?.meta ?? null;
   const ok = await client.setMeta(id, meta);
   return c.json({ ok });
 }

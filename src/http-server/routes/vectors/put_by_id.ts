@@ -17,7 +17,7 @@ export async function putById(c: Context, { client }: RouteContext) {
   const id = ensureNumericId(c, "id");
   const body = await c.req.json<{ vector: number[]; meta?: Record<string, unknown> | null }>();
   const vec = toNumberArray(body?.vector);
-  const meta = (body?.meta ?? null) as Record<string, unknown> | null;
+  const meta = body?.meta ?? null;
   if (!vec) {
     return c.json({ error: { message: "vector:number[] required" } }, 400);
   }

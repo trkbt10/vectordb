@@ -13,16 +13,13 @@ export type CorsOptions =
       credentials?: boolean;
     };
 
-import type { FileIO } from "../storage/types";
+// no direct FileIO usage here
 
 export type ServerOptions = {
   port?: number;
   host?: string;
   strictPort?: boolean;
   cors?: CorsOptions;
-  /** Optional WAL binding for server; explicit io+name required when provided */
-  wal?: { io: FileIO; name: string };
-  autoSave?: { ops?: number; intervalMs?: number };
   embeddings?: {
     provider?: "openai";
     /** If set, read API key from this env var name (default: OPENAI_API_KEY) */
@@ -46,6 +43,7 @@ export type AppConfig = {
   /** Concrete FileIOs required; no implicit resolution */
   storage?: StorageConfig;
   database?: VectorDBOptions;
-  index?: ClientOptions & { name?: string };
+  /** Client options (name is top-level only) */
+  index?: ClientOptions;
   server?: ServerOptions;
 };

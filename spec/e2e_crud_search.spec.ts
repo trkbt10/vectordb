@@ -50,11 +50,13 @@ describe("indexing/e2e CRUD + search", () => {
     await db.index.saveState(db.state, { baseName: "db" });
 
     // Open back
-    const db2 = await connect<{ tag?: string }>({
-      storage: { index: indexIO, data: dataIO },
-      index: { name: "db", shards: 1, pgs: 16, segmented: true, segmentBytes: 1 << 15, includeAnn: false },
-      onMissing: async ({ index }) => index.openState({ baseName: "db" }),
-    });
+    const db2 = await connect<{ tag?: string }>(
+      {
+        storage: { index: indexIO, data: dataIO },
+        index: { name: "db", shards: 1, pgs: 16, segmented: true, segmentBytes: 1 << 15, includeAnn: false },
+      },
+      { onMissing: async ({ index }) => index.openState({ baseName: "db" }) },
+    );
     // internal count not directly exposed on client; check via get/search
     expect((await db2.get(3))?.meta).toEqual({ tag: "c" });
     const hits2 = await db2.findMany(new Float32Array([0, 1, 0]), { k: 2 });

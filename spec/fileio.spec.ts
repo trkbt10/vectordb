@@ -24,23 +24,27 @@ describe("persist/FileIO path isolation", () => {
     await mkdir(outRoot, { recursive: true });
 
     // create small DB
-    const db = await connect<{ tag?: string }>({
-      storage: { index: createNodeFileIO(outRoot), data: createNodeFileIO(outRoot) },
-      database: { dim: 2, metric: "cosine", strategy: "bruteforce" },
-    });
+    const db = await connect<{ tag?: string }>(
+      {
+        storage: { index: createNodeFileIO(outRoot), data: createNodeFileIO(outRoot) },
+        database: { dim: 2, metric: "cosine", strategy: "bruteforce" },
+      },
+    );
     await db.set(1, { vector: new Float32Array([1, 0]), meta: { tag: "a" } });
     await db.set(2, { vector: new Float32Array([0, 1]), meta: { tag: "b" } });
     await db.set(3, { vector: new Float32Array([0.5, 0.5]), meta: null });
 
     // bind env with prefixed IO, shards>1 to fan out data dirs
-    const client2 = await connect<{ tag?: string }>({
-      storage: {
-        index: createNodeFileIO(outRoot),
-        data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+    const client2 = await connect<{ tag?: string }>(
+      {
+        storage: {
+          index: createNodeFileIO(outRoot),
+          data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+        },
+        index: { name: "db", shards: 2, segmented: true, segmentBytes: 1 << 14, includeAnn: false },
       },
-      index: { name: "db", shards: 2, segmented: true, segmentBytes: 1 << 14, includeAnn: false },
-      onMissing: async ({ index }) => index.openState({ baseName: "db" }),
-    });
+      { onMissing: async ({ index }) => index.openState({ baseName: "db" }) },
+    );
     const index = client2.index;
 
     try {
@@ -77,14 +81,16 @@ describe("persist/FileIO path isolation", () => {
       expect(await fileExists(path.join(cwd, "db.manifest.json"))).toBe(false);
 
       // roundtrip open from saved index to ensure env paths are valid
-      const db2 = await connect<{ tag?: string }>({
-        storage: {
-          index: createNodeFileIO(outRoot),
-          data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+      const db2 = await connect<{ tag?: string }>(
+        {
+          storage: {
+            index: createNodeFileIO(outRoot),
+            data: (key: string) => createNodeFileIO(path.join(dataRoot, key)),
+          },
+          index: { name: "db" },
         },
-        index: { name: "db" },
-        onMissing: async ({ index }) => index.openState({ baseName: "db" }),
-      });
+        { onMissing: async ({ index }) => index.openState({ baseName: "db" }) },
+      );
       const hits = await db2.findMany(new Float32Array([1, 0]), { k: 1 });
       expect(hits.length).toBe(1);
       expect([1, 2, 3]).toContain(hits[0].id);

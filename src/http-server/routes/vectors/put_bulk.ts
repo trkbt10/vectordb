@@ -29,7 +29,7 @@ export async function putBulk(c: Context, { client }: RouteContext) {
       return c.json({ error: { message: "Each row requires id:number and vector:number[]" } }, 400);
     }
     const vector = normalizeVector(vec);
-    const meta = (r?.meta ?? null) as Record<string, unknown> | null;
+    const meta = r?.meta ?? null;
     prepared.push({ id, vector, meta });
     (await client.has(id) ? updatedIds : createdIds).push(id);
   }
