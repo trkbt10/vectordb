@@ -8,4 +8,3 @@ describe("Help", () => {
     expect(typeof Help).toBe("function");
   });
 });
-

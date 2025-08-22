@@ -42,7 +42,9 @@ import { Text } from "ink";
 export function matchRoute(currentPath: string, routes: Route[]): Route | null {
   // First try exact match
   const exactMatch = routes.find((r) => r.path === currentPath);
-  if (exactMatch) return exactMatch;
+  if (exactMatch) {
+    return exactMatch;
+  }
 
   // Then try prefix match for nested routes (prefer longest path)
   const prefixMatches = routes.filter((r) => currentPath.startsWith(r.path + "/"));
@@ -56,7 +58,9 @@ export function matchRoute(currentPath: string, routes: Route[]): Route | null {
   if (wildcardMatch) {
     const pathPattern = wildcardMatch.path.replace("*", "(.*)");
     const regex = new RegExp(`^${pathPattern}$`);
-    if (regex.test(currentPath)) return wildcardMatch;
+    if (regex.test(currentPath)) {
+      return wildcardMatch;
+    }
   }
 
   return null;

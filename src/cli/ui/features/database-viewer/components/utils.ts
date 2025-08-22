@@ -21,7 +21,9 @@ export function truncate(s: string, n = 40): string {
  * @returns A concise textual preview like "[0.123, 0.456, …]".
  */
 export function vectorPreview(v: Float32Array, max = 3): string {
-  if (!v || v.length === 0) return "[]";
+  if (!v || v.length === 0) {
+    return "[]";
+  }
   const parts = Array.from(v.slice(0, max)).map((x) => (Number.isFinite(x) ? (x as number).toFixed(3) : String(x)));
   return `[${parts.join(", ")}${v.length > max ? ", …" : ""}]`;
 }

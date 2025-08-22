@@ -17,7 +17,16 @@
 import { bf_add, bf_search } from "../../ann/bruteforce";
 import { hnsw_ensureCapacity, hnsw_add, hnsw_remove, hnsw_search } from "../../ann/hnsw";
 import { ivf_add, ivf_remove, ivf_search } from "../../ann/ivf";
-import { VectorStoreState, UpsertOptions, SearchOptions, SearchHit, HNSWParams, IVFParams, VectorDBOptions, RowInput } from "../../types";
+import {
+  VectorStoreState,
+  UpsertOptions,
+  SearchOptions,
+  SearchHit,
+  HNSWParams,
+  IVFParams,
+  VectorDBOptions,
+  RowInput,
+} from "../../types";
 import { isHnswVL, isIvfVL, isBfVL } from "../../util/guards";
 import { createState } from "../state/create";
 import * as Store from "../store/store";
@@ -45,9 +54,13 @@ export function add<TMeta>(
   up?: UpsertOptions,
 ) {
   const grew = Store.ensure(vl.store, 1);
-  if (grew && isHnswVL(vl)) hnsw_ensureCapacity(vl.ann, vl.store._capacity);
+  if (grew && isHnswVL(vl)) {
+    hnsw_ensureCapacity(vl.ann, vl.store._capacity);
+  }
   const { created } = Store.addOrUpdate(vl.store, id, vector, meta, up);
-  if (!created) return;
+  if (!created) {
+    return;
+  }
   if (isHnswVL(vl)) {
     hnsw_add(vl.ann, vl.store, id);
     return;
@@ -56,7 +69,9 @@ export function add<TMeta>(
     ivf_add(vl.ann, vl.store, id);
     return;
   }
-  if (isBfVL(vl)) bf_add();
+  if (isBfVL(vl)) {
+    bf_add();
+  }
 }
 
 /**
@@ -64,8 +79,12 @@ export function add<TMeta>(
  */
 export function addMany<TMeta>(vl: VectorStoreState<TMeta>, rows: RowInput<TMeta>[], up?: UpsertOptions) {
   const grew = Store.ensure(vl.store, rows.length);
-  if (grew && isHnswVL(vl)) hnsw_ensureCapacity(vl.ann, vl.store._capacity);
-  for (const r of rows) add(vl, r.id, r.vector, r.meta ?? null, up);
+  if (grew && isHnswVL(vl)) {
+    hnsw_ensureCapacity(vl.ann, vl.store._capacity);
+  }
+  for (const r of rows) {
+    add(vl, r.id, r.vector, r.meta ?? null, up);
+  }
 }
 
 /**
@@ -93,12 +112,16 @@ export function setMeta<TMeta>(vl: VectorStoreState<TMeta>, id: number, meta: TM
  */
 export function remove<TMeta>(vl: VectorStoreState<TMeta>, id: number): boolean {
   if (isHnswVL(vl)) {
-    if (!has(vl, id)) return false;
+    if (!has(vl, id)) {
+      return false;
+    }
     hnsw_remove(vl.ann, vl.store, id);
     return true;
   }
   if (isIvfVL(vl)) {
-    if (!has(vl, id)) return false;
+    if (!has(vl, id)) {
+      return false;
+    }
     ivf_remove(vl.ann, id);
     return true;
   }
@@ -116,9 +139,15 @@ export function search<TMeta>(
 ): SearchHit<TMeta>[] {
   const k = Math.max(1, options.k ?? 5);
   const q = Store.normalizeQuery(vl.metric, query);
-  if (isHnswVL(vl)) return hnsw_search(vl.ann, vl.store, q, { k, filter: options.filter });
-  if (isIvfVL(vl)) return ivf_search(vl.ann, vl.store, q, k, options.filter);
-  if (isBfVL(vl)) return bf_search(vl.ann, vl.store, q, k, options.filter);
+  if (isHnswVL(vl)) {
+    return hnsw_search(vl.ann, vl.store, q, { k, filter: options.filter });
+  }
+  if (isIvfVL(vl)) {
+    return ivf_search(vl.ann, vl.store, q, k, options.filter);
+  }
+  if (isBfVL(vl)) {
+    return bf_search(vl.ann, vl.store, q, k, options.filter);
+  }
   return [];
 }
 

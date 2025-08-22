@@ -8,4 +8,3 @@ describe("FlowWizard", () => {
     expect(typeof FlowWizard).toBe("function");
   });
 });
-

@@ -8,7 +8,14 @@ import { FlowWizard, type FlowSchema } from "./FlowWizard";
 /**
  * Runner: Executes the provided FlowSchema and reports saved path.
  */
-export function Runner({ flow, onCancel, onSaved }: { flow: FlowSchema; onCancel: () => void; onSaved: (path: string) => void }) {
+export function Runner({
+  flow,
+  onCancel,
+  onSaved,
+}: {
+  flow: FlowSchema;
+  onCancel: () => void;
+  onSaved: (path: string) => void;
+}) {
   return <FlowWizard schema={flow} onCancel={onCancel} onSaved={onSaved} />;
 }
-

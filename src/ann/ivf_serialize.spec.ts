@@ -15,7 +15,9 @@ describe("ann/ivf serialize/deserialize", () => {
     add(src, 2, new Float32Array([0, 1, 0]));
     add(src, 3, new Float32Array([0, 0, 1]));
     // populate minimal centroids/lists implicitly via ivf_add
-    if (!isIvfVL(src)) throw new Error("expected ivf VL src");
+    if (!isIvfVL(src)) {
+      throw new Error("expected ivf VL src");
+    }
     const buf = ivf_serialize(src.ann as IVFState, src.store);
 
     // destination: dim=2 => should resize centroid array length to nlist*2
@@ -24,7 +26,9 @@ describe("ann/ivf serialize/deserialize", () => {
     const u8 = new Uint8Array(buf.slice(0));
     const dv = new DataView(u8.buffer);
     dv.setUint32(12, 2, true); // set serialized header dim to mismatch centroid array dim
-    if (!isIvfVL(dst)) throw new Error("expected ivf VL dst");
+    if (!isIvfVL(dst)) {
+      throw new Error("expected ivf VL dst");
+    }
     ivf_deserialize(dst.ann as IVFState, dst.store, u8.buffer);
     const cent = (dst.ann as IVFState).centroids as Float32Array;
     expect(cent.length).toBe((dst.ann as IVFState).nlist * dst.dim);

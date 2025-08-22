@@ -8,4 +8,3 @@ describe("DatabaseView", () => {
     expect(typeof DatabaseView).toBe("function");
   });
 });
-

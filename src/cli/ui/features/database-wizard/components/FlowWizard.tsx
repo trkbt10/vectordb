@@ -112,22 +112,30 @@ export function FlowWizard({
   }, [stepId]);
 
   const descriptionLines = useMemo(() => {
-    if (step?.type !== "ui") return [] as string[];
-    if (!step.description) return [] as string[];
+    if (step?.type !== "ui") {
+      return [] as string[];
+    }
+    if (!step.description) {
+      return [] as string[];
+    }
     return Array.isArray(step.description) ? step.description : [step.description];
   }, [step]);
 
   const stepItems: { id: string; label: string }[] = []; // hide steps sidebar per UX request
 
   function go(next: string | undefined) {
-    if (!next) return onCancel();
+    if (!next) {
+      return onCancel();
+    }
     setHistory((h) => [...h, stepId]);
     setStepId(next);
   }
 
   function back() {
     const prev = history[history.length - 1];
-    if (!prev) return onCancel();
+    if (!prev) {
+      return onCancel();
+    }
     setHistory((h) => h.slice(0, h.length - 1));
     setStepId(prev);
   }
@@ -214,7 +222,9 @@ export function FlowWizard({
         // surface error as a UI step
         const msg = String((e as { message?: unknown })?.message ?? e);
         setAnswers((a) => ({ ...a, __error: msg }));
-        if (step.next) go(step.next);
+        if (step.next) {
+          go(step.next);
+        }
       }
     })();
     return (
@@ -250,12 +260,15 @@ export function FlowWizard({
           isFocused={true}
           onHighlight={(i: { label: string; value: string; tooltip?: string }) => setMenuTip(i.tooltip)}
           onSelect={(i: { label: string; value: string }) => {
-            if (i.value === "__back_or_cancel__") return step.allowBack ? back() : onCancel();
+            if (i.value === "__back_or_cancel__") {
+              return step.allowBack ? back() : onCancel();
+            }
             const chosen = step.items.find((m) => m.next === i.value || m.label === i.label);
             const key = step.storeTo;
             if (chosen && typeof key === "string" && typeof chosen.value === "string") {
               setAnswers((a) => ({ ...a, [key]: chosen.value }));
             }
+
             go(i.value);
           }}
         />
@@ -269,18 +282,26 @@ export function FlowWizard({
   }
 
   // UI step
-  if (step.type !== "ui") return null;
+  if (step.type !== "ui") {
+    return null;
+  }
   const uiStep = step as UiStep;
   const preview = uiStep.preview?.(answers);
   function renderPreview(): React.ReactNode | undefined {
-    if (preview === undefined) return undefined;
+    if (preview === undefined) {
+      return undefined;
+    }
     return <Text>{typeof preview === "string" ? preview : JSON.stringify(preview, null, 2)}</Text>;
   }
   // description renderer uses field.type when needed
   function renderDescription(): React.ReactNode | null {
     // step is narrowed to UI above; safe to access field
-    if (uiStep.field.type !== "select") return null;
-    if (descriptionLines.length <= 0) return null;
+    if (uiStep.field.type !== "select") {
+      return null;
+    }
+    if (descriptionLines.length <= 0) {
+      return null;
+    }
     return (
       <Box paddingTop={1}>
         <Text color="gray">{descriptionLines.join("\n")}</Text>
@@ -309,7 +330,9 @@ export function FlowWizard({
     );
   }
   function valueForField(): string {
-    if (uiStep.field.type !== "text" && uiStep.field.type !== "number") return "";
+    if (uiStep.field.type !== "text" && uiStep.field.type !== "number") {
+      return "";
+    }
     return String((answers[uiStep.field.name] as string | undefined) ?? uiStep.field.defaultValue ?? "");
   }
   const v = valueForField();
@@ -332,7 +355,7 @@ export function FlowWizard({
         value={v}
         onChange={(nv) => setAnswers((a) => ({ ...a, [uiStep.field.name]: nv }))}
         onNext={() => go(nextForUi(uiStep, answers) ?? stepId)}
-        onBack={uiStep.allowBack ? (() => back()) : undefined}
+        onBack={uiStep.allowBack ? () => back() : undefined}
         preview={renderPreview()}
       />
       {renderDescription()}
@@ -364,9 +387,13 @@ function MultiFieldForm({
   const [actionsFocus, setActionsFocus] = React.useState<boolean>(false);
 
   useInput((input, key) => {
-    if (mode === "edit") return; // inputs manage keys; Esc handled by editor
+    if (mode === "edit") {
+      return;
+    } // inputs manage keys; Esc handled by editor
     if (actionsFocus) {
-      if (key.upArrow) return setActionsFocus(false);
+      if (key.upArrow) {
+        return setActionsFocus(false);
+      }
       return; // ActionBar captures left/right/enter
     }
     const prevIdx = (() => {
@@ -379,16 +406,22 @@ function MultiFieldForm({
       const rel = fields.slice(selected + 1).findIndex((f) => !isGroupField(f));
       return rel < 0 ? selected : selected + 1 + rel;
     })();
-    if (key.upArrow) setSelected(prevIdx);
-    if (key.downArrow) setSelected(nextIdx);
+    if (key.upArrow) {
+      setSelected(prevIdx);
+    }
+    if (key.downArrow) {
+      setSelected(nextIdx);
+    }
     const lastIdx = (() => {
-      const idx = fields
-        .map((f, i) => (!isGroupField(f) ? i : -1))
-        .reduce((a, b) => (b > a ? b : a), -1);
+      const idx = fields.map((f, i) => (!isGroupField(f) ? i : -1)).reduce((a, b) => (b > a ? b : a), -1);
       return idx < 0 ? 0 : idx;
     })();
-    if (key.downArrow && selected === lastIdx) setActionsFocus(true);
-    if (key.return && !isGroupField(fields[selected])) setMode("edit");
+    if (key.downArrow && selected === lastIdx) {
+      setActionsFocus(true);
+    }
+    if (key.return && !isGroupField(fields[selected])) {
+      setMode("edit");
+    }
   });
 
   // const f = fields[selected]; // unused
@@ -417,12 +450,16 @@ function MultiFieldForm({
             const found = opts.find((o) => o.value === value);
             return found ? found.label : String(value ?? "");
           }
-          if (field.type === "boolean") return String(Boolean(value));
+          if (field.type === "boolean") {
+            return String(Boolean(value));
+          }
           return String(value ?? "");
         }
         const display = displayFor(it, rawVal);
         const renderCell = (field: Field, editing: boolean, disp: string, value: unknown): React.ReactNode => {
-          if (!editing) return <Text inverse={highlight}>{disp}</Text>;
+          if (!editing) {
+            return <Text inverse={highlight}>{disp}</Text>;
+          }
           if (field.type === "select") {
             return (
               <SelectInput
@@ -438,7 +475,10 @@ function MultiFieldForm({
           if (field.type === "boolean") {
             return (
               <SelectInput
-                items={[{ label: "No", value: "false" }, { label: "Yes", value: "true" }]}
+                items={[
+                  { label: "No", value: "false" },
+                  { label: "Yes", value: "true" },
+                ]}
                 isFocused={true}
                 onSelect={(sel) => {
                   onChange(field.name, sel.value === "true");
@@ -469,7 +509,6 @@ function MultiFieldForm({
               {isEditing ? <EscCatcher onEsc={exitEdit} /> : null}
             </Box>
           </Box>
-          
         );
       })}
       <Box marginTop={1}>
@@ -485,7 +524,9 @@ function MultiFieldForm({
 
 function EscCatcher({ onEsc }: { onEsc: () => void }) {
   useInput((input, key) => {
-    if (key.escape) onEsc();
+    if (key.escape) {
+      onEsc();
+    }
   });
   return <></>;
 }

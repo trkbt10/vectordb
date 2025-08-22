@@ -44,6 +44,7 @@ export function bf_search<TMeta>(
   if (q.length !== dim) {
     throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
   }
+
   const out: SearchHit<TMeta>[] = [];
   const data = store.data;
   const scoreAt = getScoreAtFn(bf.metric);
@@ -53,6 +54,7 @@ export function bf_search<TMeta>(
     if (filter && !filter(id, meta)) {
       continue;
     }
+
     const base = i * dim;
     const s = scoreAt(data, base, q, dim);
     // adapt to Scored.s naming for util: map score->s when pushing

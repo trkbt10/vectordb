@@ -31,7 +31,7 @@ export type ConnectOptions<TMeta> = {
 };
 
 function isMissingStateError(e: unknown): boolean {
-  const msg = (e && typeof e === "object" && "message" in e) ? String((e as { message?: unknown }).message) : String(e);
+  const msg = e && typeof e === "object" && "message" in e ? String((e as { message?: unknown }).message) : String(e);
   // Reasons considered as "missing", not corruption: no manifest or no catalog to rebuild
   return msg.includes("manifest missing") || msg.includes("catalog missing");
 }
@@ -52,8 +52,12 @@ export async function connect<TMeta extends Record<string, unknown>>({
     try {
       return (await indexOperations.openState({ baseName: name })) as VectorStoreState<TMeta>;
     } catch (e) {
-      if (!isMissingStateError(e)) throw e; // rethrow non-missing errors (e.g., corruption)
-      if (onMissing) return (await onMissing({ create: createState, index: indexOperations, name })) as VectorStoreState<TMeta>;
+      if (!isMissingStateError(e)) {
+        throw e;
+      } // rethrow non-missing errors (e.g., corruption)
+      if (onMissing) {
+        return (await onMissing({ create: createState, index: indexOperations, name })) as VectorStoreState<TMeta>;
+      }
       if (databaseOptions) {
         const s = createState<TMeta>(databaseOptions);
         await indexOperations.saveState(s, { baseName: name });
@@ -65,6 +69,11 @@ export async function connect<TMeta extends Record<string, unknown>>({
   const state = await resolveState();
   const database = createDatabaseFromState<TMeta>(state);
   const client = database as ClientWithDatabase<TMeta>;
-  Object.defineProperty(client, "index", { value: indexOperations, enumerable: true, configurable: false, writable: false });
+  Object.defineProperty(client, "index", {
+    value: indexOperations,
+    enumerable: true,
+    configurable: false,
+    writable: false,
+  });
   return client;
 }

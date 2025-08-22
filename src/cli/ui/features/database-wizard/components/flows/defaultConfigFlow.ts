@@ -93,8 +93,12 @@ export const defaultConfigFlow: FlowSchema = {
         const name = String(a.name || "db");
         const storage = (() => {
           const intent = String(a.intent || "local");
-          if (intent === "memory") return { type: "memory" as const };
-          if (intent === "browser") return { type: "opfs" as const };
+          if (intent === "memory") {
+            return { type: "memory" as const };
+          }
+          if (intent === "browser") {
+            return { type: "opfs" as const };
+          }
           const base = String(a.baseDir || ".vectordb");
           return { type: "node" as const, indexRoot: `${base}/index`, dataRoot: `${base}/data` };
         })();
@@ -103,7 +107,8 @@ export const defaultConfigFlow: FlowSchema = {
           metric: (a.metric as "cosine" | "l2" | "dot") || "cosine",
           strategy: (a.strategy as "bruteforce" | "hnsw" | "ivf") || "bruteforce",
         } as const;
-        const hnswPart = a.strategy === "hnsw" ? { M: Number(a.hnswM || 16) || 16, efSearch: Number(a.hnswEfSearch || 64) || 64 } : {};
+        const hnswPart =
+          a.strategy === "hnsw" ? { M: Number(a.hnswM || 16) || 16, efSearch: Number(a.hnswEfSearch || 64) || 64 } : {};
         const ivfPart = a.strategy === "ivf" ? { nlist: Number(a.ivfNlist || 1024) || 1024 } : {};
         const database = { ...databaseBase, ...hnswPart, ...ivfPart };
         const index = {

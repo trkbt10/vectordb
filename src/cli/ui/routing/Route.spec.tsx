@@ -30,7 +30,7 @@ describe("Route utilities", () => {
       const TestComponent = ({ count, items, enabled }: Props) => (
         <Text>{`${count} ${items.join(",")} ${enabled}`}</Text>
       );
-      
+
       const route = createRoute("/complex", TestComponent, {
         count: 5,
         items: ["a", "b", "c"],
@@ -63,9 +63,7 @@ describe("Route utilities", () => {
 
     test("preserves component and props", () => {
       const TestComponent = ({ id }: { id: number }) => <Text>{id}</Text>;
-      const routes = [
-        createRoute("/item", TestComponent, { id: 1 }),
-      ];
+      const routes = [createRoute("/item", TestComponent, { id: 1 })];
 
       const nested = createNestedRoutes("/catalog", routes);
 

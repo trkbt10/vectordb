@@ -6,13 +6,7 @@
 import { Box, render } from "ink";
 import React, { useEffect, useState } from "react";
 import { crushLocate } from "../../src/indexing/placement/crush";
-import {
-  AccessLog,
-  Controls,
-  MapInfo,
-  ShardVisualizer,
-  TemplateSelector,
-} from "./crush-cli-components";
+import { AccessLog, Controls, MapInfo, ShardVisualizer, TemplateSelector } from "./crush-cli-components";
 import { CRUSH_TEMPLATES } from "./crush-cli-templates";
 import type { AppState, CrushTemplate, ShardAccess, ShardStats } from "./crush-cli-types";
 
@@ -104,11 +98,7 @@ function App() {
   if (!state.selectedTemplate) {
     return (
       <Box padding={1}>
-        <TemplateSelector
-          templates={CRUSH_TEMPLATES}
-          selectedIndex={selectedIndex}
-          onSelect={handleTemplateSelect}
-        />
+        <TemplateSelector templates={CRUSH_TEMPLATES} selectedIndex={selectedIndex} onSelect={handleTemplateSelect} />
       </Box>
     );
   }
@@ -119,16 +109,12 @@ function App() {
   return (
     <Box padding={1} flexDirection="column">
       <MapInfo template={tpl} />
-      
+
       <Box marginTop={2} flexDirection="row" gap={4}>
         <Box flexDirection="column" width="60%">
-          <ShardVisualizer
-            stats={state.stats}
-            totalAccesses={state.totalAccesses}
-            currentAccess={currentAccess}
-          />
+          <ShardVisualizer stats={state.stats} totalAccesses={state.totalAccesses} currentAccess={currentAccess} />
         </Box>
-        
+
         <Box flexDirection="column" width="40%">
           <AccessLog accesses={state.accesses} />
         </Box>

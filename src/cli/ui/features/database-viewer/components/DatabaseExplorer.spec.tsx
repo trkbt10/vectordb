@@ -8,4 +8,3 @@ describe("DatabaseExplorer", () => {
     expect(typeof DatabaseExplorer).toBe("function");
   });
 });
-

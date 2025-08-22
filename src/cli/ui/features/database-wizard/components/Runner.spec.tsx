@@ -8,4 +8,3 @@ describe("Runner", () => {
     expect(typeof Runner).toBe("function");
   });
 });
-

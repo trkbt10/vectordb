@@ -29,11 +29,17 @@ function FooterBarBase({
   actions: FooterAction[];
   focusIndex: number;
 }) {
-  const seg = React.useCallback((label: string, val: string) => (
-    <Box key={label} marginRight={1}>
-      <Text color="black"> {label}: {val} </Text>
-    </Box>
-  ), []);
+  const seg = React.useCallback(
+    (label: string, val: string) => (
+      <Box key={label} marginRight={1}>
+        <Text color="black">
+          {" "}
+          {label}: {val}{" "}
+        </Text>
+      </Box>
+    ),
+    [],
+  );
   return (
     <Box width="100%" justifyContent="space-between" flexDirection="column" backgroundColor="white">
       <Box justifyContent="space-between">

@@ -28,8 +28,12 @@ export function createShardPlanByRange(ids: number[], shards: number): ShardPlan
   const sorted = Array.from(ids).sort((a, b) => a - b);
   const out: ShardPlan = { shards: [] };
   const n = Math.max(1, shards | 0);
-  for (let i = 0; i < n; i++) out.shards.push({ name: `shard-${i}`, ids: [] });
-  for (let i = 0; i < sorted.length; i++) out.shards[i % n]!.ids.push(sorted[i]!);
+  for (let i = 0; i < n; i++) {
+    out.shards.push({ name: `shard-${i}`, ids: [] });
+  }
+  for (let i = 0; i < sorted.length; i++) {
+    out.shards[i % n]!.ids.push(sorted[i]!);
+  }
   return out;
 }
 
@@ -37,14 +41,20 @@ export function createShardPlanByRange(ids: number[], shards: number): ShardPlan
 export function createShardPlanByHash(ids: number[], shards: number): ShardPlan {
   const out: ShardPlan = { shards: [] };
   const n = Math.max(1, shards | 0);
-  for (let i = 0; i < n; i++) out.shards.push({ name: `shard-${i}`, ids: [] });
-  for (const id of ids) out.shards[(id >>> 0) % n]!.ids.push(id);
+  for (let i = 0; i < n; i++) {
+    out.shards.push({ name: `shard-${i}`, ids: [] });
+  }
+  for (const id of ids) {
+    out.shards[(id >>> 0) % n]!.ids.push(id);
+  }
   return out;
 }
 
 /** Convenience wrapper: choose plan by 'range' or 'hash'. */
 export function createShardPlan(ids: number[], opts: { by: "range" | "hash"; shards: number }): ShardPlan {
-  if (opts.by === "hash") return createShardPlanByHash(ids, opts.shards);
+  if (opts.by === "hash") {
+    return createShardPlanByHash(ids, opts.shards);
+  }
   return createShardPlanByRange(ids, opts.shards);
 }
 
@@ -61,7 +71,9 @@ export function searchParallel<TMeta>(
   const out: SearchHit<TMeta>[] = [];
   for (const shard of plan.shards) {
     function shardExpr(): FilterExpr {
-      if (opts.expr) return { has_id: { values: shard.ids }, must: [opts.expr] };
+      if (opts.expr) {
+        return { has_id: { values: shard.ids }, must: [opts.expr] };
+      }
       return { has_id: { values: shard.ids } };
     }
     const expr = shardExpr();
@@ -76,7 +88,9 @@ export function searchParallel<TMeta>(
         }
       }
       out.splice(ins, 0, h);
-      if (out.length > k) out.length = k;
+      if (out.length > k) {
+        out.length = k;
+      }
     }
   }
   return out;

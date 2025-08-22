@@ -31,7 +31,9 @@ export class MaxHeap<T extends ScoreItem> {
   }
   pop(): T | undefined {
     const n = this.a.length;
-    if (n === 0) return undefined;
+    if (n === 0) {
+      return undefined;
+    }
     const top = this.a[0];
     const last = this.a.pop() as T;
     if (n > 1) {
@@ -44,7 +46,9 @@ export class MaxHeap<T extends ScoreItem> {
     const a = this.a;
     while (i > 0) {
       const p = (i - 1) >> 1;
-      if (a[p].s >= a[i].s) break;
+      if (a[p].s >= a[i].s) {
+        break;
+      }
       const t = a[p];
       a[p] = a[i];
       a[i] = t;
@@ -59,9 +63,15 @@ export class MaxHeap<T extends ScoreItem> {
         r = l + 1;
       // eslint-disable-next-line no-restricted-syntax -- Performance-critical: heap operations require mutable index for finding max child
       let m = i;
-      if (l < n && a[l].s > a[m].s) m = l;
-      if (r < n && a[r].s > a[m].s) m = r;
-      if (m === i) break;
+      if (l < n && a[l].s > a[m].s) {
+        m = l;
+      }
+      if (r < n && a[r].s > a[m].s) {
+        m = r;
+      }
+      if (m === i) {
+        break;
+      }
       const t = a[m];
       a[m] = a[i];
       a[i] = t;

@@ -17,7 +17,9 @@ describe("ops.consistency", () => {
     // simulate drift
     if (isIvfVL(vl)) {
       vl.ann.idToList.clear();
-      for (const lst of vl.ann.lists) lst.splice(0, lst.length);
+      for (const lst of vl.ann.lists) {
+        lst.splice(0, lst.length);
+      }
     }
     const rep1 = checkConsistency(vl);
     expect(rep1.missingInIndex.length).toBeGreaterThan(0);

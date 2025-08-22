@@ -24,15 +24,23 @@ export function createBitMask(n: number): BitMask {
  *
  */
 export function maskSet(mask: BitMask, idx: number): void {
-  if (idx < 0) return;
-  if (idx >= mask.length) return;
+  if (idx < 0) {
+    return;
+  }
+  if (idx >= mask.length) {
+    return;
+  }
   mask[idx] = 1;
 }
 /**
  *
  */
 export function maskHas(mask: BitMask, idx: number): boolean {
-  if (idx < 0) return false;
-  if (idx >= mask.length) return false;
+  if (idx < 0) {
+    return false;
+  }
+  if (idx >= mask.length) {
+    return false;
+  }
   return mask[idx] === 1;
 }

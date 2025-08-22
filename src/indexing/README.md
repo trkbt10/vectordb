@@ -1,5 +1,4 @@
-Indexing Module Layout
-======================
+# Indexing Module Layout
 
 Goal: separate concerns between index/data formats and the runtime that interprets them.
 

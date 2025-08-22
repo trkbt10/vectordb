@@ -27,9 +27,15 @@ export type UiStepLike = {
  * @returns True if the condition holds.
  */
 export function evalCond(cond: FlowCondition, answers: FlowAnswers): boolean {
-  if (cond.op === "equals") return answers[cond.field] === cond.value;
-  if (cond.op === "in") return cond.values.includes(answers[cond.field] as never);
-  if (cond.op === "not") return !evalCond(cond.cond, answers);
+  if (cond.op === "equals") {
+    return answers[cond.field] === cond.value;
+  }
+  if (cond.op === "in") {
+    return cond.values.includes(answers[cond.field] as never);
+  }
+  if (cond.op === "not") {
+    return !evalCond(cond.cond, answers);
+  }
   return false;
 }
 
@@ -43,8 +49,11 @@ export function evalCond(cond: FlowCondition, answers: FlowAnswers): boolean {
  */
 export function nextForUi(step: UiStepLike, answers: FlowAnswers): string | undefined {
   for (const t of step.transitions ?? []) {
-    if (evalCond(t.when, answers)) return t.next;
+    if (evalCond(t.when, answers)) {
+      return t.next;
+    }
   }
+
   return step.defaultNext;
 }
 

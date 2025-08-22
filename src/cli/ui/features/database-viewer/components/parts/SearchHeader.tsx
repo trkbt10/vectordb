@@ -9,7 +9,15 @@ import TextInput from "ink-text-input";
  * SearchHeaderBase
  * Controlled search input and divider.
  */
-function SearchHeaderBase({ query, onChange, isFocused = true }: { query: string; onChange: (v: string) => void; isFocused?: boolean }) {
+function SearchHeaderBase({
+  query,
+  onChange,
+  isFocused = true,
+}: {
+  query: string;
+  onChange: (v: string) => void;
+  isFocused?: boolean;
+}) {
   return (
     <>
       <Box>

@@ -14,11 +14,17 @@ describe("IVF basic behavior", () => {
     const e2 = new Float32Array([0, 1, 0, 0]);
     function jitter(base: Float32Array, eps: number) {
       const v = new Float32Array(dim);
-      for (let i = 0; i < dim; i++) v[i] = base[i] + (Math.random() * 2 - 1) * eps;
+      for (let i = 0; i < dim; i++) {
+        v[i] = base[i] + (Math.random() * 2 - 1) * eps;
+      }
       return v;
     }
-    for (let i = 0; i < 50; i++) add(db, 100 + i, jitter(e1, 0.05), null);
-    for (let i = 0; i < 50; i++) add(db, 200 + i, jitter(e2, 0.05), null);
+    for (let i = 0; i < 50; i++) {
+      add(db, 100 + i, jitter(e1, 0.05), null);
+    }
+    for (let i = 0; i < 50; i++) {
+      add(db, 200 + i, jitter(e2, 0.05), null);
+    }
 
     const q1 = jitter(e1, 0.02);
     const q2 = jitter(e2, 0.02);
@@ -34,7 +40,11 @@ describe("IVF basic behavior", () => {
       const sb = new Set(b);
       // eslint-disable-next-line no-restricted-syntax -- Test utility: counting matches for recall
       let m = 0;
-      for (const x of a) if (sb.has(x)) m++;
+      for (const x of a) {
+        if (sb.has(x)) {
+          m++;
+        }
+      }
       return m / a.length;
     }
     expect(recall(bf1, ivf1)).toBeGreaterThanOrEqual(0.6);

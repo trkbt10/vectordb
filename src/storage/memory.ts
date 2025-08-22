@@ -8,12 +8,17 @@ import { toUint8 } from "./types";
 export function createMemoryFileIO(initial?: Record<string, Uint8Array | ArrayBuffer>): FileIO {
   const store = new Map<string, Uint8Array>();
   if (initial) {
-    for (const [k, v] of Object.entries(initial)) store.set(k, toUint8(v));
+    for (const [k, v] of Object.entries(initial)) {
+      store.set(k, toUint8(v));
+    }
   }
+
   return {
     async read(path: string): Promise<Uint8Array> {
       const v = store.get(path);
-      if (!v) throw new Error(`file not found: ${path}`);
+      if (!v) {
+        throw new Error(`file not found: ${path}`);
+      }
       return new Uint8Array(v);
     },
     async write(path: string, data: Uint8Array | ArrayBuffer): Promise<void> {

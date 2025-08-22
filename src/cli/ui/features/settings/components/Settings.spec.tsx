@@ -8,4 +8,3 @@ describe("Settings", () => {
     expect(typeof Settings).toBe("function");
   });
 });
-

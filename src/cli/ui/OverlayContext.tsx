@@ -16,7 +16,9 @@ export const OverlayContext = React.createContext<OverlayContextType | undefined
 export function useOverlay(node: React.ReactNode | null) {
   const ctx = React.useContext(OverlayContext);
   React.useEffect(() => {
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
     ctx.setOverlay(node);
     return () => ctx.setOverlay(null);
   }, [ctx, node]);

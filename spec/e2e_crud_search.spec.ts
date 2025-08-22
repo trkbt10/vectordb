@@ -28,7 +28,9 @@ describe("indexing/e2e CRUD + search", () => {
     // Update meta
     const r3 = db.get(3);
     expect(r3).not.toBeNull();
-    if (r3) db.set(3, { vector: r3.vector, meta: { tag: "c" } }, { upsert: true });
+    if (r3) {
+      db.set(3, { vector: r3.vector, meta: { tag: "c" } }, { upsert: true });
+    }
     expect(db.get(3)?.meta).toEqual({ tag: "c" });
     // Search
     const hits = db.findMany(new Float32Array([1, 0, 0]), { k: 2 });

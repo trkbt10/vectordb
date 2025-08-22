@@ -50,7 +50,9 @@ export function createDatabaseFromState<TMeta>(state: VectorStoreState<TMeta>): 
           }
         }, 0);
       }
-      for (const r of rows) add(state, r.id, r.vector, r.meta ?? null, { upsert: false });
+      for (const r of rows) {
+        add(state, r.id, r.vector, r.meta ?? null, { upsert: false });
+      }
       return rows.length;
     },
     upsert: (...rows: RowInput<TMeta>[]) => {
@@ -58,7 +60,9 @@ export function createDatabaseFromState<TMeta>(state: VectorStoreState<TMeta>): 
         const res = upsertMany(state, rows, { upsert: true, mode: "best_effort" });
         return res.ok;
       }
-      for (const r of rows) add(state, r.id, r.vector, r.meta ?? null, { upsert: true });
+      for (const r of rows) {
+        add(state, r.id, r.vector, r.meta ?? null, { upsert: true });
+      }
       return rows.length;
     },
     setMeta: (id: number, meta: TMeta | null) => coreSetMeta(state, id, meta),

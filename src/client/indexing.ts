@@ -20,10 +20,7 @@ export type StorageConfig = { index: FileIO; data: DataIOResolver };
  * Compose persistence helpers for a client.
  * Why: centralize CRUSH placement and IO resolution so callers don't handle paths or target mapping directly.
  */
-export function createIndexOps<TMeta>(
-  persist: StorageConfig,
-  defaults: ClientOptions = {},
-) {
+export function createIndexOps<TMeta>(persist: StorageConfig, defaults: ClientOptions = {}) {
   const shards = Math.max(1, defaults.shards ?? 1);
   const pgs = Math.max(1, defaults.pgs ?? 64);
   const replicas = Math.max(1, defaults.replicas ?? 1);
@@ -76,10 +73,11 @@ export function createIndexOps<TMeta>(
     async ensurePlacement(
       baseName: string,
       opts?: { auto?: boolean; strict?: boolean; verify?: boolean; cleanup?: boolean },
-    ): Promise<{ ok: boolean; applied: boolean; moves: number }>
-    {
+    ): Promise<{ ok: boolean; applied: boolean; moves: number }> {
       const { ok, plan } = await this.checkPlacement(baseName);
-      if (ok) return { ok: true, applied: false, moves: 0 };
+      if (ok) {
+        return { ok: true, applied: false, moves: 0 };
+      }
       const moves = plan?.length ?? 0;
       if (opts?.auto) {
         await applyRebalance(baseName, plan!, {
@@ -90,7 +88,9 @@ export function createIndexOps<TMeta>(
         });
         return { ok: true, applied: true, moves };
       }
-      if (opts?.strict) throw new Error(`Placement mismatch detected; ${moves} move(s) recommended`);
+      if (opts?.strict) {
+        throw new Error(`Placement mismatch detected; ${moves} move(s) recommended`);
+      }
       console.warn(
         `[Cluster] Placement mismatch detected; ${moves} move(s) recommended. Call ensurePlacement(..., { auto: true }) to apply.`,
       );

@@ -38,4 +38,3 @@ describe("matchRoute", () => {
     expect(r).toBeNull();
   });
 });
-

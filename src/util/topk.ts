@@ -24,11 +24,13 @@ export function pushTopK<T>(out: T[], hit: T, k: number, getScore: (t: T) => num
     if (out.length === k) {
       out.sort((a, b) => getScore(b) - getScore(a));
     }
+
     return;
   }
   if (getScore(hit) <= getScore(out[out.length - 1])) {
     return;
   }
+
   out[out.length - 1] = hit;
   for (let i = out.length - 1; i > 0 && getScore(out[i]) > getScore(out[i - 1]); i--) {
     const t = out[i];

@@ -8,4 +8,3 @@ describe("App", () => {
     expect(typeof App).toBe("function");
   });
 });
-

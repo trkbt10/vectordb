@@ -67,12 +67,18 @@ type ReaderLike = {
 
 /** Decode an index file into header, entries, and optional ANN payload. */
 export function decodeIndexFile(u8: Uint8Array): { header: IndexHeader; entries: IndexEntry[]; ann?: Uint8Array } {
-  if (u8.length < 16) throw new Error("index too short");
+  if (u8.length < 16) {
+    throw new Error("index too short");
+  }
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
   const mg = dv.getUint32(0, true);
   const ver = dv.getUint32(4, true);
-  if (mg !== I_MAGIC) throw new Error("bad index magic");
-  if (ver !== I_VERSION) throw new Error("unsupported index version");
+  if (mg !== I_MAGIC) {
+    throw new Error("bad index magic");
+  }
+  if (ver !== I_VERSION) {
+    throw new Error("unsupported index version");
+  }
   const body = u8.slice(16);
   const r = createReader(body.buffer as ArrayBuffer);
   const metricCode = r.readU32();
@@ -81,11 +87,13 @@ export function decodeIndexFile(u8: Uint8Array): { header: IndexHeader; entries:
   const strategyCode = r.readU32();
   const flags = r.readU32();
   const hasAnn = (flags & 1) === 1;
-/**
- * parseAnn: Parse optional ANN section if present; returns payload bytes or undefined.
- */
-function parseAnn(has: boolean, reader: ReaderLike): Uint8Array | undefined {
-    if (!has) return undefined;
+  /**
+   * parseAnn: Parse optional ANN section if present; returns payload bytes or undefined.
+   */
+  function parseAnn(has: boolean, reader: ReaderLike): Uint8Array | undefined {
+    if (!has) {
+      return undefined;
+    }
     const annLen = reader.readU32();
     return reader.readBytes(annLen);
   }

@@ -9,7 +9,7 @@ import type { Route } from "./types";
 export function createRoute<T extends Record<string, unknown>>(
   path: string,
   component: React.ComponentType<T>,
-  props?: T
+  props?: T,
 ): Route {
   return { path, component: component as React.ComponentType<Record<string, unknown>>, props };
 }
@@ -34,13 +34,15 @@ export const RoutePath = {
       .filter(Boolean)
       .join("/");
   },
-  
+
   parent: (path: string) => {
     const parts = path.split("/").filter(Boolean);
-    if (parts.length <= 1) return "/";
+    if (parts.length <= 1) {
+      return "/";
+    }
     return "/" + parts.slice(0, -1).join("/");
   },
-  
+
   basename: (path: string) => {
     const parts = path.split("/").filter(Boolean);
     return parts[parts.length - 1] || "";

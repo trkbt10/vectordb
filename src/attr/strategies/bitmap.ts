@@ -30,31 +30,47 @@ const skey = (v: Scalar) => typeof v + ":" + String(v);
 function addEq(c: BitmapAttrContainer, key: string, v: Scalar, id: number) {
   // eslint-disable-next-line no-restricted-syntax -- Map initialization requires mutable variable
   let m = c.eqMap.get(key);
-  if (!m) c.eqMap.set(key, (m = new Map()));
+  if (!m) {
+    c.eqMap.set(key, (m = new Map()));
+  }
   // eslint-disable-next-line no-restricted-syntax -- Set initialization requires mutable variable
   let s = m.get(skey(v));
-  if (!s) m.set(skey(v), (s = new Set()));
+  if (!s) {
+    m.set(skey(v), (s = new Set()));
+  }
   s.add(id >>> 0);
 }
 function delEq(c: BitmapAttrContainer, key: string, v: Scalar, id: number) {
   const m = c.eqMap.get(key);
-  if (!m) return;
+  if (!m) {
+    return;
+  }
   const s = m.get(skey(v));
-  if (!s) return;
+  if (!s) {
+    return;
+  }
   s.delete(id >>> 0);
-  if (s.size === 0) m.delete(skey(v));
+  if (s.size === 0) {
+    m.delete(skey(v));
+  }
 }
 function addExists(c: BitmapAttrContainer, key: string, id: number) {
   // eslint-disable-next-line no-restricted-syntax -- Set initialization requires mutable variable
   let s = c.existsMap.get(key);
-  if (!s) c.existsMap.set(key, (s = new Set()));
+  if (!s) {
+    c.existsMap.set(key, (s = new Set()));
+  }
   s.add(id >>> 0);
 }
 function delExists(c: BitmapAttrContainer, key: string, id: number) {
   const s = c.existsMap.get(key);
-  if (!s) return;
+  if (!s) {
+    return;
+  }
   s.delete(id >>> 0);
-  if (s.size === 0) c.existsMap.delete(key);
+  if (s.size === 0) {
+    c.existsMap.delete(key);
+  }
 }
 
 function addOrRemoveValue(c: BitmapAttrContainer, mode: "add" | "del", key: string, val: AttrValue, uid: number) {
@@ -67,8 +83,11 @@ function addOrRemoveValue(c: BitmapAttrContainer, mode: "add" | "del", key: stri
   }
   doExists(c, key, uid);
   if (Array.isArray(val)) {
-    for (const x of val)
-      if (typeof x === "string" || typeof x === "number" || typeof x === "boolean") doEq(c, key, x, uid);
+    for (const x of val) {
+      if (typeof x === "string" || typeof x === "number" || typeof x === "boolean") {
+        doEq(c, key, x, uid);
+      }
+    }
     return;
   }
   if (typeof val === "string" || typeof val === "boolean") {
@@ -87,8 +106,12 @@ function addOrRemoveValue(c: BitmapAttrContainer, mode: "add" | "del", key: stri
 export function bitmap_setAttrs(c: BitmapAttrContainer, id: number, attrs: Attrs | null): void {
   const uid = id >>> 0;
   bitmap_removeId(c, uid);
-  if (!attrs) return;
-  for (const [k, v] of Object.entries(attrs)) addOrRemoveValue(c, "add", k, v as AttrValue, uid);
+  if (!attrs) {
+    return;
+  }
+  for (const [k, v] of Object.entries(attrs)) {
+    addOrRemoveValue(c, "add", k, v as AttrValue, uid);
+  }
   c.data.set(uid, attrs);
 }
 /**
@@ -103,7 +126,9 @@ export function bitmap_getAttrs(c: BitmapAttrContainer, id: number): Attrs | nul
 export function bitmap_removeId(c: BitmapAttrContainer, id: number): void {
   const uid = id >>> 0;
   const old = c.data.get(uid);
-  if (!old) return;
+  if (!old) {
+    return;
+  }
   for (const [k, val] of Object.entries(old)) {
     if (val === null || val === undefined) {
       delExists(c, k, uid);
@@ -118,7 +143,9 @@ export function bitmap_removeId(c: BitmapAttrContainer, id: number): void {
  */
 export function bitmap_eq(c: BitmapAttrContainer, key: string, value: Scalar): Set<number> | null {
   const m = c.eqMap.get(key);
-  if (!m) return null;
+  if (!m) {
+    return null;
+  }
   const s = m.get(skey(value));
   return s ? new Set(s) : null;
 }

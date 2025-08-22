@@ -36,7 +36,11 @@ function TableBase({
     const allKeys: string[] = [];
     for (const r of allRows.slice(0, 200)) {
       if (isShallowObject(r.meta)) {
-        for (const k of Object.keys(r.meta)) if (!allKeys.includes(k)) allKeys.push(k);
+        for (const k of Object.keys(r.meta)) {
+          if (!allKeys.includes(k)) {
+            allKeys.push(k);
+          }
+        }
       }
     }
     const maxCols = Math.max(1, Math.floor(metaAreaW / 12));
@@ -44,8 +48,11 @@ function TableBase({
     const metaColWBase = Math.floor(metaAreaW / Math.max(1, metaCols.length || 1));
     const metaWidths: number[] = (() => {
       if (metaCols.length > 0) {
-        return metaCols.map((_, i) => (i === metaCols.length - 1 ? metaAreaW - metaColWBase * (metaCols.length - 1) : metaColWBase));
+        return metaCols.map((_, i) =>
+          i === metaCols.length - 1 ? metaAreaW - metaColWBase * (metaCols.length - 1) : metaColWBase,
+        );
       }
+
       return [metaAreaW];
     })();
     return { metaCols, metaWidths };
@@ -56,23 +63,26 @@ function TableBase({
     if (metaCols.length > 0) {
       return metaCols.map((k, i) => k.slice(0, metaWidths[i]).padEnd(metaWidths[i], " ")).join("");
     }
+
     return "Meta".slice(0, metaAreaW).padEnd(metaAreaW, " ");
   }, [metaCols, metaWidths, metaAreaW]);
   const vecH = React.useMemo(() => "Vector".slice(0, vecW).padEnd(vecW, " "), [vecW]);
   const header = `${idH}${metaH}${vecH}`;
 
   function renderRows(): React.ReactNode {
-    if (loading) return <Text color="gray">Loading...</Text>;
+    if (loading) {
+      return <Text color="gray">Loading...</Text>;
+    }
     return rows.map((r, i) => {
       const selected = i === rowIdx;
       const even = i % 2 === 1;
-      const bg = selected ? "yellow" : (even ? "gray" : undefined);
+      const bg = selected ? "yellow" : even ? "gray" : undefined;
       const fg = selected ? "black" : undefined;
       const idStr = String(r.id).slice(0, idW).padEnd(idW, " ");
       const shallow = metaCols.length > 0 ? isShallowObject(r.meta) : false;
       const metaStr = formatMeta(r, shallow);
       const vecText = vectorPreview(r.vector);
-      const vecStr = vecText.length > vecW ? vecText.slice(0, vecW) : (vecText.padEnd(vecW, " "));
+      const vecStr = vecText.length > vecW ? vecText.slice(0, vecW) : vecText.padEnd(vecW, " ");
       const line = `${idStr}${metaStr}${vecStr}`;
       return (
         <Text key={r.id} backgroundColor={bg} color={fg}>

@@ -33,7 +33,9 @@ export async function readCatalog(baseName: string, opts: { resolveIndexIO: Reso
   try {
     const u8 = await opts.resolveIndexIO().read(`${baseName}.catalog.json`);
     const cat = JSON.parse(new TextDecoder().decode(u8)) as Catalog;
-    if (!cat || typeof cat.version !== "number") return null;
+    if (!cat || typeof cat.version !== "number") {
+      return null;
+    }
     return cat;
   } catch {
     return null;

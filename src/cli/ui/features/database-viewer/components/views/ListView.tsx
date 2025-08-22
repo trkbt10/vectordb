@@ -17,7 +17,9 @@ export function ListView({ ctx, onBack }: ListViewProps) {
   useEffect(() => {
     const s = ctx.client.state;
     const out: Array<{ id: number; meta: unknown }> = [];
-    for (let i = 0; i < s.store._count; i++) out.push({ id: s.store.ids[i], meta: s.store.metas[i] });
+    for (let i = 0; i < s.store._count; i++) {
+      out.push({ id: s.store.ids[i], meta: s.store.metas[i] });
+    }
     setItems(out);
   }, [ctx]);
   return (
@@ -33,4 +35,3 @@ export function ListView({ ctx, onBack }: ListViewProps) {
     </Box>
   );
 }
-

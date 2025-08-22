@@ -85,7 +85,9 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
   // concat
   // eslint-disable-next-line no-restricted-syntax -- accumulate output size before allocation
   let total = 0;
-  for (const p of parts) total += p.length;
+  for (const p of parts) {
+    total += p.length;
+  }
   const out = new Uint8Array(total);
   // eslint-disable-next-line no-restricted-syntax -- track write offset while concatenating parts
   let off = 0;
@@ -100,17 +102,25 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
  *
  */
 export function decodeWal(u8: Uint8Array): WalRecord[] {
-  if (u8.length < 8) throw new Error("wal too short");
+  if (u8.length < 8) {
+    throw new Error("wal too short");
+  }
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
   // eslint-disable-next-line no-restricted-syntax -- track parse offset while decoding
   let off = 0;
   // allow multiple concatenated WAL segments (each starts with header)
   function readHeader(at: number): number {
-    if (at + 8 > u8.length) throw new Error("truncated wal header");
+    if (at + 8 > u8.length) {
+      throw new Error("truncated wal header");
+    }
     const mg = dv.getUint32(at, true);
-    if (mg !== MAGIC) throw new Error("bad wal magic");
+    if (mg !== MAGIC) {
+      throw new Error("bad wal magic");
+    }
     const ver = dv.getUint32(at + 4, true);
-    if (ver !== VERSION) throw new Error("unsupported wal version");
+    if (ver !== VERSION) {
+      throw new Error("unsupported wal version");
+    }
     return at + 8;
   }
   // initial header
@@ -120,7 +130,9 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
     // If a new segment header starts here, skip it and continue
     if (off + 8 <= u8.length && dv.getUint32(off, true) === MAGIC && dv.getUint32(off + 4, true) === VERSION) {
       off = readHeader(off);
-      if (off >= u8.length) break;
+      if (off >= u8.length) {
+        break;
+      }
     }
     const type = dv.getUint8(off);
     off += 1;

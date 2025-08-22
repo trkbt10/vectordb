@@ -7,7 +7,9 @@ import type { FlowStep } from "./FlowWizard";
 export type Validation = { ok: true } | { ok: false; errors: string[] };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
-  if (typeof v !== "object") return false;
+  if (typeof v !== "object") {
+    return false;
+  }
   return v !== null;
 }
 
@@ -17,20 +19,33 @@ function validateField(field: Field, ctx: string, errors: string[]) {
     return;
   }
   if (field.type === "select") {
-    if (!Array.isArray(field.options) || field.options.length === 0)
+    if (!Array.isArray(field.options) || field.options.length === 0) {
       errors.push(`${ctx}: select requires non-empty options`);
-    if (!field.name) errors.push(`${ctx}: field.name required`);
-    if (!field.label) errors.push(`${ctx}: field.label required`);
+    }
+    if (!field.name) {
+      errors.push(`${ctx}: field.name required`);
+    }
+    if (!field.label) {
+      errors.push(`${ctx}: field.label required`);
+    }
     return;
   }
   if (field.type === "text" || field.type === "number") {
-    if (!field.name) errors.push(`${ctx}: field.name required`);
-    if (!field.label) errors.push(`${ctx}: field.label required`);
+    if (!field.name) {
+      errors.push(`${ctx}: field.name required`);
+    }
+    if (!field.label) {
+      errors.push(`${ctx}: field.label required`);
+    }
     return;
   }
   if (field.type === "boolean") {
-    if (!field.name) errors.push(`${ctx}: field.name required`);
-    if (!field.label) errors.push(`${ctx}: field.label required`);
+    if (!field.name) {
+      errors.push(`${ctx}: field.name required`);
+    }
+    if (!field.label) {
+      errors.push(`${ctx}: field.label required`);
+    }
     return;
   }
   errors.push(`${ctx}: unknown field.type`);
@@ -42,14 +57,22 @@ function validateField(field: Field, ctx: string, errors: string[]) {
  */
 export function validateWizardSchema(schema: unknown): Validation {
   const errors: string[] = [];
-  if (!isRecord(schema)) return { ok: false, errors: ["schema must be an object"] };
+  if (!isRecord(schema)) {
+    return { ok: false, errors: ["schema must be an object"] };
+  }
   const start = schema.start as unknown;
   const steps = schema.steps as unknown;
-  if (typeof start !== "string" || !start) errors.push("start must be a non-empty string");
-  if (!isRecord(steps) || Object.keys(steps).length === 0) errors.push("steps must be a non-empty object");
+  if (typeof start !== "string" || !start) {
+    errors.push("start must be a non-empty string");
+  }
+  if (!isRecord(steps) || Object.keys(steps).length === 0) {
+    errors.push("steps must be a non-empty object");
+  }
   if (!errors.length && isRecord(steps)) {
     const step = (steps as Record<string, unknown>)[start as string] as Step | undefined;
-    if (!step) errors.push(`steps must include start step: ${String(start)}`);
+    if (!step) {
+      errors.push(`steps must include start step: ${String(start)}`);
+    }
   }
   if (isRecord(steps)) {
     for (const [id, s] of Object.entries(steps)) {
@@ -59,7 +82,9 @@ export function validateWizardSchema(schema: unknown): Validation {
         errors.push(`${ctx}: must be an object`);
         continue;
       }
-      if (!("id" in step) || (step as { id?: unknown }).id !== id) errors.push(`${ctx}: id must equal key`);
+      if (!("id" in step) || (step as { id?: unknown }).id !== id) {
+        errors.push(`${ctx}: id must equal key`);
+      }
       validateField(step.field as Field, `${ctx}.field`, errors);
     }
   }
@@ -72,14 +97,22 @@ export function validateWizardSchema(schema: unknown): Validation {
  */
 export function validateFlowSchema(flow: unknown): Validation {
   const errors: string[] = [];
-  if (!isRecord(flow)) return { ok: false, errors: ["flow must be an object"] };
+  if (!isRecord(flow)) {
+    return { ok: false, errors: ["flow must be an object"] };
+  }
   const start = flow.start as unknown;
   const steps = flow.steps as unknown;
-  if (typeof start !== "string" || !start) errors.push("start must be a non-empty string");
-  if (!isRecord(steps) || Object.keys(steps).length === 0) errors.push("steps must be a non-empty object");
+  if (typeof start !== "string" || !start) {
+    errors.push("start must be a non-empty string");
+  }
+  if (!isRecord(steps) || Object.keys(steps).length === 0) {
+    errors.push("steps must be a non-empty object");
+  }
   if (!errors.length && isRecord(steps)) {
     const step = (steps as Record<string, unknown>)[start as string] as FlowStep | undefined;
-    if (!step) errors.push(`steps must include start step: ${String(start)}`);
+    if (!step) {
+      errors.push(`steps must include start step: ${String(start)}`);
+    }
   }
   if (isRecord(steps)) {
     for (const [id, raw] of Object.entries(steps)) {
@@ -91,10 +124,16 @@ export function validateFlowSchema(flow: unknown): Validation {
       }
       if (s.type === "qa") {
         const schemaVal = (s as Record<string, unknown>)["schema"];
-        if (!isRecord(schemaVal)) errors.push(`${ctx}: qa requires schema`);
+        if (!isRecord(schemaVal)) {
+          errors.push(`${ctx}: qa requires schema`);
+        }
         const res = validateWizardSchema(schemaVal);
-        if (!res.ok) errors.push(...res.errors.map((e) => `${ctx}: ${e}`));
-        if (!("next" in (s as Record<string, unknown>))) errors.push(`${ctx}: qa requires next`);
+        if (!res.ok) {
+          errors.push(...res.errors.map((e) => `${ctx}: ${e}`));
+        }
+        if (!("next" in (s as Record<string, unknown>))) {
+          errors.push(`${ctx}: qa requires next`);
+        }
         continue;
       }
       if (s.type === "ui") {
@@ -103,15 +142,23 @@ export function validateFlowSchema(flow: unknown): Validation {
       }
       if (s.type === "compute") {
         const run = (s as Record<string, unknown>)["run"];
-        if (typeof run !== "function") errors.push(`${ctx}: compute requires run()`);
-        if (!("next" in (s as Record<string, unknown>))) errors.push(`${ctx}: compute requires next`);
+        if (typeof run !== "function") {
+          errors.push(`${ctx}: compute requires run()`);
+        }
+        if (!("next" in (s as Record<string, unknown>))) {
+          errors.push(`${ctx}: compute requires next`);
+        }
         continue;
       }
       if (s.type === "write") {
         const pathFrom = (s as Record<string, unknown>)["pathFrom"];
         const dataFrom = (s as Record<string, unknown>)["dataFrom"];
-        if (typeof pathFrom !== "function") errors.push(`${ctx}: write requires pathFrom()`);
-        if (typeof dataFrom !== "function") errors.push(`${ctx}: write requires dataFrom()`);
+        if (typeof pathFrom !== "function") {
+          errors.push(`${ctx}: write requires pathFrom()`);
+        }
+        if (typeof dataFrom !== "function") {
+          errors.push(`${ctx}: write requires dataFrom()`);
+        }
         continue;
       }
       errors.push(`${ctx}: unknown step type ${(s as Record<string, unknown>)["type"]}`);

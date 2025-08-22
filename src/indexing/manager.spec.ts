@@ -125,6 +125,7 @@ describe("indexing/manager", () => {
     for (let i = 0; i < N; i++) {
       writer.append({ id: i + 1, meta: null, vector: new Float32Array([1, 0]) });
     }
+
     await writer.writeAtomic(dataIO, `${segName}.data`);
     // Write manifest and catalog
     const man = { base: baseName, segments: [{ name: segName, targetKey: "mem" }] };

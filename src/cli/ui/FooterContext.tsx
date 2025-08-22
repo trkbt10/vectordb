@@ -17,7 +17,9 @@ export const FooterContext = React.createContext<FooterContextType | undefined>(
 export function useFooter(node: React.ReactNode | null) {
   const ctx = React.useContext(FooterContext);
   React.useEffect(() => {
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
     ctx.setFooter(node);
     return () => ctx.setFooter(null);
   }, [node, ctx]);

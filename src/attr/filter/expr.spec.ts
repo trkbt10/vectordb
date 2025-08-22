@@ -52,13 +52,17 @@ test("compilePredicate: exists/is_null/range boundaries and array overlap", () =
 
 test("preselectCandidates: must/should/must_not combinations", () => {
   const idx: AttrIndexReader = {
-    eq: (k: string, v: Scalar) => (k === "color" && v === "red" ? new Set([1, 3]) : k === "shape" && v === "square" ? new Set([2, 3]) : null),
+    eq: (k: string, v: Scalar) =>
+      k === "color" && v === "red" ? new Set([1, 3]) : k === "shape" && v === "square" ? new Set([2, 3]) : null,
     exists: (k: string) => (k === "price" ? new Set([1, 2, 3]) : null),
     range: () => null,
   };
   const expr: FilterExpr = {
     must: [{ key: "color", match: "red" }],
-    should: [{ key: "shape", match: "square" }, { key: "price", exists: true }],
+    should: [
+      { key: "shape", match: "square" },
+      { key: "price", exists: true },
+    ],
     must_not: [{ key: "shape", match: "square" }],
   };
   const c = preselectCandidates(expr, idx);

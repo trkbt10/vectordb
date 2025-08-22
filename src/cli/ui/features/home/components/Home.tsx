@@ -26,12 +26,16 @@ export function Home() {
   return (
     <Box flexDirection="column" width={cols} height={rows - 4} alignItems="center" justifyContent="center">
       <Logo />
-      <Box marginTop={1}><Text color="gray">Databases • Search • Manage</Text></Box>
+      <Box marginTop={1}>
+        <Text color="gray">Databases • Search • Manage</Text>
+      </Box>
       <Box marginTop={1}>
         <SelectInput
           items={items}
           onSelect={(i: Choice) => {
-            if (i.value === "__exit__") process.exit(0);
+            if (i.value === "__exit__") {
+              process.exit(0);
+            }
             navigate(i.value);
           }}
         />

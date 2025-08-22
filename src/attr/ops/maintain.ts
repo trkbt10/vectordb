@@ -31,17 +31,26 @@ import { createStore, addOrUpdate, resizeCapacity, shrinkToFit, getByIndex } fro
  *
  */
 export function hnswCompactAndRebuild<TMeta>(vl: VectorStoreState<TMeta>): number {
-  if (!isHnswVL(vl)) return 0;
+  if (!isHnswVL(vl)) {
+    return 0;
+  }
   const h = vl.ann;
   const n = vl.store._count;
-  if (n === 0) return 0;
+  if (n === 0) {
+    return 0;
+  }
   // eslint-disable-next-line no-restricted-syntax -- Performance: counting alive vectors for compaction
   let alive = 0;
 
   for (let i = 0; i < n; i++) {
-    if (!h.tombstone[i]) alive++;
+    if (!h.tombstone[i]) {
+      alive++;
+    }
   }
-  if (alive === n) return 0;
+
+  if (alive === n) {
+    return 0;
+  }
   const newStore = createStore<TMeta>(vl.dim, vl.metric, alive || 1);
   const newH = createHNSWState(
     {
@@ -56,11 +65,15 @@ export function hnswCompactAndRebuild<TMeta>(vl: VectorStoreState<TMeta>): numbe
     alive || 1,
   );
   for (let i = 0; i < n; i++) {
-    if (h.tombstone[i]) continue;
+    if (h.tombstone[i]) {
+      continue;
+    }
     const { id, vector, meta } = getByIndex(vl.store, i);
     addOrUpdate(newStore, id, vector, meta, { upsert: false });
   }
-  for (let i = 0; i < newStore._count; i++) hnsw_add(newH, newStore, newStore.ids[i]);
+  for (let i = 0; i < newStore._count; i++) {
+    hnsw_add(newH, newStore, newStore.ids[i]);
+  }
   vl.store = newStore;
   vl.ann = newH;
   return n - alive;
@@ -82,8 +95,14 @@ export function compactStore<TMeta>(
     // eslint-disable-next-line no-restricted-syntax -- Performance: counting dead vectors
     let dead = 0;
 
-    for (let i = 0; i < n; i++) if (h.tombstone[i] === 1) dead++;
-    if (n > 0 && dead / n > ratio) rebuilt = hnswCompactAndRebuild(vl);
+    for (let i = 0; i < n; i++) {
+      if (h.tombstone[i] === 1) {
+        dead++;
+      }
+    }
+    if (n > 0 && dead / n > ratio) {
+      rebuilt = hnswCompactAndRebuild(vl);
+    }
   }
   // eslint-disable-next-line no-restricted-syntax -- Performance: tracking shrink status
   let shrunk = false;
@@ -106,7 +125,9 @@ export function rebuildIndex<TMeta>(
   opts: { strategy: "hnsw" | "ivf"; params?: HNSWParams | IVFParams; ids?: number[] },
 ): number {
   const ids = opts.ids && opts.ids.length ? Array.from(opts.ids) : null;
-  if (opts.strategy === "hnsw") return rebuildHnsw(vl, opts.params as HNSWParams | undefined, ids);
+  if (opts.strategy === "hnsw") {
+    return rebuildHnsw(vl, opts.params as HNSWParams | undefined, ids);
+  }
   return rebuildIvf(vl, opts.params as IVFParams | undefined, ids);
 }
 
@@ -115,11 +136,26 @@ function computeHnswParams(
   params: HNSWParams | undefined,
   fallback: { M: number; efConstruction: number; efSearch: number },
 ): HNSWParams {
-  if (params) return params;
+  if (params) {
+    return params;
+  }
   // old may be null; caller passes appropriately typed values
   if (old) {
-    const h = old as unknown as { M: number; efConstruction: number; efSearch: number; levelMult: number; allowReplaceDeleted: boolean };
-    return { M: h.M, efConstruction: h.efConstruction, efSearch: h.efSearch, levelMult: h.levelMult, allowReplaceDeleted: h.allowReplaceDeleted, seed: 42 } as HNSWParams;
+    const h = old as unknown as {
+      M: number;
+      efConstruction: number;
+      efSearch: number;
+      levelMult: number;
+      allowReplaceDeleted: boolean;
+    };
+    return {
+      M: h.M,
+      efConstruction: h.efConstruction,
+      efSearch: h.efSearch,
+      levelMult: h.levelMult,
+      allowReplaceDeleted: h.allowReplaceDeleted,
+      seed: 42,
+    } as HNSWParams;
   }
   return fallback as HNSWParams;
 }
@@ -132,10 +168,15 @@ function rebuildHnsw<TMeta>(vl: VectorStoreState<TMeta>, params: HNSWParams | un
   vl.ann = newH;
   if (isHnswVL(vl)) {
     if (!ids) {
-      for (let i = 0; i < vl.store._count; i++) hnsw_add(vl.ann, vl.store, vl.store.ids[i]);
+      for (let i = 0; i < vl.store._count; i++) {
+        hnsw_add(vl.ann, vl.store, vl.store.ids[i]);
+      }
     }
+
     if (ids) {
-      for (const id of ids) hnsw_add(vl.ann, vl.store, id);
+      for (const id of ids) {
+        hnsw_add(vl.ann, vl.store, id);
+      }
     }
   }
   return ids ? ids.length : vl.store._count;
@@ -153,7 +194,10 @@ function rebuildIvf<TMeta>(vl: VectorStoreState<TMeta>, params: IVFParams | unde
   if (!needRecreate && old && typeof next.nprobe === "number") {
     old.nprobe = Math.max(1, Math.min(old.nlist, next.nprobe));
   }
-  if (!isIvfVL(vl)) return 0;
+
+  if (!isIvfVL(vl)) {
+    return 0;
+  }
   const trained = ivf_trainCentroids(vl.ann, vl.store);
   if (!ids) {
     ivf_reassignLists(vl.ann, vl.store);
@@ -161,12 +205,16 @@ function rebuildIvf<TMeta>(vl: VectorStoreState<TMeta>, params: IVFParams | unde
   }
   for (const id of ids) {
     const at = vl.store.pos.get(id);
-    if (at === undefined) continue;
+    if (at === undefined) {
+      continue;
+    }
     const li = vl.ann.idToList.get(id);
     if (li !== undefined) {
       const arr = vl.ann.lists[li];
       const pos = arr.indexOf(id);
-      if (pos >= 0) arr.splice(pos, 1);
+      if (pos >= 0) {
+        arr.splice(pos, 1);
+      }
     }
     ivf_add(vl.ann, vl.store, id);
   }

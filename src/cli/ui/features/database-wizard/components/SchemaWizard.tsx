@@ -59,16 +59,25 @@ export type WizardSchema = {
 export type Answers = Record<string, string | number | boolean | undefined>;
 
 function evalCond(cond: Condition, answers: Answers): boolean {
-  if (cond.op === "equals") return answers[cond.field] === cond.value;
-  if (cond.op === "in") return cond.values.includes(answers[cond.field] as never);
-  if (cond.op === "not") return !evalCond(cond.cond, answers);
+  if (cond.op === "equals") {
+    return answers[cond.field] === cond.value;
+  }
+  if (cond.op === "in") {
+    return cond.values.includes(answers[cond.field] as never);
+  }
+  if (cond.op === "not") {
+    return !evalCond(cond.cond, answers);
+  }
   return false;
 }
 
 function nextStepFor(step: Step, answers: Answers): string | undefined {
   for (const t of step.transitions ?? []) {
-    if (evalCond(t.when, answers)) return t.next;
+    if (evalCond(t.when, answers)) {
+      return t.next;
+    }
   }
+
   return step.defaultNext;
 }
 
@@ -104,20 +113,26 @@ export function SchemaWizard({
   const value = answers[step.field.name];
 
   const descriptionLines = useMemo(() => {
-    if (!step.description) return [] as string[];
+    if (!step.description) {
+      return [] as string[];
+    }
     return Array.isArray(step.description) ? step.description : [step.description];
   }, [step.description]);
 
   function goNext(updated: Answers) {
     const next = nextStepFor(step, updated);
-    if (!next) return onComplete(updated);
+    if (!next) {
+      return onComplete(updated);
+    }
     setHistory((h) => [...h, step.id]);
     setStepId(next);
   }
 
   function goBack() {
     const prev = history[history.length - 1];
-    if (!prev) return onCancel();
+    if (!prev) {
+      return onCancel();
+    }
     setHistory((h) => h.slice(0, h.length - 1));
     setStepId(prev);
   }
@@ -133,13 +148,17 @@ export function SchemaWizard({
       <Box flexDirection="column">
         <Text color="cyan">{step.title}</Text>
         {descriptionLines.map((line, idx) => (
-          <Text key={idx} color="gray">{line}</Text>
+          <Text key={idx} color="gray">
+            {line}
+          </Text>
         ))}
         <SelectInput
           items={items}
           initialIndex={current ? step.field.options.indexOf(current) : 0}
           onSelect={(i: { label: string; value: string }) => {
-            if (i.value === "__back_or_cancel") return step.allowBack ? goBack() : onCancel();
+            if (i.value === "__back_or_cancel") {
+              return step.allowBack ? goBack() : onCancel();
+            }
             const updated = { ...answers, [step.field.name]: i.value };
             setAnswers(updated);
             goNext(updated);
@@ -150,16 +169,13 @@ export function SchemaWizard({
   }
 
   if (step.field.type === "text" || step.field.type === "number") {
-    const v = value === undefined ? step.field.defaultValue ?? "" : String(value);
+    const v = value === undefined ? (step.field.defaultValue ?? "") : String(value);
     const backOrCancel = step.allowBack ? "Back" : "Cancel";
     return (
       <Box flexDirection="column">
         <Text color="cyan">{step.title}</Text>
         <Text>{step.field.label}</Text>
-        <TextInput
-          value={v as string}
-          onChange={(nv) => setAnswers((a) => ({ ...a, [step.field.name]: nv }))}
-        />
+        <TextInput value={v as string} onChange={(nv) => setAnswers((a) => ({ ...a, [step.field.name]: nv }))} />
         <Box marginTop={1}>
           <SelectInput
             items={[
@@ -167,7 +183,9 @@ export function SchemaWizard({
               { label: backOrCancel, value: "__back_or_cancel" },
             ]}
             onSelect={(i) => {
-              if (i.value === "__back_or_cancel") return step.allowBack ? goBack() : onCancel();
+              if (i.value === "__back_or_cancel") {
+                return step.allowBack ? goBack() : onCancel();
+              }
               goNext(answers);
             }}
           />
@@ -190,8 +208,12 @@ export function SchemaWizard({
             { label: step.allowBack ? "Back" : "Cancel", value: "__back_or_cancel" },
           ]}
           onSelect={(i) => {
-            if (i.value === "__back_or_cancel") return step.allowBack ? goBack() : onCancel();
-            if (i.value === "__toggle") return setAnswers((a) => ({ ...a, [step.field.name]: !boolVal }));
+            if (i.value === "__back_or_cancel") {
+              return step.allowBack ? goBack() : onCancel();
+            }
+            if (i.value === "__toggle") {
+              return setAnswers((a) => ({ ...a, [step.field.name]: !boolVal }));
+            }
             goNext(answers);
           }}
         />

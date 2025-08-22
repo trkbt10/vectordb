@@ -33,7 +33,9 @@ export function UpsertView({ ctx, onBack }: UpsertViewProps) {
           { label: "Back", value: "back" },
         ]}
         onSelect={(i: { label: string; value: string }) => {
-          if (i.value === "back") return onBack();
+          if (i.value === "back") {
+            return onBack();
+          }
           try {
             const rid = Number(id);
             const arr = new Float32Array(
@@ -60,4 +62,3 @@ export function UpsertView({ ctx, onBack }: UpsertViewProps) {
     </Box>
   );
 }
-

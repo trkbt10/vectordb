@@ -8,15 +8,20 @@ import type { FileIO } from "../src/storage/types";
 
 function createRecordingIO(initial?: Record<string, Uint8Array | ArrayBuffer>) {
   const store = new Map<string, Uint8Array>();
-  if (initial)
-    for (const [k, v] of Object.entries(initial)) store.set(k, v instanceof Uint8Array ? v : new Uint8Array(v));
+  if (initial) {
+    for (const [k, v] of Object.entries(initial)) {
+      store.set(k, v instanceof Uint8Array ? v : new Uint8Array(v));
+    }
+  }
   const writes = new Set<string>();
   const reads = new Set<string>();
   const io: FileIO = {
     async read(path: string) {
       reads.add(path);
       const v = store.get(path);
-      if (!v) throw new Error(`not found: ${path}`);
+      if (!v) {
+        throw new Error(`not found: ${path}`);
+      }
       return new Uint8Array(v);
     },
     async write(path: string, data: Uint8Array | ArrayBuffer) {
@@ -49,7 +54,9 @@ function createRecordingIO(initial?: Record<string, Uint8Array | ArrayBuffer>) {
 
 function makeVec(dim: number, seed: number) {
   const v = new Float32Array(dim);
-  for (let i = 0; i < dim; i++) v[i] = ((seed + i * 13) % 100) / 100;
+  for (let i = 0; i < dim; i++) {
+    v[i] = ((seed + i * 13) % 100) / 100;
+  }
   return v;
 }
 
@@ -149,6 +156,7 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
     for (const [k, rec] of Object.entries(dataTargets)) {
       counts[k] = Array.from(rec.writes).filter((p) => p.endsWith(".data")).length;
     }
+
     const usedKeys = Object.entries(counts)
       .filter(([, n]) => (n ?? 0) > 0)
       .map(([k]) => k);

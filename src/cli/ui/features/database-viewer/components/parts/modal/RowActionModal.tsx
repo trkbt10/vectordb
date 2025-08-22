@@ -23,7 +23,9 @@ export function RowActionModal({
   onDelete: () => void;
   onCancel: () => void;
 }) {
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
   return (
     <Dialog open={true} title="Row Actions" width={60}>
       <Text>Row {rowId ?? "-"} — Choose action</Text>
@@ -35,9 +37,15 @@ export function RowActionModal({
           { label: "Cancel", value: "cancel" },
         ]}
         onSelect={(i: { value: string }) => {
-          if (i.value === "cancel") return onCancel();
-          if (i.value === "delete") return onDelete();
-          if (i.value === "edit") return onEdit();
+          if (i.value === "cancel") {
+            return onCancel();
+          }
+          if (i.value === "delete") {
+            return onDelete();
+          }
+          if (i.value === "edit") {
+            return onEdit();
+          }
         }}
       />
     </Dialog>

@@ -11,4 +11,3 @@ export type DatabaseRegistryEntry = {
 export type DatabaseRegistry = {
   entries: DatabaseRegistryEntry[];
 };
-

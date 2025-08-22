@@ -61,12 +61,13 @@ export function DatabaseEntry({
   }
 
   if (step.id === "wizard") {
-    if (!configFlow)
+    if (!configFlow) {
       return (
         <Box flexDirection="column">
           <Text color="red">No flow provided</Text>
         </Box>
       );
+    }
     return (
       <Runner
         flow={configFlow}
@@ -79,4 +80,3 @@ export function DatabaseEntry({
   // form
   return <DatabaseForm onSubmit={onSubmit} onExit={onExit} />;
 }
-

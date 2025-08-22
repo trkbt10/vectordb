@@ -46,10 +46,14 @@ function ClusterMenuRouter({ ctx, onExit }: ClusterMenuProps) {
 
   const routesWithNavigation = useMemo(() => {
     return routes.map((route) => {
-      if (route.path === "/menu") return route;
+      if (route.path === "/menu") {
+        return route;
+      }
       return {
         ...route,
-        component: withNavigation(route.component as React.ComponentType<{ onBack: () => void } & Record<string, unknown>>),
+        component: withNavigation(
+          route.component as React.ComponentType<{ onBack: () => void } & Record<string, unknown>>,
+        ),
       };
     });
   }, [routes]);
@@ -83,7 +87,9 @@ function MenuView({ ctx, onExit }: ClusterMenuProps) {
         <SelectInput
           items={items}
           onSelect={(i: Choice) => {
-            if (i.value === "back") return onExit();
+            if (i.value === "back") {
+              return onExit();
+            }
             navigate(i.value);
           }}
         />

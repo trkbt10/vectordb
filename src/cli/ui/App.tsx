@@ -32,13 +32,18 @@ function AppWithRoutes({ initialConfigPath }: { initialConfigPath?: string }) {
   const { navigate, goBack } = useNavigation();
   const [footer, setFooter] = React.useState<React.ReactNode | null>(null);
   useInput((input, key) => {
-    if (key.ctrl && input === "c") return; // allow default exit
+    if (key.ctrl && input === "c") {
+      return;
+    } // allow default exit
     // Disable global shortcuts to avoid stealing focus from inputs
   });
 
   const routes = [
     createRoute("/home", Home, {}),
-    createRoute("/database", DatabaseView as React.ComponentType, { onExit: () => navigate("/home"), configPath: initialConfigPath }),
+    createRoute("/database", DatabaseView as React.ComponentType, {
+      onExit: () => navigate("/home"),
+      configPath: initialConfigPath,
+    }),
     createRoute("/wizard", DefaultWizard, { onDone: () => navigate("/database") }),
     createRoute("/help", Help, { onBack: () => goBack() }),
   ];
@@ -55,7 +60,6 @@ function AppWithRoutes({ initialConfigPath }: { initialConfigPath?: string }) {
 
   return (
     <FooterContext.Provider value={{ footer, setFooter }}>
-      
       <Box flexDirection="column" width={cols} height={rows}>
         <Box>
           <Text color="magentaBright">VectorDB CLI</Text>
@@ -67,6 +71,6 @@ function AppWithRoutes({ initialConfigPath }: { initialConfigPath?: string }) {
         <Text color="gray">{"─".repeat(Math.max(8, cols - 2))}</Text>
         <Box>{footer ?? null}</Box>
       </Box>
-              </FooterContext.Provider>
+    </FooterContext.Provider>
   );
 }

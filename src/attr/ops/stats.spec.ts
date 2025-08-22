@@ -43,6 +43,7 @@ describe("ops.stats", () => {
     for (let i = 0; i < 18; i++) {
       add(vl, 10 + i, new Float32Array([1, i * 1e-3]), null);
     }
+
     // A few points for others
     add(vl, 100, new Float32Array([0, 1]), null);
     add(vl, 101, new Float32Array([-1, 0]), null);
@@ -52,7 +53,12 @@ describe("ops.stats", () => {
     expect((d.hotspots ?? []).length).toBeGreaterThan(0);
   });
   it("stats exposes HNSW metrics and diagnose flags tombstones", () => {
-    const vl = createState({ dim: 2, metric: "cosine", strategy: "hnsw", hnsw: { M: 4, efConstruction: 8, efSearch: 4, seed: 1 } });
+    const vl = createState({
+      dim: 2,
+      metric: "cosine",
+      strategy: "hnsw",
+      hnsw: { M: 4, efConstruction: 8, efSearch: 4, seed: 1 },
+    });
     // Add several points, then remove enough to push tombstone ratio > 0.3
     add(vl, 1, new Float32Array([1, 0]), null);
     add(vl, 2, new Float32Array([0.9, 0]), null);

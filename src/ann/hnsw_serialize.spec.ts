@@ -26,7 +26,9 @@ describe("ann/hnsw serialize/deserialize + controls", () => {
     remove(db, 4);
 
     // search with mask + adaptiveEf + random seed strategyを通す（ガードで型を絞る）
-    if (!isHnswVL(db)) throw new Error("expected hnsw VL");
+    if (!isHnswVL(db)) {
+      throw new Error("expected hnsw VL");
+    }
     const mask = new Set([1, 2, 3, 5]);
     const q = new Float32Array([1, 0, 0]);
     const hitsCtl = hnsw_search(db.ann as HNSWState, db.store, q, {
@@ -64,7 +66,9 @@ describe("ann/hnsw serialize/deserialize + controls", () => {
     add(db2, 2, new Float32Array([0.95, 0.05, 0]), null);
     add(db2, 3, new Float32Array([0, 1, 0]), null);
     // apply deserialize and ensure links populated
-    if (!isHnswVL(db2)) throw new Error("expected hnsw VL db2");
+    if (!isHnswVL(db2)) {
+      throw new Error("expected hnsw VL db2");
+    }
     hnsw_deserialize(db2.ann as HNSWState, db2.store, buf);
     const again = hnsw_search(db2.ann as HNSWState, db2.store, q, { k: 2 });
     expect(again.length).toBeGreaterThan(0);

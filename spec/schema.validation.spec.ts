@@ -51,7 +51,13 @@ describe("FlowSchema validation", () => {
       start: "qa",
       steps: {
         qa: { type: "qa", id: "qa", schema: wizard, next: "review" },
-        review: { type: "ui", id: "review", title: "Review", field: { type: "text", name: "p", label: "Path" }, defaultNext: "write" },
+        review: {
+          type: "ui",
+          id: "review",
+          title: "Review",
+          field: { type: "text", name: "p", label: "Path" },
+          defaultNext: "write",
+        },
         write: { type: "write", id: "write", pathFrom: () => "./tmp.json", dataFrom: () => ({}) },
       },
     } as const;

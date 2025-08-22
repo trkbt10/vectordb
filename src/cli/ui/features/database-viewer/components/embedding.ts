@@ -10,14 +10,20 @@
 /** Try to parse a vector from a string. Accepts comma or whitespace separated numbers. */
 export function parseQueryVector(q: string, dim: number): Float32Array | null {
   const trimmed = q.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {
+    return null;
+  }
   const parts = trimmed
     .split(/[,\s]+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   const nums = parts.map((s) => Number(s)).filter((n) => !Number.isNaN(n));
-  if (nums.length !== parts.length) return null;
-  if (nums.length !== dim) return null;
+  if (nums.length !== parts.length) {
+    return null;
+  }
+  if (nums.length !== dim) {
+    return null;
+  }
   return Float32Array.from(nums);
 }
 
@@ -51,7 +57,9 @@ export function hashEmbed(text: string, dim: number): Float32Array {
     return next;
   };
   const fold = (arr: string[]): Float32Array => {
-    if (arr.length === 0) return new Float32Array(dim);
+    if (arr.length === 0) {
+      return new Float32Array(dim);
+    }
     const head = arr[arr.length - 1] as string;
     const init = fold(arr.slice(0, arr.length - 1));
     return bump(init, head);
@@ -62,8 +70,12 @@ export function hashEmbed(text: string, dim: number): Float32Array {
 /** Convert query → vector: prefer numeric vector, else fallback to hash embedding. */
 export function queryToVector(q: string, dim: number): Float32Array | null {
   const direct = parseQueryVector(q, dim);
-  if (direct) return direct;
-  if (!q.trim()) return null;
+  if (direct) {
+    return direct;
+  }
+  if (!q.trim()) {
+    return null;
+  }
   return hashEmbed(q, dim);
 }
 
@@ -73,13 +85,21 @@ import { embedOpenAI } from "../../../../../../debug/scenarios/embeddings-openai
 /** Try embedding via OpenAI; returns null when unavailable or on error. */
 export async function queryToVectorOpenAI(q: string, dim: number): Promise<Float32Array | null> {
   const key = process.env.OPENAI_API_KEY as string | undefined;
-  if (!q.trim()) return null;
-  if (!key) return null;
+  if (!q.trim()) {
+    return null;
+  }
+  if (!key) {
+    return null;
+  }
   try {
     const [arr] = await embedOpenAI([q], key);
     const u = new Float32Array(arr);
-    if (u.length === dim) return u;
-    if (u.length > dim) return u.slice(0, dim);
+    if (u.length === dim) {
+      return u;
+    }
+    if (u.length > dim) {
+      return u.slice(0, dim);
+    }
     const out = new Float32Array(dim);
     out.set(u, 0);
     return out;

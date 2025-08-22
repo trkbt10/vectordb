@@ -21,8 +21,12 @@ export function RebuildView({ ctx, onBack }: RebuildViewProps) {
         const target = ctx.selectedStrategy;
         if (target && target !== ctx.client.state.strategy) {
           const rebuilt = ((): typeof ctx.client.state => {
-            if (target === "hnsw") return buildHNSWFromStore(ctx.client.state) as typeof ctx.client.state;
-            if (target === "ivf") return buildIVFFromStore(ctx.client.state) as typeof ctx.client.state;
+            if (target === "hnsw") {
+              return buildHNSWFromStore(ctx.client.state) as typeof ctx.client.state;
+            }
+            if (target === "ivf") {
+              return buildIVFFromStore(ctx.client.state) as typeof ctx.client.state;
+            }
             return ctx.client.state;
           })();
           // persist new state (updates catalog: strategy) and include ANN payload
@@ -34,8 +38,12 @@ export function RebuildView({ ctx, onBack }: RebuildViewProps) {
         }
         const fresh = await ctx.client.index.rebuildState({ baseName: ctx.name });
         const finalized = ((): typeof fresh => {
-          if (fresh.strategy === "hnsw") return buildHNSWFromStore(fresh) as typeof fresh;
-          if (fresh.strategy === "ivf") return buildIVFFromStore(fresh) as typeof fresh;
+          if (fresh.strategy === "hnsw") {
+            return buildHNSWFromStore(fresh) as typeof fresh;
+          }
+          if (fresh.strategy === "ivf") {
+            return buildIVFFromStore(fresh) as typeof fresh;
+          }
           return fresh;
         })();
         // Save with ANN embedded for future fast open

@@ -52,12 +52,18 @@ export function stats<TMeta>(vl: VectorStoreState<TMeta>): StatsOut {
     for (let l = 0; l <= levels; l++) {
       const layer = h.links[l] || [];
 
-      for (let i = 0; i < layer.length; i++) edges += layer[i]?.length || 0;
+      for (let i = 0; i < layer.length; i++) {
+        edges += layer[i]?.length || 0;
+      }
     }
     // eslint-disable-next-line no-restricted-syntax -- Performance: counting tombstones
     let dead = 0;
 
-    for (let i = 0; i < nodes; i++) if (h.tombstone[i] === 1) dead++;
+    for (let i = 0; i < nodes; i++) {
+      if (h.tombstone[i] === 1) {
+        dead++;
+      }
+    }
     const tomb = nodes ? dead / nodes : 0;
     out.hnsw = { levels, avgDeg: nodes ? edges / Math.max(1, nodes) : 0, tombstoneRatio: tomb };
     out.deletedRatio = tomb;
@@ -82,11 +88,16 @@ export function diagnose<TMeta>(
   const s = stats(vl);
   const suggestions: string[] = [];
   const hotspots: string[] = [];
-  if (vl.strategy === "bruteforce" && s.n >= 10000)
+  if (vl.strategy === "bruteforce" && s.n >= 10000) {
     suggestions.push("Large dataset on BF; consider HNSW/IVF for latency. (manual build)");
+  }
   if (isHnswVL(vl)) {
-    if ((s.hnsw?.avgDeg ?? 0) < 4) suggestions.push("HNSW avgDeg is low; consider increasing M or efConstruction.");
-    if ((s.hnsw?.tombstoneRatio ?? 0) > 0.3) suggestions.push("HNSW tombstone high; consider compaction.");
+    if ((s.hnsw?.avgDeg ?? 0) < 4) {
+      suggestions.push("HNSW avgDeg is low; consider increasing M or efConstruction.");
+    }
+    if ((s.hnsw?.tombstoneRatio ?? 0) > 0.3) {
+      suggestions.push("HNSW tombstone high; consider compaction.");
+    }
   }
   if (isIvfVL(vl)) {
     const arr: number[] = s.ivf ? s.ivf.listSizeHist : [];
@@ -110,7 +121,11 @@ export function diagnose<TMeta>(
       const truth = new Set(bf.map((h) => h.id));
       // eslint-disable-next-line no-restricted-syntax -- Performance: counting intersection for recall
       let inter = 0;
-      for (const h of res) if (truth.has(h.id)) inter++;
+      for (const h of res) {
+        if (truth.has(h.id)) {
+          inter++;
+        }
+      }
       acc += inter / k;
     }
     recallEstimate = acc / qs.length;

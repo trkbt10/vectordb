@@ -35,26 +35,31 @@ bun debug/crush-cli.tsx
 ## Visualization Elements
 
 ### Shard Access Distribution
+
 - Bar chart showing relative access frequency
 - Current shard being accessed is highlighted in yellow
 - Shows total access count and percentage for each shard
 
 ### Recent Accesses
+
 - Shows the last 10 access events
 - Format: `ID: XXXXXX → PG: XXX → shard-name`
 - Most recent access highlighted in yellow
 
 ### Map Info
+
 - Displays current template name
 - Shows PG count, replica count, and number of shards
 
 ## How It Works
 
 The CLI generates random IDs continuously and uses the CRUSH algorithm to determine:
+
 1. Which placement group (PG) the ID maps to
 2. Which shard(s) should store the data
 
 This helps visualize:
+
 - How evenly data distributes across shards
 - The effect of different weight configurations
 - The impact of PG count on distribution patterns

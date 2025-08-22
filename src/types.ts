@@ -21,7 +21,6 @@
  */
 export type Metric = "cosine" | "l2" | "dot";
 
-
 /** Controls add() behavior when id exists. */
 export type UpsertOptions = {
   upsert?: boolean;

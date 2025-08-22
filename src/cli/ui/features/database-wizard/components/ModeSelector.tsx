@@ -8,7 +8,13 @@ import SelectInput from "ink-select-input";
 /**
  * ModeSelector: Choose flow creation or open; creation only shown when a flow is injected.
  */
-export function ModeSelector({ onChoose, canCreate }: { onChoose: (mode: "create" | "open" | "exit") => void; canCreate: boolean }) {
+export function ModeSelector({
+  onChoose,
+  canCreate,
+}: {
+  onChoose: (mode: "create" | "open" | "exit") => void;
+  canCreate: boolean;
+}) {
   const items: { label: string; value: "create" | "open" | "exit" }[] = [
     ...(canCreate ? [{ label: "Create Config", value: "create" as const }] : []),
     { label: "Open Database", value: "open" },
@@ -22,8 +28,6 @@ export function ModeSelector({ onChoose, canCreate }: { onChoose: (mode: "create
       <Box marginTop={1}>
         <SelectInput items={items} onSelect={(i) => onChoose(i.value)} />
       </Box>
-      
     </Box>
   );
 }
-

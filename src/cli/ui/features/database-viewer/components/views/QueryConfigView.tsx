@@ -42,7 +42,9 @@ export function QueryConfigView({ ctx, onBack }: QueryConfigViewProps) {
           <Text>{snippet}</Text>
         </Box>
         <Box marginTop={1}>
-          <Text color="gray">Note: This config is used by CLI operations (open/rebuild/save), not runtime UI state.</Text>
+          <Text color="gray">
+            Note: This config is used by CLI operations (open/rebuild/save), not runtime UI state.
+          </Text>
         </Box>
         <Box marginTop={1}>
           <SelectInput items={items} onSelect={() => onBack()} />

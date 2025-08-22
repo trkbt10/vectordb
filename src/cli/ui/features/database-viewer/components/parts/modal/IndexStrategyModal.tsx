@@ -18,7 +18,9 @@ export function IndexStrategyModal({
   onSelect: (strategy: string) => void;
   onCancel: () => void;
 }) {
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
   return (
     <Dialog open={true} title="Index Strategy" width={60}>
       <SelectInput
@@ -30,7 +32,9 @@ export function IndexStrategyModal({
           { label: "Cancel", value: "cancel" },
         ]}
         onSelect={(i: { value: string }) => {
-          if (i.value === "cancel") return onCancel();
+          if (i.value === "cancel") {
+            return onCancel();
+          }
           onSelect(i.value);
         }}
       />

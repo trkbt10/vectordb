@@ -12,7 +12,10 @@ test("state guards narrow strategy/state correctly", () => {
   expect(isHnswVL(hs)).toBe(true);
   expect(isIvfVL(iv)).toBe(true);
   // state discriminants
-  if (isHnswVL(hs)) expect(isHnswState(hs.ann)).toBe(true);
-  if (isBfVL(bf)) expect(isBruteforceState(bf.ann)).toBe(true);
+  if (isHnswVL(hs)) {
+    expect(isHnswState(hs.ann)).toBe(true);
+  }
+  if (isBfVL(bf)) {
+    expect(isBruteforceState(bf.ann)).toBe(true);
+  }
 });
-

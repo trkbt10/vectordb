@@ -7,7 +7,9 @@ import { toUint8 } from "./types";
 function requireStorage(kind: "localStorage" | "sessionStorage"): Storage {
   const g = globalThis as unknown as { [k: string]: unknown };
   const s = g[kind] as Storage | undefined;
-  if (!s || typeof s.getItem !== "function") throw new Error(`${kind} not available`);
+  if (!s || typeof s.getItem !== "function") {
+    throw new Error(`${kind} not available`);
+  }
   return s;
 }
 
@@ -20,7 +22,9 @@ function encodeBase64(u8: Uint8Array): string {
 function decodeBase64(s: string): Uint8Array {
   const bin = atob(s);
   const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i) & 0xff;
+  for (let i = 0; i < bin.length; i++) {
+    out[i] = bin.charCodeAt(i) & 0xff;
+  }
   return out;
 }
 
@@ -28,7 +32,9 @@ function createStorageFileIO(storage: Storage): FileIO {
   return {
     async read(path: string): Promise<Uint8Array> {
       const v = storage.getItem(path);
-      if (v == null) throw new Error(`file not found: ${path}`);
+      if (v == null) {
+        throw new Error(`file not found: ${path}`);
+      }
       return decodeBase64(v);
     },
     async write(path: string, data: Uint8Array | ArrayBuffer): Promise<void> {

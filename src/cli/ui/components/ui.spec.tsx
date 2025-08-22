@@ -14,4 +14,3 @@ describe("ui primitives", () => {
     expect(typeof ActionBar).toBe("function");
   });
 });
-

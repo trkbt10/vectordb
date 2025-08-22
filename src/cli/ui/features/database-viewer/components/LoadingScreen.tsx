@@ -20,4 +20,3 @@ export function LoadingScreen({ message = "Loading..." }: LoadingScreenProps) {
     </Box>
   );
 }
-

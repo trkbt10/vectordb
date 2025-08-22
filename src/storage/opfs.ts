@@ -14,14 +14,18 @@ type NavigatorWithOPFS = { storage: { getDirectory(): Promise<OPFSDirectory> } }
 
 function hasOPFSNavigator(x: unknown): x is NavigatorWithOPFS {
   const storage = (x as Record<string, unknown> | undefined)?.storage;
-  if (!storage) return false;
+  if (!storage) {
+    return false;
+  }
   const getDir = (storage as { getDirectory?: unknown }).getDirectory;
   return typeof getDir === "function";
 }
 
 function requireRoot(): Promise<OPFSDirectory> {
   const nav: unknown = (globalThis as { navigator?: unknown }).navigator;
-  if (!hasOPFSNavigator(nav)) throw new Error("OPFS not available in this environment");
+  if (!hasOPFSNavigator(nav)) {
+    throw new Error("OPFS not available in this environment");
+  }
   return (nav as NavigatorWithOPFS).storage.getDirectory();
 }
 

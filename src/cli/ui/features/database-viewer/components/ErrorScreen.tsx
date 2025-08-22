@@ -17,4 +17,3 @@ export function ErrorScreen({ message, onBack }: { message: string; onBack: () =
     </Box>
   );
 }
-

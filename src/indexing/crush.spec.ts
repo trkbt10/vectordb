@@ -22,6 +22,8 @@ describe("indexing/crush", () => {
       count[primaries[0]]++;
     }
     // Each target should have some assignments
-    for (const k of Object.keys(count)) expect(count[k]).toBeGreaterThan(0);
+    for (const k of Object.keys(count)) {
+      expect(count[k]).toBeGreaterThan(0);
+    }
   });
 });

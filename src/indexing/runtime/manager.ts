@@ -83,8 +83,11 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
     }
   })();
   if (manifest) {
-    for (const s of manifest.segments) segTarget.set(s.name, s.targetKey);
+    for (const s of manifest.segments) {
+      segTarget.set(s.name, s.targetKey);
+    }
   }
+
   for (const e of entries) {
     const t =
       segTarget.get(e.ptr.segment) ??
@@ -108,7 +111,9 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
     const vec = row.vector.slice();
     // For cosine metric, vectors must be L2-normalized to ensure correct similarity scores
     // and comparable search behavior with in-memory operations.
-    if (vl0.metric === "cosine") normalizeVectorInPlace(vec);
+    if (vl0.metric === "cosine") {
+      normalizeVectorInPlace(vec);
+    }
     vl0.store.data.set(vec, i * vl0.dim);
     vl0.store.metas[i] = (row.meta as TMeta | null) ?? null;
     vl0.store.pos.set(e.id >>> 0, i);
@@ -130,6 +135,7 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
     if (isHnswVL(vl0)) {
       return finalize(buildHNSWFromStore(vl0));
     }
+
     if (isIvfVL(vl0)) {
       return finalize(buildIVFFromStore(vl0));
     }
@@ -151,11 +157,15 @@ export async function rebuildIndexingFromData<TMeta = unknown>(
       return null;
     }
   })();
-  if (!manifest) throw new Error("manifest missing; control plane must supply segment locations");
+  if (!manifest) {
+    throw new Error("manifest missing; control plane must supply segment locations");
+  }
 
   // Load catalog (required to avoid guessing)
   const cat = await readCatalog(base, { resolveIndexIO: opts.resolveIndexIO });
-  if (!cat) throw new Error("catalog missing; cannot rebuild without metric/strategy/dim");
+  if (!cat) {
+    throw new Error("catalog missing; cannot rebuild without metric/strategy/dim");
+  }
   const vl = createState<TMeta>({
     dim: cat.dim,
     metric: decodeMetric(cat.metricCode),
@@ -174,7 +184,9 @@ export async function rebuildIndexingFromData<TMeta = unknown>(
         const data2 = new Float32Array((vl.store._capacity + extra) * vl.dim);
         data2.set(vl.store.data);
         const metas2 = new Array(vl.store._capacity + extra).fill(null) as (TMeta | null)[];
-        for (let j = 0; j < vl.store._count; j++) metas2[j] = vl.store.metas[j];
+        for (let j = 0; j < vl.store._count; j++) {
+          metas2[j] = vl.store.metas[j];
+        }
         vl.store.ids = ids2;
         vl.store.data = data2;
         vl.store.metas = metas2;
@@ -185,7 +197,9 @@ export async function rebuildIndexingFromData<TMeta = unknown>(
       const vec = vector.slice();
       // For cosine metric, vectors must be L2-normalized to maintain score semantics
       // consistent with add()/search() behavior in memory.
-      if (vl.metric === "cosine") normalizeVectorInPlace(vec);
+      if (vl.metric === "cosine") {
+        normalizeVectorInPlace(vec);
+      }
       vl.store.data.set(vec, idx * vl.dim);
       vl.store.metas[idx] = meta as TMeta | null;
       vl.store.pos.set(id >>> 0, idx);

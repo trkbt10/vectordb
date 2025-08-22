@@ -144,8 +144,7 @@ export function Controls({ isRunning, onToggle }: { isRunning: boolean; onToggle
   return (
     <Box marginTop={1}>
       <Text color="gray">
-        Press <Text color="green">SPACE</Text> to {isRunning ? "pause" : "resume"} | <Text color="red">Q</Text> to
-        quit
+        Press <Text color="green">SPACE</Text> to {isRunning ? "pause" : "resume"} | <Text color="red">Q</Text> to quit
       </Text>
     </Box>
   );

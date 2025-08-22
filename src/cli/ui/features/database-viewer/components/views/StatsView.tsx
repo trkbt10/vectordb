@@ -19,12 +19,13 @@ export function StatsView({ ctx, onBack }: StatsViewProps) {
   useEffect(() => {
     setReady(true);
   }, [ctx]);
-  if (!ready)
+  if (!ready) {
     return (
       <Text>
         <Spinner type="dots" /> Loading...
       </Text>
     );
+  }
   const items = [{ label: "Back", value: "back" }];
   return (
     <Dialog open={true} title="Stats / Diagnose" width={60}>

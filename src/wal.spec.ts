@@ -54,7 +54,8 @@ test("decodeWal throws on malformed upsert with missing vector bytes", () => {
 test("applyWalWithIndex keeps attribute index in sync", () => {
   const db = createState<{ tag?: string; price?: number }>({ dim: 2 });
   const idx = createAttrIndex();
-  const projector = (m: { tag?: string; price?: number } | null) => (m ? { tag: m.tag ?? null, price: m.price ?? null } : null);
+  const projector = (m: { tag?: string; price?: number } | null) =>
+    m ? { tag: m.tag ?? null, price: m.price ?? null } : null;
 
   // upsert then setMeta then remove
   const wal = encodeWal([

@@ -51,7 +51,9 @@ export function searchWithExpr<TMeta>(
   const pred = compilePredicate(expr);
   const idx = opts.index ?? null;
   function makeIdxReader(x: AttrIndex | null | undefined): AttrIndexReader | null {
-    if (!x) return null;
+    if (!x) {
+      return null;
+    }
     return {
       eq: (key: string, value: Scalar) => x.eq(key, value),
       exists: (key: string) => x.exists(key),
@@ -64,16 +66,22 @@ export function searchWithExpr<TMeta>(
   // HNSW hard-mode: score only candidates
   if (vl.strategy === "hnsw" && candidates && candidates.size > 0 && opts.hnsw?.mode === "hard") {
     const dim = vl.store.dim;
-    if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
+    if (q.length !== dim) {
+      throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
+    }
     const out: SearchHit<TMeta>[] = [];
     const data = vl.store.data;
     const scoreAt = getScoreAtFn(vl.metric);
     for (const id of candidates) {
       const at = vl.store.pos.get(id);
-      if (at === undefined) continue;
+      if (at === undefined) {
+        continue;
+      }
       const meta = vl.store.metas[at];
       const attrs = idx ? idx.getAttrs(id) : null;
-      if (!pred(id, meta, attrs)) continue;
+      if (!pred(id, meta, attrs)) {
+        continue;
+      }
       const base = at * dim;
       const s = scoreAt(data, base, q, dim);
       pushTopK(out, { id, score: s, meta }, k, (x) => x.score);
@@ -90,7 +98,9 @@ export function searchWithExpr<TMeta>(
     const maskIdx = createBitMask(vl.store._count);
     for (const id of candidates) {
       const at = vl.store.pos.get(id);
-      if (at !== undefined) maskSet(maskIdx, at);
+      if (at !== undefined) {
+        maskSet(maskIdx, at);
+      }
     }
     return hnsw_search(vl.ann as HNSWState, vl.store, q, {
       k,
@@ -111,16 +121,22 @@ export function searchWithExpr<TMeta>(
   // Bruteforce with candidate preselection
   if (vl.strategy === "bruteforce" && candidates && candidates.size > 0) {
     const dim = vl.store.dim;
-    if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
+    if (q.length !== dim) {
+      throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
+    }
     const out: SearchHit<TMeta>[] = [];
     const data = vl.store.data;
     const scoreAt = getScoreAtFn(vl.metric);
     for (const id of candidates) {
       const at = vl.store.pos.get(id);
-      if (at === undefined) continue;
+      if (at === undefined) {
+        continue;
+      }
       const meta = vl.store.metas[at];
       const attrs = idx ? idx.getAttrs(id) : null;
-      if (!pred(id, meta, attrs)) continue;
+      if (!pred(id, meta, attrs)) {
+        continue;
+      }
       const base = at * dim;
       const s = scoreAt(data, base, q, dim);
       pushTopK(out, { id, score: s, meta }, k, (x) => x.score);
@@ -137,16 +153,21 @@ export function searchWithExpr<TMeta>(
   if (vl.strategy === "hnsw") {
     return hnsw_search(vl.ann as HNSWState, vl.store, q, { k, filter });
   }
+
   // bruteforce path when no candidates
   const dim = vl.store.dim;
-  if (q.length !== dim) throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
+  if (q.length !== dim) {
+    throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
+  }
   const out: SearchHit<TMeta>[] = [];
   const data = vl.store.data;
   const scoreAt = getScoreAtFn(vl.metric);
   for (let i = 0; i < vl.store._count; i++) {
     const id = vl.store.ids[i];
     const meta = vl.store.metas[i];
-    if (!filter(id, meta)) continue;
+    if (!filter(id, meta)) {
+      continue;
+    }
     const base = i * dim;
     const s = scoreAt(data, base, q, dim);
     pushTopK(out, { id, score: s, meta }, k, (x) => x.score);

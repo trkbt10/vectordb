@@ -18,8 +18,12 @@ export type IndexBuildOptions = {
 };
 
 function annBytesFor<T>(vl: VectorStoreState<T>): Uint8Array {
-  if (isHnswVL(vl)) return new Uint8Array(hnsw_serialize(vl.ann, vl.store));
-  if (isIvfVL(vl)) return new Uint8Array(ivf_serialize(vl.ann, vl.store));
+  if (isHnswVL(vl)) {
+    return new Uint8Array(hnsw_serialize(vl.ann, vl.store));
+  }
+  if (isIvfVL(vl)) {
+    return new Uint8Array(ivf_serialize(vl.ann, vl.store));
+  }
   return new Uint8Array(bf_serialize());
 }
 

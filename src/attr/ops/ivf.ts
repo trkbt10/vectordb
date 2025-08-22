@@ -22,7 +22,9 @@ export function trainIvfCentroids<TMeta>(
   vl: VectorStoreState<TMeta>,
   opts?: { iters?: number; seed?: number },
 ): { updated: number } {
-  if (!isIvfVL(vl)) return { updated: 0 };
+  if (!isIvfVL(vl)) {
+    return { updated: 0 };
+  }
   return ivf_trainCentroids(vl.ann, vl.store, opts ?? {});
 }
 
@@ -31,7 +33,9 @@ export function trainIvfCentroids<TMeta>(
  * No-op if the current strategy is not IVF.
  */
 export function reassignIvfLists<TMeta>(vl: VectorStoreState<TMeta>): { moved: number } {
-  if (!isIvfVL(vl)) return { moved: 0 };
+  if (!isIvfVL(vl)) {
+    return { moved: 0 };
+  }
   return ivf_reassignLists(vl.ann, vl.store);
 }
 
@@ -44,6 +48,8 @@ export function evaluateIvf<TMeta>(
   queries: Float32Array[],
   k: number,
 ): { recall: number; latency: number } {
-  if (!isIvfVL(vl)) return { recall: 0, latency: 0 };
+  if (!isIvfVL(vl)) {
+    return { recall: 0, latency: 0 };
+  }
   return ivf_evaluate(vl.ann, vl.store, queries, k);
 }

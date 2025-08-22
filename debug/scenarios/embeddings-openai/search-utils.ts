@@ -16,7 +16,14 @@ export function runSearch<TMeta>(
   opts?: { hnswFilterMode?: "soft" | "hard"; hnswSeeds?: "auto" | number; hnswBridge?: number },
 ) {
   const searchOpts: Parameters<typeof vl.findMany>[1] = expr
-    ? { k: 5, expr, exprOpts: { index: idx, hnsw: { mode: opts?.hnswFilterMode, seeds: opts?.hnswSeeds, bridgeBudget: opts?.hnswBridge } } }
+    ? {
+        k: 5,
+        expr,
+        exprOpts: {
+          index: idx,
+          hnsw: { mode: opts?.hnswFilterMode, seeds: opts?.hnswSeeds, bridgeBudget: opts?.hnswBridge },
+        },
+      }
     : { k: 5 };
   return vl.findMany(q, searchOpts);
 }

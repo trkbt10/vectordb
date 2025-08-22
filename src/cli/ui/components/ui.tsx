@@ -154,7 +154,9 @@ export function QuestionForm({
 }) {
   const [focus, setFocus] = React.useState<"field" | "actions">("field");
   useInput((input, key) => {
-    if (key.upArrow || key.downArrow) setFocus((f) => (f === "field" ? "actions" : "field"));
+    if (key.upArrow || key.downArrow) {
+      setFocus((f) => (f === "field" ? "actions" : "field"));
+    }
   });
   const actionItems = [{ label: "Next", value: "__next" }, ...(onBack ? [{ label: "Back", value: "__back" }] : [])];
   function renderBody(): React.ReactNode {
@@ -163,7 +165,11 @@ export function QuestionForm({
         <>
           <Text>{field.label}</Text>
           <TextInput value={String(value ?? "")} onChange={(v) => onChange(v)} focus={focus === "field"} />
-          <ActionBar items={actionItems} focus={focus === "actions"} onSelect={(val) => (val === "__back" ? onBack?.() : onNext())} />
+          <ActionBar
+            items={actionItems}
+            focus={focus === "actions"}
+            onSelect={(val) => (val === "__back" ? onBack?.() : onNext())}
+          />
         </>
       );
     }
@@ -187,11 +193,17 @@ export function QuestionForm({
             items={items}
             isFocused={focus === "field"}
             onSelect={(i: { label: string; value: string }) => {
-              if (i.value === "__back__") return onBack?.();
+              if (i.value === "__back__") {
+                return onBack?.();
+              }
               onChange(i.value);
             }}
           />
-          <ActionBar items={actionItems} focus={focus === "actions"} onSelect={(val) => (val === "__back" ? onBack?.() : onNext())} />
+          <ActionBar
+            items={actionItems}
+            focus={focus === "actions"}
+            onSelect={(val) => (val === "__back" ? onBack?.() : onNext())}
+          />
         </>
       );
     }
@@ -203,8 +215,12 @@ export function QuestionForm({
           items={[{ label: boolLabel, value: "__toggle" }, ...actionItems]}
           focus={true}
           onSelect={(val) => {
-            if (val === "__toggle") return onChange(!(value as boolean));
-            if (val === "__back") return onBack?.();
+            if (val === "__toggle") {
+              return onChange(!(value as boolean));
+            }
+            if (val === "__back") {
+              return onBack?.();
+            }
             onNext();
           }}
         />
@@ -236,10 +252,18 @@ export function ActionBar({
   const [idx, setIdx] = React.useState(initialIndex);
   React.useEffect(() => setIdx(initialIndex), [initialIndex, items.length]);
   useInput((input, key) => {
-    if (!focus) return;
-    if (key.leftArrow) setIdx((i) => (i > 0 ? i - 1 : i));
-    if (key.rightArrow) setIdx((i) => (i < items.length - 1 ? i + 1 : i));
-    if (key.return) onSelect(items[idx]?.value);
+    if (!focus) {
+      return;
+    }
+    if (key.leftArrow) {
+      setIdx((i) => (i > 0 ? i - 1 : i));
+    }
+    if (key.rightArrow) {
+      setIdx((i) => (i < items.length - 1 ? i + 1 : i));
+    }
+    if (key.return) {
+      onSelect(items[idx]?.value);
+    }
   });
   return (
     <Box>

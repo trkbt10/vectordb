@@ -75,11 +75,15 @@ function createRng(seed: number): () => number {
 function normalizeVec(v: Float32Array): void {
   // eslint-disable-next-line no-restricted-syntax -- Performance: sum accumulator for normalization
   let ss = 0;
-   
-  for (let i = 0; i < v.length; i++) ss += v[i] * v[i];
+
+  for (let i = 0; i < v.length; i++) {
+    ss += v[i] * v[i];
+  }
   const n = Math.sqrt(ss) || 1;
-   
-  for (let i = 0; i < v.length; i++) v[i] = v[i] / n;
+
+  for (let i = 0; i < v.length; i++) {
+    v[i] = v[i] / n;
+  }
 }
 
 function argmax(scores: Float32Array): number {
@@ -87,7 +91,7 @@ function argmax(scores: Float32Array): number {
   let bi = 0;
   // eslint-disable-next-line no-restricted-syntax -- Performance: tracking best value in argmax
   let bv = -Infinity;
-   
+
   for (let i = 0; i < scores.length; i++) {
     const v = scores[i];
     if (v > bv) {
@@ -107,7 +111,9 @@ export function ivf_trainCentroids<TMeta>(
   const n = store._count;
   const dim = store.dim;
   const k = ivf.nlist;
-  if (n === 0 || k === 0) return { updated: 0 };
+  if (n === 0 || k === 0) {
+    return { updated: 0 };
+  }
   const rng = createRng((opts.seed ?? 42) >>> 0);
   // Initialize with k distinct random ids (or fewer if n<k)
   const chosen = new Set<number>();
@@ -120,17 +126,25 @@ export function ivf_trainCentroids<TMeta>(
   let ci = 0;
   for (const idx of chosen) {
     const base = idx * dim;
-     
-    for (let d = 0; d < dim; d++) cents[ci * dim + d] = store.data[base + d];
-    if (ivf.metric !== "l2") normalizeVec(cents.subarray(ci * dim, (ci + 1) * dim));
+
+    for (let d = 0; d < dim; d++) {
+      cents[ci * dim + d] = store.data[base + d];
+    }
+    if (ivf.metric !== "l2") {
+      normalizeVec(cents.subarray(ci * dim, (ci + 1) * dim));
+    }
     ci++;
-    if (ci >= k) break;
+    if (ci >= k) {
+      break;
+    }
   }
   // If picked less than k (n<k), duplicate heads
   for (; ci < k; ci++) {
     const from = ci % Math.max(1, chosen.size);
     const base = from * dim;
-    for (let d = 0; d < dim; d++) cents[ci * dim + d] = cents[base + d];
+    for (let d = 0; d < dim; d++) {
+      cents[ci * dim + d] = cents[base + d];
+    }
   }
   // Iterative refinement
   const iters = Math.max(1, opts.iters ?? 10);
@@ -138,18 +152,22 @@ export function ivf_trainCentroids<TMeta>(
   const scores = new Float32Array(k);
   const sums = new Float64Array(k * dim);
   const counts = new Uint32Array(k);
-   
+
   for (let it = 0; it < iters; it++) {
     // reset accumulators
-     
-    for (let j = 0; j < sums.length; j++) sums[j] = 0;
-     
-    for (let j = 0; j < counts.length; j++) counts[j] = 0;
+
+    for (let j = 0; j < sums.length; j++) {
+      sums[j] = 0;
+    }
+
+    for (let j = 0; j < counts.length; j++) {
+      counts[j] = 0;
+    }
     // assign
-     
+
     for (let i = 0; i < n; i++) {
       const base = i * dim;
-       
+
       for (let c = 0; c < k; c++) {
         const off = c * dim;
         // scoreAt expects a contiguous vector in data and query; we adapt by computing score vs centroid
@@ -160,7 +178,7 @@ export function ivf_trainCentroids<TMeta>(
           // negative L2
           // eslint-disable-next-line no-restricted-syntax -- Performance: distance accumulator
           let acc = 0;
-           
+
           for (let d = 0; d < dim; d++) {
             const diff = store.data[base + d] - cents[off + d];
             acc += diff * diff;
@@ -170,8 +188,10 @@ export function ivf_trainCentroids<TMeta>(
         if (ivf.metric === "dot" || ivf.metric === "cosine") {
           // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
           let acc = 0;
-           
-          for (let d = 0; d < dim; d++) acc += store.data[base + d] * cents[off + d];
+
+          for (let d = 0; d < dim; d++) {
+            acc += store.data[base + d] * cents[off + d];
+          }
           s = acc;
         }
         scores[c] = s;
@@ -180,16 +200,24 @@ export function ivf_trainCentroids<TMeta>(
       assign[i] = best >>> 0;
       counts[best]++;
       const soff = best * dim;
-       
-      for (let d = 0; d < dim; d++) sums[soff + d] += store.data[base + d];
+
+      for (let d = 0; d < dim; d++) {
+        sums[soff + d] += store.data[base + d];
+      }
     }
     // recompute centroids
     for (let c = 0; c < k; c++) {
       const cnt = counts[c];
       const off = c * dim;
-      if (cnt === 0) continue; // keep previous
-      for (let d = 0; d < dim; d++) cents[off + d] = sums[off + d] / cnt;
-      if (ivf.metric !== "l2") normalizeVec(cents.subarray(off, off + dim));
+      if (cnt === 0) {
+        continue;
+      } // keep previous
+      for (let d = 0; d < dim; d++) {
+        cents[off + d] = sums[off + d] / cnt;
+      }
+      if (ivf.metric !== "l2") {
+        normalizeVec(cents.subarray(off, off + dim));
+      }
     }
   }
   // write back
@@ -205,13 +233,17 @@ export function ivf_reassignLists<TMeta>(ivf: IVFState, store: CoreStore<TMeta>)
   const k = ivf.nlist;
   // clear
   ivf.idToList.clear();
-  for (let i = 0; i < ivf.lists.length; i++) ivf.lists[i] = [];
-  if (n === 0 || k === 0 || ivf.centroidCount === 0) return { moved: 0 };
+  for (let i = 0; i < ivf.lists.length; i++) {
+    ivf.lists[i] = [];
+  }
+  if (n === 0 || k === 0 || ivf.centroidCount === 0) {
+    return { moved: 0 };
+  }
   const scores = new Float32Array(k);
-   
+
   for (let i = 0; i < n; i++) {
     const base = i * dim;
-     
+
     for (let c = 0; c < k; c++) {
       const off = c * dim;
       // eslint-disable-next-line no-restricted-syntax -- Performance: score accumulator
@@ -219,7 +251,7 @@ export function ivf_reassignLists<TMeta>(ivf: IVFState, store: CoreStore<TMeta>)
       if (ivf.metric === "l2") {
         // eslint-disable-next-line no-restricted-syntax -- Performance: L2 distance accumulator
         let acc = 0;
-         
+
         for (let d = 0; d < dim; d++) {
           const diff = store.data[base + d] - ivf.centroids[off + d];
           acc += diff * diff;
@@ -229,8 +261,10 @@ export function ivf_reassignLists<TMeta>(ivf: IVFState, store: CoreStore<TMeta>)
       if (ivf.metric !== "l2") {
         // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
         let acc = 0;
-         
-        for (let d = 0; d < dim; d++) acc += store.data[base + d] * ivf.centroids[off + d];
+
+        for (let d = 0; d < dim; d++) {
+          acc += store.data[base + d] * ivf.centroids[off + d];
+        }
         s = acc;
       }
       scores[c] = s;
@@ -253,7 +287,7 @@ export function ivf_evaluate<TMeta>(
   const dim = store.dim;
   const bfTopK = (q: Float32Array, kk: number): number[] => {
     const out: { id: number; score: number }[] = [];
-     
+
     for (let i = 0; i < store._count; i++) {
       const id = store.ids[i];
       const base = i * dim;
@@ -262,7 +296,7 @@ export function ivf_evaluate<TMeta>(
       if (ivf.metric === "l2") {
         // eslint-disable-next-line no-restricted-syntax -- Performance: L2 distance accumulator
         let acc = 0;
-         
+
         for (let d = 0; d < dim; d++) {
           const diff = store.data[base + d] - q[d];
           acc += diff * diff;
@@ -272,14 +306,16 @@ export function ivf_evaluate<TMeta>(
       if (ivf.metric !== "l2") {
         // eslint-disable-next-line no-restricted-syntax -- Performance: dot product accumulator
         let acc = 0;
-         
-        for (let d = 0; d < dim; d++) acc += store.data[base + d] * q[d];
+
+        for (let d = 0; d < dim; d++) {
+          acc += store.data[base + d] * q[d];
+        }
         s = acc;
       }
       // insert sorted desc
       // eslint-disable-next-line no-restricted-syntax -- Performance: finding insertion position
       let pos = out.length;
-       
+
       for (let j = 0; j < out.length; j++) {
         if (s > out[j]!.score) {
           pos = j;
@@ -287,7 +323,9 @@ export function ivf_evaluate<TMeta>(
         }
       }
       out.splice(pos, 0, { id, score: s });
-      if (out.length > kk) out.length = kk;
+      if (out.length > kk) {
+        out.length = kk;
+      }
     }
     return out.map((x) => x.id);
   };
@@ -305,8 +343,11 @@ export function ivf_evaluate<TMeta>(
     // eslint-disable-next-line no-restricted-syntax -- Performance: counting intersection for recall calculation
     let inter = 0;
     for (const h of hits) {
-      if (truth.has(h.id)) inter++;
+      if (truth.has(h.id)) {
+        inter++;
+      }
     }
+
     sumRecall += inter / Math.max(1, k);
   }
   const n = Math.max(1, queries.length);
@@ -338,7 +379,9 @@ function nearestCentroid<TMeta>(h: IVFState, store: CoreStore<TMeta>, vec: Float
  */
 export function ivf_add<TMeta>(h: IVFState, store: CoreStore<TMeta>, id: number): void {
   const idx = store.pos.get(id >>> 0) ?? -1;
-  if (idx < 0) return;
+  if (idx < 0) {
+    return;
+  }
   const base = idx * store.dim;
   const vec = store.data.subarray(base, base + store.dim);
   // Initialize centroids with first nlist vectors
@@ -361,10 +404,14 @@ export function ivf_add<TMeta>(h: IVFState, store: CoreStore<TMeta>, id: number)
 export function ivf_remove(h: IVFState, id: number): void {
   const uid = id >>> 0;
   const li = h.idToList.get(uid);
-  if (li === undefined) return;
+  if (li === undefined) {
+    return;
+  }
   const arr = h.lists[li];
   const pos = arr.indexOf(uid);
-  if (pos >= 0) arr.splice(pos, 1);
+  if (pos >= 0) {
+    arr.splice(pos, 1);
+  }
   h.idToList.delete(uid);
 }
 
@@ -382,6 +429,7 @@ export function ivf_search<TMeta>(
   if (q.length !== dim) {
     throw new Error(`dim mismatch: got ${q.length}, want ${dim}`);
   }
+
   const scoreAt = getScoreAtFn(h.metric);
   // Pick nprobe centroids by score
   const scores: Array<{ c: number; s: number }> = [];
@@ -397,9 +445,13 @@ export function ivf_search<TMeta>(
     const list = h.lists[scores[i]!.c];
     for (const id of list) {
       const at = store.pos.get(id);
-      if (at === undefined) continue;
+      if (at === undefined) {
+        continue;
+      }
       const meta = store.metas[at];
-      if (filter && !filter(id, meta)) continue;
+      if (filter && !filter(id, meta)) {
+        continue;
+      }
       const base = at * dim;
       const s = scoreAt(store.data, base, q, dim);
       // simple insert sort for k (small k)
@@ -412,7 +464,9 @@ export function ivf_search<TMeta>(
         }
       }
       out.splice(ins, 0, { id, score: s, meta });
-      if (out.length > k) out.length = k;
+      if (out.length > k) {
+        out.length = k;
+      }
     }
   }
   return out;
@@ -459,8 +513,11 @@ export function ivf_deserialize(h: IVFState, store: CoreStore<unknown>, buf: Arr
   h.lists = lists;
   h.idToList.clear();
   for (let li = 0; li < lists.length; li++) {
-    for (const id of lists[li]!) h.idToList.set(id >>> 0, li);
+    for (const id of lists[li]!) {
+      h.idToList.set(id >>> 0, li);
+    }
   }
+
   if (cent.length !== nlist * dim) {
     // Resize to fit current dim even if serialized dim differs
     const fixed = new Float32Array(nlist * store.dim);

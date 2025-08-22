@@ -63,9 +63,15 @@ export function DatabaseForm({ onSubmit, onExit }: { onSubmit: (input: OpenInput
         <SelectInput
           items={items}
           onSelect={(i: { label: string; value: string }) => {
-            if (i.value === "back") return onExit();
-            if (i.value === "switch") return setMode(mode === "folder" ? "config" : "folder");
-            if (mode === "folder") return onSubmit({ kind: "folder", indexRoot, dataRoot, name });
+            if (i.value === "back") {
+              return onExit();
+            }
+            if (i.value === "switch") {
+              return setMode(mode === "folder" ? "config" : "folder");
+            }
+            if (mode === "folder") {
+              return onSubmit({ kind: "folder", indexRoot, dataRoot, name });
+            }
             return onSubmit({ kind: "config", path: configPath });
           }}
         />

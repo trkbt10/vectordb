@@ -20,17 +20,25 @@ describe("IVF retrain/evaluate", () => {
     const e3 = new Float32Array([0, 0, 1, 0]);
     function jitter(base: Float32Array, eps: number): Float32Array {
       const v = new Float32Array(dim);
-      for (let i = 0; i < dim; i++) v[i] = base[i] + (Math.random() * 2 - 1) * eps;
+      for (let i = 0; i < dim; i++) {
+        v[i] = base[i] + (Math.random() * 2 - 1) * eps;
+      }
       return v;
     }
     // eslint-disable-next-line no-restricted-syntax -- Test setup: ID counter for test data
     let id = 1;
-     
-    for (let i = 0; i < 40; i++) add(vl, id++, jitter(e1, 0.05), null);
-     
-    for (let i = 0; i < 40; i++) add(vl, id++, jitter(e2, 0.05), null);
-     
-    for (let i = 0; i < 40; i++) add(vl, id++, jitter(e3, 0.05), null);
+
+    for (let i = 0; i < 40; i++) {
+      add(vl, id++, jitter(e1, 0.05), null);
+    }
+
+    for (let i = 0; i < 40; i++) {
+      add(vl, id++, jitter(e2, 0.05), null);
+    }
+
+    for (let i = 0; i < 40; i++) {
+      add(vl, id++, jitter(e3, 0.05), null);
+    }
 
     const t = trainIvfCentroids(vl, { iters: 12, seed: 123 });
     expect(t.updated).toBeGreaterThan(0);

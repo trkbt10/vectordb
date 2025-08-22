@@ -15,4 +15,3 @@ describe("utils", () => {
     expect(vectorPreview(new Float32Array([1, 2, 3, 4]), 2)).toBe("[1.000, 2.000, …]");
   });
 });
-

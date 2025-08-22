@@ -8,4 +8,3 @@ describe("DefaultWizard", () => {
     expect(typeof DefaultWizard).toBe("function");
   });
 });
-

@@ -51,13 +51,19 @@ export type AttrsLike = Record<string, unknown> | null | undefined;
 export type CompiledPredicate = (id: number, meta: MetaLike, attrs?: AttrsLike) => boolean;
 
 function getByPath(obj: unknown, path: string | undefined): unknown {
-  if (!path) return undefined;
-  if (obj == null) return undefined;
+  if (!path) {
+    return undefined;
+  }
+  if (obj == null) {
+    return undefined;
+  }
   const parts = path.split(".");
   // eslint-disable-next-line no-restricted-syntax -- Performance: object traversal requires mutable cursor
   let cur = obj as Record<string, unknown>;
   for (const p of parts) {
-    if (cur == null) return undefined;
+    if (cur == null) {
+      return undefined;
+    }
     cur = cur[p] as Record<string, unknown>;
   }
   return cur;
@@ -70,7 +76,9 @@ function ensureArray<T>(v: T | T[]): T[] {
 function compileLeaf(l: LeafExpr): (id: number, meta: MetaLike, attrs?: AttrsLike) => boolean {
   const scope = l.scope ?? "attrs";
   const getter = (id: number, meta: MetaLike, attrs?: AttrsLike) => {
-    if (l.key === undefined) return undefined;
+    if (l.key === undefined) {
+      return undefined;
+    }
     const src = scope === "attrs" ? attrs : meta;
     return getByPath(src, l.key);
   };
@@ -81,8 +89,11 @@ function compileLeaf(l: LeafExpr): (id: number, meta: MetaLike, attrs?: AttrsLik
       if (Array.isArray(v)) {
         // any overlap of scalar list with array value
         for (const x of arr) {
-          if (v.includes(x)) return true;
+          if (v.includes(x)) {
+            return true;
+          }
         }
+
         return false;
       }
       return arr.some((x) => x === v);
@@ -108,11 +119,21 @@ function compileLeaf(l: LeafExpr): (id: number, meta: MetaLike, attrs?: AttrsLik
     const r = l.range;
     return (_id, meta, attrs) => {
       const v = getter(_id, meta, attrs);
-      if (typeof v !== "number") return false;
-      if (r.gt !== undefined && !(v > r.gt)) return false;
-      if (r.gte !== undefined && !(v >= r.gte)) return false;
-      if (r.lt !== undefined && !(v < r.lt)) return false;
-      if (r.lte !== undefined && !(v <= r.lte)) return false;
+      if (typeof v !== "number") {
+        return false;
+      }
+      if (r.gt !== undefined && !(v > r.gt)) {
+        return false;
+      }
+      if (r.gte !== undefined && !(v >= r.gte)) {
+        return false;
+      }
+      if (r.lt !== undefined && !(v < r.lt)) {
+        return false;
+      }
+      if (r.lte !== undefined && !(v <= r.lte)) {
+        return false;
+      }
       return true;
     };
   }
@@ -130,6 +151,7 @@ export function compilePredicate(expr: FilterExpr): CompiledPredicate {
     if (!hasRest) {
       return (id) => set.has(id >>> 0);
     }
+
     const restPred = compilePredicate(rest as FilterExpr);
     return (id, meta, attrs) => (set.has(id >>> 0) ? restPred(id, meta, attrs) : false);
   }
@@ -137,6 +159,7 @@ export function compilePredicate(expr: FilterExpr): CompiledPredicate {
   if (l && (l.match !== undefined || l.range !== undefined || l.exists !== undefined || l.is_null !== undefined)) {
     return compileLeaf(l as LeafExpr);
   }
+
   const b = expr as BoolExpr;
   const must = (b.must ?? []).map(compilePredicate);
   const must_not = (b.must_not ?? []).map(compilePredicate);
@@ -144,18 +167,29 @@ export function compilePredicate(expr: FilterExpr): CompiledPredicate {
   const should_min = Math.max(0, b.should_min ?? (should.length > 0 ? 1 : 0));
   return (id, meta, attrs) => {
     for (const m of must) {
-      if (!m(id, meta, attrs)) return false;
+      if (!m(id, meta, attrs)) {
+        return false;
+      }
     }
+
     for (const n of must_not) {
-      if (n(id, meta, attrs)) return false;
+      if (n(id, meta, attrs)) {
+        return false;
+      }
     }
+
     if (should.length > 0) {
       // eslint-disable-next-line no-restricted-syntax -- Performance: counting matched should clauses
       let ok = 0;
       for (const s of should) {
-        if (s(id, meta, attrs)) ok++;
+        if (s(id, meta, attrs)) {
+          ok++;
+        }
       }
-      if (ok < should_min) return false;
+
+      if (ok < should_min) {
+        return false;
+      }
     }
     return true;
   };
@@ -174,28 +208,50 @@ export type AttrIndexReader = {
 };
 
 function unionInto(dst: CandidateSet | null, src: CandidateSet | null): CandidateSet | null {
-  if (!src) return dst;
-  if (!dst) return new Set(src);
-  for (const v of src) dst.add(v);
+  if (!src) {
+    return dst;
+  }
+  if (!dst) {
+    return new Set(src);
+  }
+  for (const v of src) {
+    dst.add(v);
+  }
   return dst;
 }
 
 function intersectInto(dst: CandidateSet | null, src: CandidateSet | null): CandidateSet | null {
-  if (!dst && !src) return null;
-  if (!dst) return src ? new Set(src) : null;
-  if (!src) return dst ? new Set(dst) : null;
+  if (!dst && !src) {
+    return null;
+  }
+  if (!dst) {
+    return src ? new Set(src) : null;
+  }
+  if (!src) {
+    return dst ? new Set(dst) : null;
+  }
   const out = new Set<number>();
   const small = dst.size <= src.size ? dst : src;
   const large = dst.size <= src.size ? src : dst;
-  for (const v of small) if (large.has(v)) out.add(v);
+  for (const v of small) {
+    if (large.has(v)) {
+      out.add(v);
+    }
+  }
   return out;
 }
 
 function subtractInto(dst: CandidateSet | null, src: CandidateSet | null): CandidateSet | null {
-  if (!dst) return null;
-  if (!src) return new Set(dst);
+  if (!dst) {
+    return null;
+  }
+  if (!src) {
+    return new Set(dst);
+  }
   const out = new Set(dst);
-  for (const v of src) out.delete(v);
+  for (const v of src) {
+    out.delete(v);
+  }
   return out;
 }
 
@@ -205,27 +261,37 @@ function subtractInto(dst: CandidateSet | null, src: CandidateSet | null): Candi
  */
 export function preselectCandidates(expr: FilterExpr, idx: AttrIndexReader | null): CandidateSet | null {
   // if no index supplied, bail
-  if (!idx) return null;
-  if ("has_id" in expr) return new Set(expr.has_id.values.map((v) => v >>> 0));
+  if (!idx) {
+    return null;
+  }
+  if ("has_id" in expr) {
+    return new Set(expr.has_id.values.map((v) => v >>> 0));
+  }
   // leaf
   const l = expr as LeafExpr;
   const isLeaf = l.match !== undefined || l.range !== undefined || l.exists !== undefined || l.is_null !== undefined;
   if (isLeaf) {
     const scope = l.scope ?? "attrs";
-    if (scope !== "attrs") return null; // index only covers attrs
+    if (scope !== "attrs") {
+      return null;
+    } // index only covers attrs
     if (l.match !== undefined && l.key) {
       const vals = ensureArray(l.match).filter((v) => typeof v !== "object") as Scalar[];
       // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating union of candidate sets
       let out: CandidateSet | null = null;
-      for (const v of vals) out = unionInto(out, idx.eq(l.key!, v));
+      for (const v of vals) {
+        out = unionInto(out, idx.eq(l.key!, v));
+      }
       return out;
     }
     if (l.exists !== undefined && l.key) {
       return l.exists ? idx.exists(l.key) : null;
     }
+
     if (l.range && l.key) {
       return idx.range(l.key, l.range);
     }
+
     return null;
   }
   // bool
@@ -243,12 +309,17 @@ export function preselectCandidates(expr: FilterExpr, idx: AttrIndexReader | nul
   if (b.should && b.should.length) {
     // eslint-disable-next-line no-restricted-syntax -- Accumulator for union of "should" clauses
     let u: CandidateSet | null = null;
-    for (const e of b.should) u = unionInto(u, preselectCandidates(e, idx));
+    for (const e of b.should) {
+      u = unionInto(u, preselectCandidates(e, idx));
+    }
     cur = cur ? intersectInto(cur, u) : u;
   }
   // must_not: subtract
   if (b.must_not && b.must_not.length) {
-    for (const e of b.must_not) cur = subtractInto(cur, preselectCandidates(e, idx));
+    for (const e of b.must_not) {
+      cur = subtractInto(cur, preselectCandidates(e, idx));
+    }
   }
+
   return cur;
 }

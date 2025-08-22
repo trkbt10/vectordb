@@ -18,11 +18,15 @@ export function Dialog({
   width?: number;
   children: React.ReactNode;
 }) {
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
   const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
   const w = Math.min(width, Math.max(40, cols - 6));
   const titleNode = (() => {
-    if (!title) return null;
+    if (!title) {
+      return null;
+    }
     return (
       <Box marginBottom={1}>
         <Text color="white">{title}</Text>

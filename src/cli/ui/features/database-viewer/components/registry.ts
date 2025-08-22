@@ -33,51 +33,77 @@ export async function writeRegistry(reg: DatabaseRegistry, p?: string): Promise<
 }
 
 /** Upsert one entry by configPath; returns updated registry. */
-export async function upsertRegistryEntry(entry: { name: string; configPath: string; description?: string }, p?: string): Promise<DatabaseRegistry> {
+export async function upsertRegistryEntry(
+  entry: { name: string; configPath: string; description?: string },
+  p?: string,
+): Promise<DatabaseRegistry> {
   const file = p ? path.resolve(p) : defaultRegistryPath();
   const reg = await readRegistry(file);
   const ix = reg.entries.findIndex((e) => path.resolve(e.configPath) === path.resolve(entry.configPath));
-  if (ix >= 0) reg.entries[ix] = { ...reg.entries[ix], ...entry };
-  if (ix < 0) reg.entries.push(entry);
+  if (ix >= 0) {
+    reg.entries[ix] = { ...reg.entries[ix], ...entry };
+  }
+  if (ix < 0) {
+    reg.entries.push(entry);
+  }
   await writeRegistry(reg, file);
   return reg;
 }
 
 /** Discover config files under typical locations; returns entries (not persisted). */
-export async function discoverConfigs({ roots = ["." , "./configs"], maxDepth = 2 }: { roots?: string[]; maxDepth?: number } = {}): Promise<DatabaseRegistryEntry[]> {
+export async function discoverConfigs({
+  roots = [".", "./configs"],
+  maxDepth = 2,
+}: { roots?: string[]; maxDepth?: number } = {}): Promise<DatabaseRegistryEntry[]> {
   const out: DatabaseRegistryEntry[] = [];
   const seen = new Set<string>();
   async function walk(dir: string, depth: number) {
-    if (depth > maxDepth) return;
+    if (depth > maxDepth) {
+      return;
+    }
     // Normalize Dirent typing without using any
     try {
       const entsUnknown = await readdir(dir, { withFileTypes: true } as unknown as { withFileTypes: true });
       type DirLike = { name: string; isDirectory(): boolean; isFile(): boolean };
       const ents = entsUnknown as unknown as DirLike[];
       for (const ent of ents) {
-      const p = path.join(dir, ent.name);
-      if (ent.isDirectory()) {
-        if (ent.name.startsWith(".")) continue;
-        await walk(p, depth + 1);
-        continue;
+        const p = path.join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name.startsWith(".")) {
+            continue;
+          }
+          await walk(p, depth + 1);
+          continue;
+        }
+        const lower = ent.name.toLowerCase();
+        function isCandidateFile(): boolean {
+          if (!ent.isFile()) {
+            return false;
+          }
+          if (!lower.endsWith(".json")) {
+            return false;
+          }
+          if (lower === "vectordb.config.json") {
+            return true;
+          }
+          return lower.includes("vectordb") ? lower.includes("config") : false;
+        }
+        if (isCandidateFile()) {
+          const abs = path.resolve(p);
+          if (seen.has(abs)) {
+            continue;
+          }
+          seen.add(abs);
+          const name = path.basename(ent.name).replace(/\.[^/.]+$/, "");
+          out.push({ name, configPath: abs });
+        }
       }
-      const lower = ent.name.toLowerCase();
-      function isCandidateFile(): boolean {
-        if (!ent.isFile()) return false;
-        if (!lower.endsWith(".json")) return false;
-        if (lower === "vectordb.config.json") return true;
-        return lower.includes("vectordb") ? lower.includes("config") : false;
-      }
-      if (isCandidateFile()) {
-        const abs = path.resolve(p);
-        if (seen.has(abs)) continue;
-        seen.add(abs);
-        const name = path.basename(ent.name).replace(/\.[^/.]+$/, "");
-        out.push({ name, configPath: abs });
-      }
-      }
-    } catch { return; }
+    } catch {
+      return;
+    }
   }
-  for (const r of roots) await walk(path.resolve(r), 0);
+  for (const r of roots) {
+    await walk(path.resolve(r), 0);
+  }
   return out;
 }

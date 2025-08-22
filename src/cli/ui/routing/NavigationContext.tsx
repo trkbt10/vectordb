@@ -29,7 +29,9 @@ export function NavigationProvider({ children, initialPath = "/" }: NavigationPr
 
   const goBack = useCallback(() => {
     setState((prev) => {
-      if (prev.history.length <= 1) return prev;
+      if (prev.history.length <= 1) {
+        return prev;
+      }
       const newHistory = prev.history.slice(0, -1);
       return {
         currentPath: newHistory[newHistory.length - 1],
@@ -45,7 +47,7 @@ export function NavigationProvider({ children, initialPath = "/" }: NavigationPr
       goBack,
       canGoBack: state.history.length > 1,
     }),
-    [state.currentPath, state.history.length, navigate, goBack]
+    [state.currentPath, state.history.length, navigate, goBack],
   );
 
   return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>;
@@ -59,5 +61,6 @@ export function useNavigation() {
   if (!context) {
     throw new Error("useNavigation must be used within a NavigationProvider");
   }
+
   return context;
 }

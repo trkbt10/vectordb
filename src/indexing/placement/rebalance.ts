@@ -13,7 +13,9 @@ function parsePg(name: string): number | null {
 /** Compute new target key for a placement group under a crush map. */
 function targetForPg(pg: number, crush: CrushMap): string {
   const t = crush.targets.length;
-  if (t === 0) return "0";
+  if (t === 0) {
+    return "0";
+  }
   // choose per pg deterministically
   const seed = (pg * 2654435761) >>> 0;
   const idx = seed % t >>> 0;
@@ -54,9 +56,13 @@ export function planRebalance(manifest: PlacementManifest, next: CrushMap): Move
   const out: MovePlan[] = [];
   for (const s of manifest.segments) {
     const pg = parsePg(s.name);
-    if (pg === null) continue;
+    if (pg === null) {
+      continue;
+    }
     const desired = targetForPg(pg, next);
-    if (desired !== s.targetKey) out.push({ name: s.name, from: s.targetKey, to: desired });
+    if (desired !== s.targetKey) {
+      out.push({ name: s.name, from: s.targetKey, to: desired });
+    }
   }
   return out;
 }
@@ -76,11 +82,14 @@ export async function applyRebalance(
     await ioTo.atomicWrite(`${mv.name}.data`, raw);
     if (opts.verify) {
       const reread = await ioTo.read(`${mv.name}.data`);
-      if (reread.length !== raw.length) throw new Error(`verify failed for ${mv.name}`);
+      if (reread.length !== raw.length) {
+        throw new Error(`verify failed for ${mv.name}`);
+      }
     }
     if (opts.cleanup && typeof ioFrom.del === "function") {
       await ioFrom.del(`${mv.name}.data`);
     }
+
     map.set(mv.name, mv.to);
   }
   const updated: PlacementManifest = {

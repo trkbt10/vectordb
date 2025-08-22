@@ -17,7 +17,9 @@ function hash32(x: number): number {
 }
 
 function findUnusedIndex(start: number, used: Set<number>, t: number, tried = 0): number {
-  if (tried >= t) return start;
+  if (tried >= t) {
+    return start;
+  }
   return used.has(start) ? findUnusedIndex((start + 1) % t, used, t, tried + 1) : start;
 }
 
@@ -26,7 +28,9 @@ function choosePrimaries(pg: number, replicas: number, t: number): number[] {
   const limit = Math.min(Math.max(1, replicas | 0), t);
   const base = ((pg * 2654435761) >>> 0) >>> 0;
   function loop(r: number, acc: number[]): number[] {
-    if (r >= limit) return acc;
+    if (r >= limit) {
+      return acc;
+    }
     const seed = hash32(base + r);
     const pick = seed % t;
     const idx = findUnusedIndex(pick, used, t);
@@ -40,7 +44,9 @@ function choosePrimaries(pg: number, replicas: number, t: number): number[] {
 export function crushLocate(id: number, map: CrushMap): LocateResult {
   const pg = map.pgs > 0 ? hash32(id >>> 0) % map.pgs : 0;
   const t = map.targets.length;
-  if (t === 0) return { pg, primaries: [] };
+  if (t === 0) {
+    return { pg, primaries: [] };
+  }
   const idxs = choosePrimaries(pg, map.replicas, t);
   const primaries = idxs.map((i) => map.targets[i].key);
   return { pg, primaries };

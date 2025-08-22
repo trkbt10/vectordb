@@ -29,7 +29,9 @@ export function SearchView({ ctx, onBack }: SearchViewProps) {
           { label: "Back", value: "back" },
         ]}
         onSelect={async (i: { label: string; value: string }) => {
-          if (i.value === "back") return onBack();
+          if (i.value === "back") {
+            return onBack();
+          }
           const db = ctx.client;
           const arr = new Float32Array(
             vec
@@ -55,4 +57,3 @@ export function SearchView({ ctx, onBack }: SearchViewProps) {
     </Box>
   );
 }
-

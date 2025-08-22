@@ -30,17 +30,21 @@ export function createState<TMeta = unknown>(opts: VectorDBOptions): VectorStore
   if (metric !== "cosine" && metric !== "l2" && metric !== "dot") {
     throw new Error(`Unsupported metric: ${String(metric)}. Use 'cosine' | 'l2' | 'dot'.`);
   }
+
   if (strategy !== "bruteforce" && strategy !== "hnsw" && strategy !== "ivf") {
     throw new Error(`Unsupported strategy: ${String(strategy)}. Use 'bruteforce' | 'hnsw' | 'ivf'.`);
   }
+
   const store = createStore<TMeta>(dim, metric, opts.capacity ?? 1024);
   // eslint-disable-next-line no-restricted-syntax -- Strategy pattern: ANN instance depends on strategy type
   let ann: ANNs = createBruteforceState(metric);
   if (strategy === "hnsw") {
     ann = createHNSWState(opts.hnsw ?? {}, metric, store._capacity);
   }
+
   if (strategy === "ivf") {
     ann = createIVFState(opts.ivf ?? {}, metric, dim);
   }
+
   return { dim, metric, store, strategy, ann };
 }

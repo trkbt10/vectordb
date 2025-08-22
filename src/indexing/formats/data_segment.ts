@@ -71,7 +71,9 @@ export class DataSegmentWriter {
   /** Concatenate buffered parts into a single Uint8Array. */
   concat(): Uint8Array {
     let total = 0;
-    for (const p of this.parts) total += p.length;
+    for (const p of this.parts) {
+      total += p.length;
+    }
     const out = new Uint8Array(total);
 
     let off = 0;
@@ -97,12 +99,18 @@ export class DataSegmentReader {
   constructor(name: string, buf: Uint8Array) {
     this.name = name;
     this.buf = buf;
-    if (buf.length < 8) throw new Error("data segment too short");
+    if (buf.length < 8) {
+      throw new Error("data segment too short");
+    }
     const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
     const mg = dv.getUint32(0, true);
     const ver = dv.getUint32(4, true);
-    if (mg !== D_MAGIC) throw new Error("bad data segment magic");
-    if (ver !== D_VERSION) throw new Error("unsupported data segment version");
+    if (mg !== D_MAGIC) {
+      throw new Error("bad data segment magic");
+    }
+    if (ver !== D_VERSION) {
+      throw new Error("unsupported data segment version");
+    }
   }
   // Iterate rows with their offsets
   /** Iterate rows in this segment with their offsets and lengths. */
@@ -111,11 +119,15 @@ export class DataSegmentReader {
     const u8 = this.buf;
     while (off < u8.length) {
       const dv = new DataView(u8.buffer, u8.byteOffset + off, u8.byteLength - off);
-      if (off + 12 > u8.length) break;
+      if (off + 12 > u8.length) {
+        break;
+      }
       const metaLen = dv.getUint32(4, true);
       const vecLen = dv.getUint32(8, true);
       const total = 12 + metaLen + vecLen;
-      if (off + total > u8.length) break;
+      if (off + total > u8.length) {
+        break;
+      }
       const slice = u8.subarray(off, off + total);
       const row = decodeRow(slice);
       yield { off, len: total, row };

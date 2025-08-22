@@ -32,7 +32,9 @@ describe("ops.maintain", () => {
   });
   it("compactStore shrink and capacity resize paths", () => {
     const vl = createState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
-    for (let i = 0; i < 5; i++) add(vl, i + 1, new Float32Array([1, 0]), null);
+    for (let i = 0; i < 5; i++) {
+      add(vl, i + 1, new Float32Array([1, 0]), null);
+    }
     const r1 = compactStore(vl, { shrink: true });
     expect(r1.shrunk).toBe(true);
     const r2 = compactStore(vl, { capacity: 16 });
@@ -50,7 +52,12 @@ describe("ops.maintain", () => {
     expect(cnt).toBe(1);
   });
   it("rebuildIndex(hnsw) without params reuses old settings (old branch)", () => {
-    const h = createState({ dim: 2, metric: "cosine", strategy: "hnsw", hnsw: { M: 5, efConstruction: 25, efSearch: 12, allowReplaceDeleted: true } });
+    const h = createState({
+      dim: 2,
+      metric: "cosine",
+      strategy: "hnsw",
+      hnsw: { M: 5, efConstruction: 25, efSearch: 12, allowReplaceDeleted: true },
+    });
     add(h, 1, new Float32Array([1, 0]), null);
     // no params -> should use existing hnsw settings (lines 117-124)
     const n = rebuildIndex(h, { strategy: "hnsw" });

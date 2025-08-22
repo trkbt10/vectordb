@@ -22,7 +22,9 @@ describe("ann/ivf extra branches", () => {
   it("ivf_search throws on query length mismatch", () => {
     const db = createState({ dim: 3, metric: "cosine", strategy: "ivf", ivf: { nlist: 2, nprobe: 1 } });
     add(db, 1, new Float32Array([1, 0, 0]));
-    if (!isIvfVL(db)) throw new Error("expected ivf VL");
+    if (!isIvfVL(db)) {
+      throw new Error("expected ivf VL");
+    }
     expect(() => ivf_search(db.ann as IVFState, db.store, new Float32Array([1, 0]), 1)).toThrow(/dim mismatch/);
   });
 

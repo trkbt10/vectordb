@@ -13,15 +13,21 @@ describe("tuneHnsw", () => {
     const base2 = new Float32Array([0, 1, 0, 0]);
     function jit(b: Float32Array) {
       const v = new Float32Array(dim);
-      for (let i = 0; i < dim; i++) v[i] = b[i] + (Math.random() * 2 - 1) * 0.05;
+      for (let i = 0; i < dim; i++) {
+        v[i] = b[i] + (Math.random() * 2 - 1) * 0.05;
+      }
       return v;
     }
     // eslint-disable-next-line no-restricted-syntax -- Test setup: ID counter for test data
     let id = 1;
-     
-    for (let i = 0; i < 60; i++) add(bf, id++, jit(base1), null);
-     
-    for (let i = 0; i < 60; i++) add(bf, id++, jit(base2), null);
+
+    for (let i = 0; i < 60; i++) {
+      add(bf, id++, jit(base1), null);
+    }
+
+    for (let i = 0; i < 60; i++) {
+      add(bf, id++, jit(base2), null);
+    }
     const h = buildHNSWFromStore(bf, { M: 8, efSearch: 32 });
     const qs = [jit(base1), jit(base2)];
     const res = tuneHnsw(h, { efSearch: [16, 32], M: [8] }, qs, 10);

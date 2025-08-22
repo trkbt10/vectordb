@@ -36,14 +36,18 @@ export function checkConsistency<TMeta>(vl: VectorStoreState<TMeta>) {
     const idToList = vl.ann.idToList;
     for (let i = 0; i < vl.store._count; i++) {
       const id = vl.store.ids[i];
-      if (!idToList.has(id)) missingInIndex.push(id);
+      if (!idToList.has(id)) {
+        missingInIndex.push(id);
+      }
     }
   }
   // HNSW/Bruteforce: store.pos mismatch detection
   for (let i = 0; i < vl.store._count; i++) {
     const id = vl.store.ids[i];
     const at = vl.store.pos.get(id);
-    if (at !== i) mismatchedPos.push(id);
+    if (at !== i) {
+      mismatchedPos.push(id);
+    }
   }
   return { missingInIndex, missingInStore, mismatchedPos };
 }
@@ -59,8 +63,12 @@ export function repairConsistency<TMeta>(
   if (opts?.fixIndex) {
     if (isIvfVL(vl)) {
       vl.ann.idToList.clear();
-      for (const lst of vl.ann.lists) lst.splice(0, lst.length);
-      for (let i = 0; i < vl.store._count; i++) ivf_add(vl.ann, vl.store, vl.store.ids[i]);
+      for (const lst of vl.ann.lists) {
+        lst.splice(0, lst.length);
+      }
+      for (let i = 0; i < vl.store._count; i++) {
+        ivf_add(vl.ann, vl.store, vl.store.ids[i]);
+      }
     }
   }
   return report;

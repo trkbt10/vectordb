@@ -14,6 +14,7 @@ export function normalizeVectorInPlace(vec: Float32Array): void {
   for (let i = 0; i < vec.length; i++) {
     sum += vec[i] * vec[i];
   }
+
   const inv = sum > 0 ? 1 / Math.sqrt(sum) : 1;
   for (let i = 0; i < vec.length; i++) {
     vec[i] *= inv;
@@ -29,6 +30,7 @@ export function dotAt(data: Float32Array, base: number, q: Float32Array, dim: nu
   for (let i = 0; i < dim; i++) {
     s += data[base + i] * q[i];
   }
+
   return s;
 }
 

@@ -29,7 +29,9 @@ export function FilterView({ ctx, onBack }: FilterViewProps) {
           { label: "Back", value: "back" },
         ]}
         onSelect={async (i: { label: string; value: string }) => {
-          if (i.value === "back") return onBack();
+          if (i.value === "back") {
+            return onBack();
+          }
           const s = ctx.client.state;
           const ids: number[] = [];
           for (let i = 0; i < s.store._count; i++) {
@@ -37,7 +39,9 @@ export function FilterView({ ctx, onBack }: FilterViewProps) {
             const meta = s.store.metas[i] as unknown;
             if (meta && typeof meta === "object" && meta !== null) {
               const rec = meta as Record<string, unknown>;
-              if (String(rec[key]) === val) ids.push(id);
+              if (String(rec[key]) === val) {
+                ids.push(id);
+              }
             }
           }
           setOut(ids);
@@ -53,4 +57,3 @@ export function FilterView({ ctx, onBack }: FilterViewProps) {
     </Box>
   );
 }
-

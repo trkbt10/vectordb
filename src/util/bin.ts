@@ -89,6 +89,7 @@ export function createWriter(): BinWriter {
     for (const p of parts) {
       total += p.length;
     }
+
     const out = new Uint8Array(total);
     // eslint-disable-next-line no-restricted-syntax -- Performance: tracking offset position requires mutable variable
     let off = 0;

@@ -39,7 +39,9 @@ export function tuneHnsw<TMeta>(
   queries: Float32Array[],
   k: number,
 ): HnswTuneResult[] {
-  if (!isHnswVL(vl)) return [];
+  if (!isHnswVL(vl)) {
+    return [];
+  }
   const base = vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
   // vl is narrowed to HNSW here
   const efList = (grid.efSearch && grid.efSearch.length ? grid.efSearch : [base.ann.efSearch]).map((x) =>
@@ -52,7 +54,9 @@ export function tuneHnsw<TMeta>(
   for (const M of MList) {
     // Build candidate HNSW state if M differs
     function candidateForM(m: number): VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState } {
-      if (m === base.ann.M) return base as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+      if (m === base.ann.M) {
+        return base as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+      }
       return buildHNSWFromStore(base, {
         M: m,
         efConstruction: base.ann.efConstruction,
@@ -78,7 +82,11 @@ export function tuneHnsw<TMeta>(
         const truth = bfTopK(q, k);
         // eslint-disable-next-line no-restricted-syntax -- Performance: counting intersection for recall
         let inter = 0;
-        for (const h of got) if (truth.has(h.id)) inter++;
+        for (const h of got) {
+          if (truth.has(h.id)) {
+            inter++;
+          }
+        }
         sumR += inter / k;
       }
       hnswCand.ann.efSearch = origEf;

@@ -77,8 +77,12 @@ export function createHNSWState(params: HNSWParams, metric: Metric, capacity: nu
  *
  */
 export function hnsw_ensureCapacity(h: HNSWState, capacity: number) {
-  if (h.levelArr.length >= capacity && h.tombstone.length >= capacity) return;
-  if (h.levelArr.length < capacity) h.levelArr = h.levelArr.concat(new Array(capacity - h.levelArr.length).fill(0));
+  if (h.levelArr.length >= capacity && h.tombstone.length >= capacity) {
+    return;
+  }
+  if (h.levelArr.length < capacity) {
+    h.levelArr = h.levelArr.concat(new Array(capacity - h.levelArr.length).fill(0));
+  }
   if (h.tombstone.length < capacity) {
     const t = new Uint8Array(capacity);
     t.set(h.tombstone);
@@ -99,7 +103,9 @@ function hnsw_sampleLevel(h: HNSWState): number {
 }
 
 function ensureLevels(h: HNSWState, L: number) {
-  while (h.links.length <= L) h.links.push([]);
+  while (h.links.length <= L) {
+    h.links.push([]);
+  }
 }
 
 function greedyDescent<TMeta>(
@@ -111,7 +117,7 @@ function greedyDescent<TMeta>(
 ): number {
   // eslint-disable-next-line no-restricted-syntax -- Performance-critical: greedy search needs mutable cursor
   let cur = ep;
-   
+
   for (let l = fromLevel; l > 0; l--) {
     // eslint-disable-next-line no-restricted-syntax -- Performance-critical: greedy search convergence flag
     let improved = true;
@@ -123,7 +129,9 @@ function greedyDescent<TMeta>(
       // eslint-disable-next-line no-restricted-syntax -- Performance-critical: tracking best score
       let bestScore = hnsw_score(h, store, cur, target);
       for (const nb of neigh) {
-        if (h.tombstone[nb]) continue;
+        if (h.tombstone[nb]) {
+          continue;
+        }
         const sc = hnsw_score(h, store, nb, target);
         if (sc > bestScore) {
           bestScore = sc;
@@ -154,7 +162,9 @@ export type HNSWSearchControl = {
  *
  */
 export function computeNumSeeds(maskSize: number, seeds: "auto" | number): number {
-  if (seeds === "auto") return Math.max(1, Math.min(8, Math.floor(Math.sqrt(Math.max(0, maskSize)))));
+  if (seeds === "auto") {
+    return Math.max(1, Math.min(8, Math.floor(Math.sqrt(Math.max(0, maskSize)))));
+  }
   const n = Math.floor(seeds);
   return Math.max(1, Math.min(32, n));
 }
@@ -191,22 +201,28 @@ function hnsw_searchLayer<TMeta>(args: SearchLayerArgs<TMeta>): Scored[] {
     if (results.length >= ef && cur.s <= worst + margin) {
       break;
     }
+
     const neigh = h.links[level] && h.links[level][cur.idx] ? h.links[level][cur.idx] : [];
     for (const nb of neigh) {
       if (visited[nb]) {
         continue;
       }
+
       visited[nb] = 1;
       if (h.tombstone[nb]) {
         continue;
       }
+
       if ((mask || maskIdx) && mode) {
         const allowed = maskIdx ? !!(maskIdx[nb] === 1) : mask!.has(store.ids[nb] as number);
         if (mode === "hard" && !allowed) {
           continue;
         }
+
         if (mode === "soft" && !allowed) {
-          if (bridges <= 0) continue;
+          if (bridges <= 0) {
+            continue;
+          }
           bridges--;
         }
       }
@@ -224,12 +240,22 @@ function hnsw_searchLayer<TMeta>(args: SearchLayerArgs<TMeta>): Scored[] {
 function connectMutually(h: HNSWState, a: number, neighbors: number[], level: number) {
   const la = (h.links[level][a] ||= []);
   for (const b of neighbors) {
-    if (b === a) continue;
-    if (!la.includes(b)) la.push(b);
+    if (b === a) {
+      continue;
+    }
+    if (!la.includes(b)) {
+      la.push(b);
+    }
     const lb = (h.links[level][b] ||= []);
-    if (!lb.includes(a)) lb.push(a);
-    if (la.length > h.M) la.sort((x, y) => x - y).splice(h.M);
-    if (lb.length > h.M) lb.sort((x, y) => x - y).splice(h.M);
+    if (!lb.includes(a)) {
+      lb.push(a);
+    }
+    if (la.length > h.M) {
+      la.sort((x, y) => x - y).splice(h.M);
+    }
+    if (lb.length > h.M) {
+      lb.sort((x, y) => x - y).splice(h.M);
+    }
   }
 }
 
@@ -239,7 +265,9 @@ function connectMutually(h: HNSWState, a: number, neighbors: number[], level: nu
 export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: number) {
   hnsw_ensureCapacity(h, store._capacity);
   const idx = getIndex(store, id);
-  if (idx === undefined) return;
+  if (idx === undefined) {
+    return;
+  }
   const L = hnsw_sampleLevel(h);
   ensureLevels(h, L);
   h.levelArr[idx] = L;
@@ -249,12 +277,15 @@ export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: numbe
     for (let l = 0; l <= L; l++) {
       (h.links[l] ||= [])[idx] = h.links[l][idx] ||= [];
     }
+
     return;
   }
   // eslint-disable-next-line no-restricted-syntax -- Performance: entry point tracking for HNSW insertion
   let ep = h.enterPoint;
-  if (h.maxLevel > L) ep = greedyDescent(h, store, ep, getByIndex(store, idx).vector, h.maxLevel);
-   
+  if (h.maxLevel > L) {
+    ep = greedyDescent(h, store, ep, getByIndex(store, idx).vector, h.maxLevel);
+  }
+
   for (let l = Math.min(L, h.maxLevel); l >= 0; l--) {
     // explore neighbors locally from entry point on this level
     const cand = hnsw_searchLayer({
@@ -295,7 +326,9 @@ export function hnsw_add<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: numbe
  */
 export function hnsw_remove<TMeta>(h: HNSWState, store: CoreStore<TMeta>, id: number) {
   const idx = getIndex(store, id);
-  if (idx === undefined) return;
+  if (idx === undefined) {
+    return;
+  }
   h.tombstone[idx] = 1;
   if (h.allowReplaceDeleted) {
     // placeholder
@@ -311,7 +344,9 @@ export function hnsw_search<TMeta>(
   q: Float32Array,
   args: { k: number; filter?: (id: number, meta: TMeta | null) => boolean; control?: HNSWSearchControl },
 ): SearchHit<TMeta>[] {
-  if (h.enterPoint < 0 || store._count === 0) return [];
+  if (h.enterPoint < 0 || store._count === 0) {
+    return [];
+  }
   const k = Math.max(1, args.k | 0);
   const filter = args.filter;
   const options = args.control;
@@ -327,11 +362,12 @@ export function hnsw_search<TMeta>(
     for (let i = 0; i < n && idxs.length < numSeeds; i++) {
       const id = ids[i];
       const idx = store.pos.get(id);
-      if (idx !== undefined) idxs.push(idx);
+      if (idx !== undefined) {
+        idxs.push(idx);
+      }
     }
     // If random strategy, shuffle a bit
     if ((options.seedStrategy ?? "random") === "random") {
-       
       for (let i = idxs.length - 1; i > 0; i--) {
         const j = Math.floor((h.rng ? h.rng() : Math.random()) * (i + 1));
         const t = idxs[i];
@@ -369,9 +405,13 @@ export function hnsw_search<TMeta>(
   for (const r of res) {
     const idVal = store.ids[r.idx];
     const meta = store.metas[r.idx];
-    if (filter && !filter(idVal, meta)) continue;
+    if (filter && !filter(idVal, meta)) {
+      continue;
+    }
     out.push({ id: idVal, score: r.s, meta });
-    if (out.length >= k) break;
+    if (out.length >= k) {
+      break;
+    }
   }
   return out;
 }
@@ -387,6 +427,7 @@ export function hnsw_serialize(h: HNSWState, store: CoreStore<unknown>): ArrayBu
   for (let i = 0; i < n; i++) {
     lvlU8[i] = (h.levelArr[i] ?? 0) & 0xff;
   }
+
   const tomb = new Uint8Array(h.tombstone.buffer.slice(0, n));
   const w = createWriter();
   w.pushU32(paramsBytes.length);
@@ -404,7 +445,7 @@ export function hnsw_serialize(h: HNSWState, store: CoreStore<unknown>): ArrayBu
     const offsets = new Uint32Array(n + 1);
     // eslint-disable-next-line no-restricted-syntax -- Performance: accumulating edge offsets
     let total = 0;
-     
+
     for (let i = 0; i < n; i++) {
       const deg = layer[i] ? layer[i].length : 0;
       offsets[i] = total;
@@ -438,10 +479,18 @@ export function hnsw_deserialize(h: HNSWState, store: CoreStore<unknown>, seg: A
     levelMult?: number;
     M?: number;
   };
-  if (typeof p.M === "number") h.M = p.M;
-  if (typeof p.efConstruction === "number") h.efConstruction = p.efConstruction;
-  if (typeof p.efSearch === "number") h.efSearch = p.efSearch;
-  if (typeof p.levelMult === "number") h.levelMult = p.levelMult;
+  if (typeof p.M === "number") {
+    h.M = p.M;
+  }
+  if (typeof p.efConstruction === "number") {
+    h.efConstruction = p.efConstruction;
+  }
+  if (typeof p.efSearch === "number") {
+    h.efSearch = p.efSearch;
+  }
+  if (typeof p.levelMult === "number") {
+    h.levelMult = p.levelMult;
+  }
   h.enterPoint = r.readU32() | 0;
   h.maxLevel = r.readI32() | 0;
   const levelLen = r.readU32();
@@ -468,6 +517,7 @@ export function hnsw_deserialize(h: HNSWState, store: CoreStore<unknown>, seg: A
       for (let j = s; j < e; j++) {
         arr.push(neighbors[j] as number);
       }
+
       layer[i] = arr;
     }
     h.links[l] = layer;

@@ -62,8 +62,12 @@ export function removeMany<TMeta>(vl: VectorStoreState<TMeta>, ids: number[], op
   const res = { ok: 0, missing: [] as number[] };
   for (const id of ids) {
     const ok = remove(vl, id);
-    if (ok) res.ok++;
-    if (!ok && !opts?.ignoreMissing) res.missing.push(id);
+    if (ok) {
+      res.ok++;
+    }
+    if (!ok && !opts?.ignoreMissing) {
+      res.missing.push(id);
+    }
   }
   return res;
 }

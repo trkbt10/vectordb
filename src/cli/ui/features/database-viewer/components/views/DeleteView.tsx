@@ -27,7 +27,9 @@ export function DeleteView({ ctx, onBack }: DeleteViewProps) {
           { label: "Back", value: "back" },
         ]}
         onSelect={(i: { label: string; value: string }) => {
-          if (i.value === "back") return onBack();
+          if (i.value === "back") {
+            return onBack();
+          }
           try {
             const rid = Number(id);
             const ok = ctx.client.delete(rid);
@@ -47,4 +49,3 @@ export function DeleteView({ ctx, onBack }: DeleteViewProps) {
     </Box>
   );
 }
-

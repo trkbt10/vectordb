@@ -27,6 +27,7 @@ export function createStore<TMeta = unknown>(dim: number, metric: Metric, capaci
   if (!Number.isInteger(dim) || dim <= 0) {
     throw new Error("dim must be positive integer");
   }
+
   const cap = Math.max(1, capacity);
   return {
     dim,
@@ -66,6 +67,7 @@ export function ensure<T>(s: CoreStore<T>, extra = 1): boolean {
   if (s._count + extra <= s._capacity) {
     return false;
   }
+
   const grow = (c: number): number => (c >= s._count + extra ? c : grow(c << 1));
   const newCap = grow(s._capacity);
   const ids2 = new Uint32Array(newCap);
@@ -76,6 +78,7 @@ export function ensure<T>(s: CoreStore<T>, extra = 1): boolean {
   for (let i = 0; i < s._count; i++) {
     metas2[i] = s.metas[i];
   }
+
   s.ids = ids2;
   s.data = data2;
   s.metas = metas2;
@@ -118,6 +121,7 @@ export function get<T>(s: CoreStore<T>, id: number): { vector: Float32Array; met
   if (at === undefined) {
     return null;
   }
+
   const base = at * s.dim;
   return { vector: s.data.slice(base, base + s.dim), meta: s.metas[at] };
 }
@@ -125,7 +129,9 @@ export function get<T>(s: CoreStore<T>, id: number): { vector: Float32Array; met
 /** Update only the meta by id. Returns true if updated, false if id missing. */
 export function updateMeta<T>(s: CoreStore<T>, id: number, meta: T | null): boolean {
   const at = getIndex(s, id);
-  if (at === undefined) return false;
+  if (at === undefined) {
+    return false;
+  }
   s.metas[at] = meta;
   return true;
 }
@@ -143,12 +149,14 @@ export function addOrUpdate<T>(
   if (vector.length !== s.dim) {
     throw new Error(`dim mismatch: got ${vector.length}, want ${s.dim}`);
   }
+
   const uid = id >>> 0;
   const at = s.pos.get(uid);
   if (at !== undefined) {
     if (!opts?.upsert) {
       throw new Error(`id ${uid} already exists`);
     }
+
     writeVectorAt(s, at, vector);
     s.metas[at] = meta;
     return { index: at, created: false };
@@ -175,6 +183,7 @@ export function removeById<T>(
   if (at === undefined) {
     return null;
   }
+
   const last = s._count - 1;
   if (at !== last) {
     s.ids[at] = s.ids[last];
@@ -199,6 +208,7 @@ export function normalizeQuery(metric: Metric, q: Float32Array): Float32Array {
   if (metric !== "cosine") {
     return q;
   }
+
   const out = q.slice();
   normalizeVectorInPlace(out);
   return out;
@@ -211,10 +221,12 @@ export function restoreFromDeserialized<T>(s: CoreStore<T>, count: number) {
   if (!Number.isInteger(count) || count < 0 || count > s._capacity) {
     throw new Error("invalid restore count");
   }
+
   s.pos.clear();
   for (let i = 0; i < count; i++) {
     s.pos.set(s.ids[i], i);
   }
+
   s._count = count;
 }
 
@@ -226,7 +238,9 @@ export function shrinkToFit<T>(s: CoreStore<T>): void {
   const data2 = new Float32Array(Math.max(1, n) * s.dim);
   data2.set(s.data.subarray(0, n * s.dim));
   const metas2 = new Array(Math.max(1, n)).fill(null) as (T | null)[];
-  for (let i = 0; i < n; i++) metas2[i] = s.metas[i];
+  for (let i = 0; i < n; i++) {
+    metas2[i] = s.metas[i];
+  }
   s.ids = ids2;
   s.data = data2;
   s.metas = metas2;
@@ -236,13 +250,17 @@ export function shrinkToFit<T>(s: CoreStore<T>): void {
 /** Shrink or grow to target capacity >= count. */
 export function resizeCapacity<T>(s: CoreStore<T>, capacity: number): void {
   const cap = Math.max(s._count, Math.max(1, capacity | 0));
-  if (cap === s._capacity) return;
+  if (cap === s._capacity) {
+    return;
+  }
   const ids2 = new Uint32Array(cap);
   ids2.set(s.ids.subarray(0, s._count));
   const data2 = new Float32Array(cap * s.dim);
   data2.set(s.data.subarray(0, s._count * s.dim));
   const metas2 = new Array(cap).fill(null) as (T | null)[];
-  for (let i = 0; i < s._count; i++) metas2[i] = s.metas[i];
+  for (let i = 0; i < s._count; i++) {
+    metas2[i] = s.metas[i];
+  }
   s.ids = ids2;
   s.data = data2;
   s.metas = metas2;
