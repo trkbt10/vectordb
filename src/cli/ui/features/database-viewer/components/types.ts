@@ -17,5 +17,6 @@ export type Step =
 export type ClusterCtx = {
   name: string;
   client: ClientWithDatabase<unknown>;
+  selectedStrategy?: "bruteforce" | "hnsw" | "ivf";
+  query?: { method: "auto" | "numeric" | "hash" | "openai"; name?: string };
 };
-

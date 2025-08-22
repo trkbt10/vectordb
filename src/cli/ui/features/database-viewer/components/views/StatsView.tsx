@@ -6,6 +6,7 @@ import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
 import type { ClusterCtx } from "../types";
+import { Dialog } from "../parts/Dialog";
 
 type StatsViewProps = { ctx: ClusterCtx; onBack: () => void };
 
@@ -24,14 +25,18 @@ export function StatsView({ ctx, onBack }: StatsViewProps) {
         <Spinner type="dots" /> Loading...
       </Text>
     );
+  const items = [{ label: "Back", value: "back" }];
   return (
-    <Box flexDirection="column">
-      <Text>Dim: {ctx.client.state.dim}</Text>
-      <Text>Metric: {ctx.client.state.metric}</Text>
-      <Text>Strategy: {ctx.client.state.strategy}</Text>
-      <Text>Count: {ctx.client.size}</Text>
-      <SelectInput items={[{ label: "Back", value: "back" }]} onSelect={() => onBack()} />
-    </Box>
+    <Dialog open={true} title="Stats / Diagnose" width={60}>
+      <Box flexDirection="column">
+        <Text>Dim: {ctx.client.state.dim}</Text>
+        <Text>Metric: {ctx.client.state.metric}</Text>
+        <Text>Strategy: {ctx.client.state.strategy}</Text>
+        <Text>Count: {ctx.client.size}</Text>
+        <Box marginTop={1}>
+          <SelectInput items={items} onSelect={() => onBack()} />
+        </Box>
+      </Box>
+    </Dialog>
   );
 }
-

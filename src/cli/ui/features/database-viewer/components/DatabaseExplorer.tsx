@@ -16,8 +16,10 @@ import { truncate } from "./utils";
 import { useInput } from "ink";
 import { StatsView } from "./views/StatsView";
 import { RebuildView } from "./views/RebuildView";
+import { QueryConfigView } from "./views/QueryConfigView";
 import { useFooter } from "../../../FooterContext";
 import { SearchHeader } from "./parts/SearchHeader";
+import { queryToVector, queryToVectorOpenAI } from "./embedding";
 import { Table } from "./parts/Table";
 import { FooterBar } from "./parts/FooterBar";
 import { RowActionModal } from "./parts/modal/RowActionModal";
@@ -43,6 +45,7 @@ export function DatabaseExplorer({
   const [client, setClient] = useState<ClientWithDatabase<Record<string, unknown>> | null>(null);
   const [rows, setRows] = useState<RecordRow[]>([]);
   const [query, setQuery] = useState("");
+  const [queryVec, setQueryVec] = useState<Float32Array | null>(null);
   const [searchFocus, setSearchFocus] = useState<boolean>(false);
   const [searchMode, setSearchMode] = useState<"meta" | "vector">("meta");
   const [status, setStatus] = useState<string>("Ready");
@@ -52,12 +55,20 @@ export function DatabaseExplorer({
   const [rowIdx, setRowIdx] = useState<number>(0);
   const [showRowMenu, setShowRowMenu] = useState<boolean>(false);
   const [showEditMeta, setShowEditMeta] = useState<boolean>(false);
+  const [metaEditing, setMetaEditing] = useState<boolean>(false);
   const [showIndexStrategy, setShowIndexStrategy] = useState<boolean>(false);
+  const [selectedStrategy, setSelectedStrategy] = useState<"bruteforce" | "hnsw" | "ivf" | undefined>(undefined);
+  const [showQueryCfg, setShowQueryCfg] = useState<boolean>(false);
+  const [queryCfg, setQueryCfg] = useState<{ method: "auto" | "numeric" | "hash" | "openai"; name?: string } | undefined>(undefined);
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [editMetaText, setEditMetaText] = useState<string>("");
   const footerActions = useMemo(
     () => [
+      { label: "Search", value: "search" },
+      { label: "PgUp", value: "pgup" },
+      { label: "PgDn", value: "pgdn" },
       { label: "Stats / Diagnose", value: "stats" },
+      { label: "Query Config", value: "qcfg" },
       { label: "Rebuild State", value: "rebuild" },
       { label: "Index Strategy", value: "index" },
       { label: "Back", value: "back" },
@@ -80,20 +91,40 @@ export function DatabaseExplorer({
   }, [rows, query]);
   const filteredVector = useMemo(() => {
     if (!client) return rows;
-    const dim = client.state.store.dim;
-    const parts = query
-      .split(",")
-      .map((s) => Number(s.trim()))
-      .filter((n) => !Number.isNaN(n));
-    if (parts.length !== dim) return rows;
-    const qv = new Float32Array(parts);
+    const qv = queryVec ?? null;
+    if (!qv) return rows;
     const hits = client.findMany(qv, { k: Math.min(500, rows.length) });
     const ids = new Set(hits.map((h) => h.id));
     const byId = new Map(rows.map((r) => [r.id, r] as const));
     const ordered = hits.map((h) => byId.get(h.id)).filter((r): r is RecordRow => !!r);
     const tail = rows.filter((r) => !ids.has(r.id));
     return [...ordered, ...tail];
-  }, [client, query, rows]);
+  }, [client, rows, queryVec]);
+
+  // Compute query vector when query or method changes (supports async OpenAI)
+  useEffect(() => {
+    (async () => {
+      if (!client) return setQueryVec(null);
+      const dim = client.state.store.dim;
+      const m = queryCfg?.method ?? "auto";
+      if (m === "openai") {
+        const v = await queryToVectorOpenAI(query, dim);
+        setQueryVec(v);
+        return;
+      }
+      if (m === "numeric") {
+        const v = queryToVector(query, dim);
+        setQueryVec(v && v.length === dim ? v : null);
+        return;
+      }
+      if (m === "hash") {
+        const v = query.trim() ? queryToVector(query, dim) : null;
+        setQueryVec(v);
+        return;
+      }
+      setQueryVec(queryToVector(query, dim));
+    })();
+  }, [client, query, queryCfg?.method]);
   const filtered = searchMode === "vector" ? filteredVector : filteredMeta;
 
   // Viewport scrolling (~30 rows)
@@ -127,12 +158,34 @@ export function DatabaseExplorer({
   const handleFooterAction = React.useCallback(
     (sel: string | undefined) => {
       if (!sel) return;
+      if (sel === "search") {
+        setSearchFocus(true);
+        setFooterFocus(false);
+        return;
+      }
+      if (sel === "pgup") {
+        setFooterFocus(false);
+        setScroll((s) => Math.max(0, s - 29));
+        setRowIdx(0);
+        return;
+      }
+      if (sel === "pgdn") {
+        setFooterFocus(false);
+        setScroll((s) => Math.min(s + 29, Math.max(0, filtered.length - 30)));
+        setRowIdx(Math.min(29, filtered.length - 1));
+        return;
+      }
       if (sel === "stats" && client) {
         setPanel("stats");
         return;
       }
       if (sel === "rebuild" && client) {
         setPanel("rebuild");
+        return;
+      }
+      if (sel === "qcfg") {
+        setShowQueryCfg(true);
+        setFooterFocus(false);
         return;
       }
       if (sel === "index") {
@@ -149,15 +202,19 @@ export function DatabaseExplorer({
       if (key.escape) setSearchFocus(false);
       return;
     }
+    if (input === "\t") {
+      setFooterFocus((f) => !f);
+      return;
+    }
     if (showRowMenu || showEditMeta || showIndexStrategy) {
       if (key.escape) {
-        setShowRowMenu(false);
-        setShowEditMeta(false);
-        setShowIndexStrategy(false);
+        if (showRowMenu) setShowRowMenu(false);
+        if (showEditMeta && !metaEditing) setShowEditMeta(false);
+        if (showIndexStrategy) setShowIndexStrategy(false);
       }
       return;
     }
-    if (input == "/") {
+    if (input === "/" || input === "s") {
       setSearchFocus(true);
       return;
     }
@@ -218,6 +275,16 @@ export function DatabaseExplorer({
         try {
           const c = await openFromConfig(directConfigPath);
           setClient(c);
+          try {
+            const raw = await readFile(path.resolve(directConfigPath), "utf8");
+            const cfg = JSON.parse(raw) as { query?: { embed?: { method?: "auto" | "numeric" | "hash" | "openai"; name?: string } } };
+            const embed = cfg.query?.embed;
+            if (embed && (embed.method === "auto" || embed.method === "numeric" || embed.method === "hash" || embed.method === "openai")) {
+              setQueryCfg({ method: embed.method, name: embed.name });
+            }
+          } catch {
+            // ignore JSON read errors
+          }
           const s = c.state;
           const out: RecordRow[] = [];
           const max = s.store._count;
@@ -257,6 +324,16 @@ export function DatabaseExplorer({
     try {
       const c = await openFromConfig(item.configPath);
       setClient(c);
+      try {
+        const raw = await readFile(path.resolve(item.configPath), "utf8");
+        const cfg = JSON.parse(raw) as { query?: { embed?: { method?: "auto" | "numeric" | "hash" | "openai"; name?: string } } };
+        const embed = cfg.query?.embed;
+        if (embed && (embed.method === "auto" || embed.method === "numeric" || embed.method === "hash" || embed.method === "openai")) {
+          setQueryCfg({ method: embed.method, name: embed.name });
+        }
+      } catch {
+        // ignore JSON read errors
+      }
       const s = c.state;
       const out: RecordRow[] = [];
       const max = s.store._count;
@@ -327,75 +404,60 @@ export function DatabaseExplorer({
 
   const mainPanel: React.ReactNode = (() => {
     if (panel === "table") return <Table rows={pageRows} allRows={rows} rowIdx={rowIdx} loading={loading} />;
-    if (panel === "stats" && client) return <StatsView ctx={{ name: registry[selected]?.name ?? "db", client }} onBack={() => setPanel("table")} />;
-    if (panel === "rebuild" && client) return <RebuildView ctx={{ name: registry[selected]?.name ?? "db", client }} onBack={() => setPanel("table")} />;
+    if (panel === "stats" && client)
+      return (
+        <StatsView
+          ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
+          onBack={() => setPanel("table")}
+        />
+      );
+    if (panel === "rebuild" && client)
+      return (
+        <RebuildView
+          ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
+          onBack={() => setPanel("table")}
+        />
+      );
     return <Box />;
   })();
   const rowMenu: React.ReactNode = (() => {
     if (!showRowMenu) return null;
     return (
-      <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-        <RowActionModal
-          open={showRowMenu}
-          rowId={pageRows[selectedIdx]?.id}
-          onCancel={() => setShowRowMenu(false)}
-          onDelete={() => {
-            const rid = pageRows[selectedIdx]?.id;
-            if (rid != null) {
-              client?.delete(rid);
-              setRows((rs) => rs.filter((r) => r.id !== rid));
-              setStatus(`Deleted id ${rid}`);
-            }
-            setShowRowMenu(false);
-          }}
-          onEdit={() => {
-            const mt = JSON.stringify(pageRows[selectedIdx]?.meta ?? null);
-            setEditMetaText(mt);
-            setShowRowMenu(false);
-            setShowEditMeta(true);
-          }}
-        />
-      </Box>
+      <RowActionModal
+        open={showRowMenu}
+        rowId={pageRows[selectedIdx]?.id}
+        onCancel={() => setShowRowMenu(false)}
+        onDelete={() => {
+          const rid = pageRows[selectedIdx]?.id;
+          if (rid != null) {
+            client?.delete(rid);
+            setRows((rs) => rs.filter((r) => r.id !== rid));
+            setStatus(`Deleted id ${rid}`);
+          }
+          setShowRowMenu(false);
+        }}
+        onEdit={() => {
+          const mt = JSON.stringify(pageRows[selectedIdx]?.meta ?? null);
+          setEditMetaText(mt);
+          setShowRowMenu(false);
+          setShowEditMeta(true);
+        }}
+      />
     );
   })();
-  const editMeta: React.ReactNode = (() => {
-    if (!showEditMeta) return null;
-    return (
-      <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-        <EditMetaModal
-          open={showEditMeta}
-          initialMetaText={editMetaText}
-          onCancel={() => setShowEditMeta(false)}
-          onSave={(text: string) => {
-            try {
-              const rid = pageRows[selectedIdx]?.id;
-              const vec = pageRows[selectedIdx]?.vector;
-              const meta = text ? JSON.parse(text) : null;
-              if (rid != null && vec) client?.set(rid, { vector: vec, meta }, { upsert: true });
-              setRows((rs) => rs.map((r) => (r.id === rid ? { ...r, meta } : r)));
-              setStatus(`Updated id ${rid}`);
-              setShowEditMeta(false);
-            } catch (e) {
-              setStatus(`Update failed: ${String((e as { message?: unknown })?.message ?? e)}`);
-            }
-          }}
-        />
-      </Box>
-    );
-  })();
+  // legacy editMeta block removed (inlined below)
   const indexStrategy: React.ReactNode = (() => {
     if (!showIndexStrategy) return null;
     return (
-      <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-        <IndexStrategyModal
-          open={showIndexStrategy}
-          onCancel={() => setShowIndexStrategy(false)}
-          onSelect={(strategy: string) => {
-            setStatus(`Selected index strategy: ${strategy} (apply via Rebuild)`);
-            setShowIndexStrategy(false);
-          }}
-        />
-      </Box>
+      <IndexStrategyModal
+        open={showIndexStrategy}
+        onCancel={() => setShowIndexStrategy(false)}
+        onSelect={(strategy: string) => {
+          setStatus(`Selected index strategy: ${strategy} (apply via Rebuild)`);
+          if (strategy === "bruteforce" || strategy === "hnsw" || strategy === "ivf") setSelectedStrategy(strategy);
+          setShowIndexStrategy(false);
+        }}
+      />
     );
   })();
   return (
@@ -403,8 +465,46 @@ export function DatabaseExplorer({
       <SearchHeader query={query} onChange={setQuery} isFocused={searchFocus} />
       {mainPanel}
       {rowMenu}
-      {editMeta}
+      {(() => {
+        if (!showEditMeta) return null;
+        return (
+          <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
+            <EditMetaModal
+              open={showEditMeta}
+              initialMetaText={editMetaText}
+              onCancel={() => setShowEditMeta(false)}
+              onEditingChange={(e) => setMetaEditing(e)}
+              onSave={(text: string) => {
+                try {
+                  const rid = pageRows[selectedIdx]?.id;
+                  const vec = pageRows[selectedIdx]?.vector;
+                  const meta = text ? JSON.parse(text) : null;
+                  if (rid != null && vec) client?.set(rid, { vector: vec, meta }, { upsert: true });
+                  setRows((rs) => rs.map((r) => (r.id === rid ? { ...r, meta } : r)));
+                  setStatus(`Updated id ${rid}`);
+                  setShowEditMeta(false);
+                } catch (e) {
+                  setStatus(`Update failed: ${String((e as { message?: unknown })?.message ?? e)}`);
+                }
+              }}
+            />
+          </Box>
+        );
+      })()}
       {indexStrategy}
+      {(() => {
+        if (!showQueryCfg) return null;
+        if (!client) return (
+          <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
+            <Box />
+          </Box>
+        );
+        return (
+          <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
+            <QueryConfigView ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }} onBack={() => setShowQueryCfg(false)} />
+          </Box>
+        );
+      })()}
     </Box>
   );
 }

@@ -44,14 +44,7 @@ function FooterBarBase({
           {seg("page", `${page}/${totalPages}`)}
           {seg("per", String(per))}
         </Box>
-        <Box>
-          <Box marginLeft={1} backgroundColor="grey">
-            <Text color="black"> PgUp </Text>
-          </Box>
-          <Box marginLeft={1} backgroundColor="grey">
-            <Text color="black"> PgDn </Text>
-          </Box>
-        </Box>
+        <Box />
       </Box>
       <Box>
         {actions.map((it, i) => {

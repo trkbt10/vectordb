@@ -30,7 +30,14 @@ export function Dialog({
     );
   })();
   return (
-    <Box width="100%" flexDirection="column" alignItems="center" justifyContent="center">
+    <Box
+      width="100%"
+      height="100%"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      position="absolute"
+    >
       {/* Shadow + Card: stack to simulate bottom-right drop shadow */}
       <Box flexDirection="column">
         {/* Dialog card */}
