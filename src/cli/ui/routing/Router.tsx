@@ -16,25 +16,7 @@ type RouterProps = {
 export function Router({ routes, fallback }: RouterProps) {
   const { currentPath } = useNavigation();
 
-  const matchedRoute = useMemo(() => {
-    // First try exact match
-    const exactMatch = routes.find((r) => r.path === currentPath);
-    if (exactMatch) return exactMatch;
-
-    // Then try prefix match for nested routes
-    const prefixMatch = routes.find((r) => currentPath.startsWith(r.path + "/"));
-    if (prefixMatch) return prefixMatch;
-
-    // Finally try wildcard routes
-    const wildcardMatch = routes.find((r) => r.path.includes("*"));
-    if (wildcardMatch) {
-      const pathPattern = wildcardMatch.path.replace("*", "(.*)");
-      const regex = new RegExp(`^${pathPattern}$`);
-      if (regex.test(currentPath)) return wildcardMatch;
-    }
-
-    return null;
-  }, [currentPath, routes]);
+  const matchedRoute = useMemo(() => matchRoute(currentPath, routes), [currentPath, routes]);
 
   if (!matchedRoute) {
     return <>{fallback || <NotFound />}</>;
@@ -53,3 +35,29 @@ function NotFound() {
 
 // Re-export Text from ink to avoid missing import
 import { Text } from "ink";
+
+/**
+ * Pure route matching for testing and reuse.
+ */
+export function matchRoute(currentPath: string, routes: Route[]): Route | null {
+  // First try exact match
+  const exactMatch = routes.find((r) => r.path === currentPath);
+  if (exactMatch) return exactMatch;
+
+  // Then try prefix match for nested routes (prefer longest path)
+  const prefixMatches = routes.filter((r) => currentPath.startsWith(r.path + "/"));
+  if (prefixMatches.length) {
+    prefixMatches.sort((a, b) => b.path.length - a.path.length);
+    return prefixMatches[0] || null;
+  }
+
+  // Finally try wildcard routes
+  const wildcardMatch = routes.find((r) => r.path.includes("*"));
+  if (wildcardMatch) {
+    const pathPattern = wildcardMatch.path.replace("*", "(.*)");
+    const regex = new RegExp(`^${pathPattern}$`);
+    if (regex.test(currentPath)) return wildcardMatch;
+  }
+
+  return null;
+}

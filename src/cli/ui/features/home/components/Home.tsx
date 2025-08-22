@@ -4,27 +4,29 @@
 import React, { useMemo } from "react";
 import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
+import { Logo } from "../../../components/ui";
 import { useNavigation } from "../../../routing";
 
 type Choice = { label: string; value: string };
 
 /** Home screen offering navigation to features and exit. */
 export function Home() {
+  const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
+  const rows = process.stdout?.rows ? Math.max(12, process.stdout.rows) : 24;
   const { navigate } = useNavigation();
   const items: Choice[] = useMemo(
     () => [
       { label: "Open Database Explorer", value: "/database" },
       { label: "Create Config (Wizard)", value: "/wizard" },
-      { label: "Settings", value: "/settings" },
       { label: "Help", value: "/help" },
       { label: "Exit", value: "__exit__" },
     ],
     [],
   );
   return (
-    <Box flexDirection="column">
-      <Text color="magentaBright">VectorDB CLI</Text>
-      <Text color="gray">Databases • Search • Manage</Text>
+    <Box flexDirection="column" width={cols} height={rows - 4} alignItems="center" justifyContent="center">
+      <Logo />
+      <Box marginTop={1}><Text color="gray">Databases • Search • Manage</Text></Box>
       <Box marginTop={1}>
         <SelectInput
           items={items}
@@ -33,9 +35,6 @@ export function Home() {
             navigate(i.value);
           }}
         />
-      </Box>
-      <Box marginTop={1}>
-        <Text color="gray">Shortcuts: h=Home  b=Back  ?=Help  q=Quit</Text>
       </Box>
     </Box>
   );

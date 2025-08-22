@@ -14,11 +14,11 @@ import { defaultConfigFlow } from "../../database-wizard/components/flows/defaul
  * DatabaseView entry component.
  * Accepts an optional onExit handler from router, currently unused by the Explorer.
  */
-export function DatabaseView({ onExit }: { onExit: () => void }) {
+export function DatabaseView({ onExit, configPath }: { onExit: () => void; configPath?: string }) {
   // reference prop to satisfy no-unused-vars until used by explorer shell
   void onExit;
   // Provide a minimal built-in flow so wizard is available even if caller doesn't inject one.
   const defaultFlow: FlowSchema = defaultConfigFlow;
 
-  return <DatabaseExplorer configFlow={defaultFlow} />;
+  return <DatabaseExplorer configFlow={defaultFlow} directConfigPath={configPath} onExit={onExit} />;
 }

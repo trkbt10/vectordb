@@ -15,29 +15,25 @@ type StorageKind = "node" | "memory" | "opfs";
 export async function openFromConfig(pathToConfig: string): Promise<ClientWithDatabase<Record<string, unknown>>> {
   const raw = await readFile(path.resolve(pathToConfig), "utf8");
   type Cfg = {
-    name?: string;
-    indexRoot?: string;
-    dataRoot?: string;
-    storage?: { type: StorageKind } & { indexRoot?: string; dataRoot?: string };
-    database?: { dim: number; metric: "cosine" | "l2" | "dot"; strategy: "bruteforce" | "hnsw" | "ivf" } & Record<
-      string,
-      unknown
-    >;
-    index?: Record<string, unknown>;
+    index?: { name?: string } & Record<string, unknown>;
+    storage?: { type?: StorageKind; indexRoot?: string; dataRoot?: string };
+    database?: { dim: number; metric: "cosine" | "l2" | "dot"; strategy: "bruteforce" | "hnsw" | "ivf" } & Record<string, unknown>;
   };
   const cfg: Cfg = JSON.parse(raw) as Cfg;
-  const name = cfg.name || "db";
-  const storageKind = cfg.storage?.type ?? "node";
+  const name = (cfg.index as { name?: string } | undefined)?.name;
+  if (!name) throw new Error("index.name is required in config");
+  const storageKind = cfg.storage?.type;
+  if (!storageKind) throw new Error("storage.type is required in config (node|memory|opfs)");
   const storage =
     storageKind === "memory"
       ? { index: createMemoryFileIO(), data: () => createMemoryFileIO() }
       : storageKind === "opfs"
         ? { index: createOPFSFileIO(), data: () => createOPFSFileIO() }
         : (() => {
-            const idxRoot = cfg.storage?.indexRoot ?? cfg.indexRoot;
-            const datRoot = cfg.storage?.dataRoot ?? cfg.dataRoot;
-            if (!idxRoot) throw new Error("config.indexRoot or storage.indexRoot is required for node storage");
-            if (!datRoot) throw new Error("config.dataRoot or storage.dataRoot is required for node storage");
+            const idxRoot = cfg.storage?.indexRoot;
+            const datRoot = cfg.storage?.dataRoot;
+            if (!idxRoot) throw new Error("storage.indexRoot is required for node storage");
+            if (!datRoot) throw new Error("storage.dataRoot is required for node storage");
             return {
               index: createNodeFileIO(idxRoot),
               data: (key: string) => createNodeFileIO(path.join(datRoot, key)),
@@ -56,4 +52,3 @@ export async function openFromConfig(pathToConfig: string): Promise<ClientWithDa
         }),
   });
 }
-

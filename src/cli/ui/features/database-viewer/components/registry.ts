@@ -38,7 +38,7 @@ export async function upsertRegistryEntry(entry: { name: string; configPath: str
   const reg = await readRegistry(file);
   const ix = reg.entries.findIndex((e) => path.resolve(e.configPath) === path.resolve(entry.configPath));
   if (ix >= 0) reg.entries[ix] = { ...reg.entries[ix], ...entry };
-  else reg.entries.push(entry);
+  if (ix < 0) reg.entries.push(entry);
   await writeRegistry(reg, file);
   return reg;
 }
@@ -59,7 +59,14 @@ export async function discoverConfigs({ roots = ["." , "./configs"], maxDepth = 
       if (ent.isDirectory()) {
         if (ent.name.startsWith(".")) continue;
         await walk(p, depth + 1);
-      } else if (ent.isFile() && ent.name.endsWith(".json") && (ent.name.includes("vectordb") || ent.name.includes("config"))) {
+        continue;
+      }
+      const lower = ent.name.toLowerCase();
+      const isCandidate =
+        ent.isFile() &&
+        lower.endsWith(".json") &&
+        (lower === "vectordb.config.json" || (lower.includes("vectordb") && lower.includes("config")));
+      if (isCandidate) {
         const abs = path.resolve(p);
         if (seen.has(abs)) continue;
         seen.add(abs);
@@ -72,4 +79,3 @@ export async function discoverConfigs({ roots = ["." , "./configs"], maxDepth = 
   for (const r of roots) await walk(path.resolve(r), 0);
   return out;
 }
-

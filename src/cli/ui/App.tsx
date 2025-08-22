@@ -8,15 +8,17 @@ import { Home } from "./features/home/components/Home";
 import { DatabaseView } from "./features/database-viewer/components/DatabaseView";
 import { DefaultWizard } from "./features/database-wizard/components/DefaultWizard";
 import { Help } from "./features/help/components/Help";
-import { Settings } from "./features/settings/components/Settings";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { FooterContext } from "./FooterContext";
 
 /**
  * Root application component that wires NavigationProvider and routes.
  */
-export function App() {
+export function App({ initialConfigPath }: { initialConfigPath?: string }) {
   return (
     <NavigationProvider initialPath="/home">
-      <AppWithRoutes />
+      <AppWithRoutes initialConfigPath={initialConfigPath} />
     </NavigationProvider>
   );
 }
@@ -24,33 +26,47 @@ export function App() {
 /**
  * Internal component providing route definitions and global shortcuts.
  */
-function AppWithRoutes() {
+function AppWithRoutes({ initialConfigPath }: { initialConfigPath?: string }) {
+  const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
+  const rows = process.stdout?.rows ? Math.max(12, process.stdout.rows) : 24;
   const { navigate, goBack } = useNavigation();
+  const [footer, setFooter] = React.useState<React.ReactNode | null>(null);
   useInput((input, key) => {
     if (key.ctrl && input === "c") return; // allow default exit
-    if (input === "q") process.exit(0);
-    if (input === "h") navigate("/home");
-    if (input === "b") goBack();
-    if (input === "?") navigate("/help");
+    // Disable global shortcuts to avoid stealing focus from inputs
   });
 
   const routes = [
     createRoute("/home", Home, {}),
-    createRoute("/database", DatabaseView as React.ComponentType, { onExit: () => navigate("/home") }),
+    createRoute("/database", DatabaseView as React.ComponentType, { onExit: () => navigate("/home"), configPath: initialConfigPath }),
     createRoute("/wizard", DefaultWizard, { onDone: () => navigate("/database") }),
     createRoute("/help", Help, { onBack: () => goBack() }),
-    createRoute("/settings", Settings, { onBack: () => goBack() }),
   ];
 
+  React.useEffect(() => {
+    if (initialConfigPath) {
+      navigate("/database");
+      return;
+    }
+    const p = path.resolve("vectordb.config.json");
+    const dest = existsSync(p) ? "/database" : "/wizard";
+    navigate(dest);
+  }, []);
+
   return (
-    <Box flexDirection="column">
-      <Box>
-        <Text color="magentaBright">VectorDB CLI</Text>
+    <FooterContext.Provider value={{ footer, setFooter }}>
+      
+      <Box flexDirection="column" width={cols} height={rows}>
+        <Box>
+          <Text color="magentaBright">VectorDB CLI</Text>
+        </Box>
+        <Text color="gray">{"─".repeat(Math.max(8, cols - 2))}</Text>
+        <Box flexGrow={1} alignItems="stretch" justifyContent="flex-start">
+          <Router routes={routes} />
+        </Box>
+        <Text color="gray">{"─".repeat(Math.max(8, cols - 2))}</Text>
+        <Box>{footer ?? null}</Box>
       </Box>
-      <Text color="gray">────────────────────────────────────────────────────────</Text>
-      <Router routes={routes} />
-      <Text color="gray">────────────────────────────────────────────────────────</Text>
-      <Text color="gray">Shortcuts: h=Home  b=Back  ?=Help  q=Quit</Text>
-    </Box>
+              </FooterContext.Provider>
   );
 }

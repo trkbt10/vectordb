@@ -20,15 +20,19 @@ function validateField(field: Field, ctx: string, errors: string[]) {
       errors.push(`${ctx}: select requires non-empty options`);
     if (!field.name) errors.push(`${ctx}: field.name required`);
     if (!field.label) errors.push(`${ctx}: field.label required`);
-  } else if (field.type === "text" || field.type === "number") {
-    if (!field.name) errors.push(`${ctx}: field.name required`);
-    if (!field.label) errors.push(`${ctx}: field.label required`);
-  } else if (field.type === "boolean") {
-    if (!field.name) errors.push(`${ctx}: field.name required`);
-    if (!field.label) errors.push(`${ctx}: field.label required`);
-  } else {
-    errors.push(`${ctx}: unknown field.type`);
+    return;
   }
+  if (field.type === "text" || field.type === "number") {
+    if (!field.name) errors.push(`${ctx}: field.name required`);
+    if (!field.label) errors.push(`${ctx}: field.label required`);
+    return;
+  }
+  if (field.type === "boolean") {
+    if (!field.name) errors.push(`${ctx}: field.name required`);
+    if (!field.label) errors.push(`${ctx}: field.label required`);
+    return;
+  }
+  errors.push(`${ctx}: unknown field.type`);
 }
 
 /**
@@ -90,22 +94,27 @@ export function validateFlowSchema(flow: unknown): Validation {
         const res = validateWizardSchema(schemaVal);
         if (!res.ok) errors.push(...res.errors.map((e) => `${ctx}: ${e}`));
         if (!("next" in (s as Record<string, unknown>))) errors.push(`${ctx}: qa requires next`);
-      } else if (s.type === "ui") {
+        continue;
+      }
+      if (s.type === "ui") {
         validateField((s as Record<string, unknown>)["field"] as Field, `${ctx}.field`, errors);
-      } else if (s.type === "compute") {
+        continue;
+      }
+      if (s.type === "compute") {
         const run = (s as Record<string, unknown>)["run"];
         if (typeof run !== "function") errors.push(`${ctx}: compute requires run()`);
         if (!("next" in (s as Record<string, unknown>))) errors.push(`${ctx}: compute requires next`);
-      } else if (s.type === "write") {
+        continue;
+      }
+      if (s.type === "write") {
         const pathFrom = (s as Record<string, unknown>)["pathFrom"];
         const dataFrom = (s as Record<string, unknown>)["dataFrom"];
         if (typeof pathFrom !== "function") errors.push(`${ctx}: write requires pathFrom()`);
         if (typeof dataFrom !== "function") errors.push(`${ctx}: write requires dataFrom()`);
-      } else {
-        errors.push(`${ctx}: unknown step type ${(s as Record<string, unknown>)["type"]}`);
+        continue;
       }
+      errors.push(`${ctx}: unknown step type ${(s as Record<string, unknown>)["type"]}`);
     }
   }
   return errors.length ? { ok: false, errors } : { ok: true };
 }
-

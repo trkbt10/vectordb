@@ -13,28 +13,58 @@ export function Title({ label, subtitle }: { label: string; subtitle?: string | 
     <Box flexDirection="column">
       <Text color="cyan">{label}</Text>
       {subs.map((s, i) => (
-        <Text key={i} color="gray">{s}</Text>
+        <Text key={i} color="gray">
+          {s}
+        </Text>
       ))}
     </Box>
   );
 }
 
 /** Render a horizontal line fitting the terminal width (approx). */
-export function HLine({ width, char = "─", color = "gray" as const }: { width?: number; char?: string; color?: "gray" | "cyan" | "yellow" | "magenta" }) {
+export function HLine({
+  width,
+  char = "─",
+  color = "gray" as const,
+}: {
+  width?: number;
+  char?: string;
+  color?: "gray" | "cyan" | "yellow" | "magenta";
+}) {
   const cols = width ?? (process.stdout?.columns ? Math.max(8, process.stdout.columns - 4) : 60);
   return <Text color={color}>{char.repeat(cols)}</Text>;
 }
 
 /** Render breadcrumb text (not heavily used now). */
 export function Breadcrumbs({ items }: { items: string[] }) {
-  return (
-    <Text color="gray">{items.filter(Boolean).join(" › ")}</Text>
-  );
+  return <Text color="gray">{items.filter(Boolean).join(" › ")}</Text>;
 }
 
 /** Render a gray hint line. */
 export function Hint({ children }: { children: string }) {
   return <Text color="gray">{children}</Text>;
+}
+
+/**
+ * Render a large ASCII logo.
+ */
+export function Logo() {
+  const art = [
+    " __     __          _            ____  ____  ",
+    " \\ \\   / /__  _ __| |_ ___ _ __| __ )| __ ) ",
+    "  \\ \\ / / _ \\| '__| __/ _ \\ '__|  _ \\  _ \\ ",
+    "   \\ V / (_) | |  | ||  __/ |  | |_) | |_) |",
+    "    \\_/ \\___/|_|   \\__\\___|_|  |____/|____/ ",
+  ];
+  return (
+    <Box flexDirection="column" alignItems="center">
+      {art.map((line, i) => (
+        <Text key={i} color="magentaBright">
+          {line}
+        </Text>
+      ))}
+    </Box>
+  );
 }
 
 /** Full-screen wizard chrome with sidebar steps and footer hints. */
@@ -51,33 +81,52 @@ export function WizardShell({
   children: React.ReactNode;
   footer?: string;
 }) {
+  const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
+  const rows = process.stdout?.rows ? Math.max(12, process.stdout.rows) : 24;
+  const contentWidth = Math.min(80, Math.max(40, cols - 10));
+  void currentId;
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" width={cols} height={rows - 4}>
       {/* Top bar */}
-      <Box>
+      <Box justifyContent="center">
         <Text color="cyan">{title}</Text>
       </Box>
-      <HLine />
+      <Box justifyContent="center">
+        <HLine width={contentWidth} />
+      </Box>
       {/* Body */}
-      <Box flexDirection="row">
-        {/* Sidebar */}
-        <Box width={28} flexDirection="column">
-          <Text color="gray">Steps</Text>
-          <Text color="gray">────────────────────────</Text>
-          {steps.map((s, i) => (
-            <Text key={`${i}:${s.id}`} inverse={s.id === currentId}>
-              {s.label}
-            </Text>
-          ))}
-        </Box>
-        <Box width={1}><Text color="gray">│</Text></Box>
+      <Box flexDirection={steps.length > 0 ? "row" : "column"}>
+        {steps.length > 0 && (
+          <>
+            <Box width={28} flexDirection="column">
+              <Text color="gray">Steps</Text>
+              <Text color="gray">────────────────────────</Text>
+              {steps.map((s, i) => (
+                <Text key={`${i}:${s.id}`} inverse={s.id === currentId}>
+                  {s.label}
+                </Text>
+              ))}
+            </Box>
+            <Box width={1}>
+              <Text color="gray">│</Text>
+            </Box>
+          </>
+        )}
         {/* Main panel */}
-        <Box flexDirection="column" flexGrow={1}>
-          {children}
+        <Box flexDirection="column" flexGrow={1} alignItems="center" justifyContent="center">
+          <Box width={contentWidth} flexDirection="column">
+            {children}
+          </Box>
         </Box>
       </Box>
-      <HLine />
-      {footer && <Hint>{footer}</Hint>}
+      <Box justifyContent="center">
+        <HLine width={contentWidth} />
+      </Box>
+      {footer && (
+        <Box justifyContent="center">
+          <Hint>{footer}</Hint>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -91,7 +140,12 @@ export function QuestionForm({
   onBack,
   preview,
 }: {
-  field: { type: "text" | "number" | "select" | "boolean"; name: string; label: string; options?: { label: string; value: string }[] };
+  field: {
+    type: "text" | "number" | "select" | "boolean";
+    name: string;
+    label: string;
+    options?: { label: string; value: string }[];
+  };
   value: string | number | boolean | undefined;
   onChange: (v: string | number | boolean) => void;
   onNext: () => void;
@@ -110,7 +164,18 @@ export function QuestionForm({
           <Text>{field.label}</Text>
           {/* For options, still use ink-select-input for reliability */}
           <SelectInput
-            items={[...(field.options ?? []), ...(onBack ? [{ label: "Back", value: "__back__" }] : [])]}
+            items={[
+              ...((field.options ?? []).map((o, idx) => ({ ...o, key: `${o.value}:${idx}` })) as {
+                label: string;
+                value: string;
+                key: string;
+              }[]),
+              ...((onBack ? [{ key: "__back__", label: "Back", value: "__back__" }] : []) as {
+                label: string;
+                value: string;
+                key: string;
+              }[]),
+            ]}
             isFocused={focus === "field"}
             onSelect={(i: { label: string; value: string }) => {
               if (i.value === "__back__") return onBack?.();
@@ -127,17 +192,21 @@ export function QuestionForm({
         <>
           <Text>{field.label}</Text>
           <ActionBar
-            items={[{ label: (value ? "Yes" : "No") + " (toggle)", value: "__toggle" }, { label: "Next", value: "__next" }, ...(onBack ? [{ label: "Back", value: "__back" }] : [])]}
+            items={[
+              { label: (value ? "Yes" : "No") + " (toggle)", value: "__toggle" },
+              { label: "Next", value: "__next" },
+              ...(onBack ? [{ label: "Back", value: "__back" }] : []),
+            ]}
             focus={true}
-            onSelect={(val) => (val === "__toggle" ? onChange(!(value as boolean)) : val === "__back" ? onBack?.() : onNext())}
+            onSelect={(val) =>
+              val === "__toggle" ? onChange(!(value as boolean)) : val === "__back" ? onBack?.() : onNext()
+            }
           />
         </>
       ) : (
         <>
-          <Box>
-            <Box width={20}><Text>{field.label}</Text></Box>
-            <TextInput value={String(value ?? "")} onChange={(v) => onChange(v)} focus={focus === "field"} />
-          </Box>
+          <Text>{field.label}</Text>
+          <TextInput value={String(value ?? "")} onChange={(v) => onChange(v)} focus={focus === "field"} />
           <ActionBar
             items={[{ label: "Next", value: "__next" }, ...(onBack ? [{ label: "Back", value: "__back" }] : [])]}
             focus={focus === "actions"}

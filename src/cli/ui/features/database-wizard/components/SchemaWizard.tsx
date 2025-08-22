@@ -91,6 +91,16 @@ export function SchemaWizard({
   const [stepId, setStepId] = useState<string>(schema.start);
 
   const step = schema.steps[stepId];
+  if (!step) {
+    return (
+      <Box flexDirection="column">
+        <Text color="red">Invalid schema step: {stepId}</Text>
+        <Box marginTop={1}>
+          <SelectInput items={[{ label: "Back", value: "back" }]} onSelect={() => goBack()} />
+        </Box>
+      </Box>
+    );
+  }
   const value = answers[step.field.name];
 
   const descriptionLines = useMemo(() => {
@@ -116,30 +126,25 @@ export function SchemaWizard({
   if (step.field.type === "select") {
     const current = step.field.options.find((o) => o.value === value);
     const items = [
-      ...step.field.options,
-      { label: step.allowBack ? "Back" : "Cancel", value: "__back_or_cancel" },
+      ...step.field.options.map((o, idx) => ({ ...o, key: `${o.value}:${idx}` })),
+      { key: "__back_or_cancel", label: step.allowBack ? "Back" : "Cancel", value: "__back_or_cancel" },
     ];
     return (
-      <Box flexDirection="row">
-        <Box width={44} flexDirection="column">
-          <Text color="cyan">{step.title}</Text>
-          <SelectInput
-            items={items}
-            initialIndex={current ? step.field.options.indexOf(current) : 0}
-            onSelect={(i: { label: string; value: string }) => {
-              if (i.value === "__back_or_cancel") return step.allowBack ? goBack() : onCancel();
-              const updated = { ...answers, [step.field.name]: i.value };
-              setAnswers(updated);
-              goNext(updated);
-            }}
-          />
-        </Box>
-        <Box paddingLeft={2} flexGrow={1} flexDirection="column">
-          {descriptionLines.length > 0 && <Text color="gray">説明</Text>}
-          {descriptionLines.map((line, idx) => (
-            <Text key={idx}>{line}</Text>
-          ))}
-        </Box>
+      <Box flexDirection="column">
+        <Text color="cyan">{step.title}</Text>
+        {descriptionLines.map((line, idx) => (
+          <Text key={idx} color="gray">{line}</Text>
+        ))}
+        <SelectInput
+          items={items}
+          initialIndex={current ? step.field.options.indexOf(current) : 0}
+          onSelect={(i: { label: string; value: string }) => {
+            if (i.value === "__back_or_cancel") return step.allowBack ? goBack() : onCancel();
+            const updated = { ...answers, [step.field.name]: i.value };
+            setAnswers(updated);
+            goNext(updated);
+          }}
+        />
       </Box>
     );
   }
@@ -149,15 +154,11 @@ export function SchemaWizard({
     return (
       <Box flexDirection="column">
         <Text color="cyan">{step.title}</Text>
-        <Box>
-          <Box width={20}>
-            <Text>{step.field.label}</Text>
-          </Box>
-          <TextInput
-            value={v as string}
-            onChange={(nv) => setAnswers((a) => ({ ...a, [step.field.name]: nv }))}
-          />
-        </Box>
+        <Text>{step.field.label}</Text>
+        <TextInput
+          value={v as string}
+          onChange={(nv) => setAnswers((a) => ({ ...a, [step.field.name]: nv }))}
+        />
         <Box marginTop={1}>
           <SelectInput
             items={[
@@ -200,4 +201,3 @@ export function SchemaWizard({
     </Box>
   );
 }
-

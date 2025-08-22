@@ -71,11 +71,6 @@ function MenuView({ ctx, onExit }: ClusterMenuProps) {
   const items: Choice[] = useMemo(
     () => [
       { label: "Stats / Diagnose", value: "/stats" },
-      { label: "List Items", value: "/list" },
-      { label: "Search", value: "/search" },
-      { label: "Filter (meta eq)", value: "/filter" },
-      { label: "Add/Update Row", value: "/upsert" },
-      { label: "Delete Row", value: "/delete" },
       { label: "Rebuild State", value: "/rebuild" },
       { label: "Back", value: "back" },
     ],
@@ -96,4 +91,3 @@ function MenuView({ ctx, onExit }: ClusterMenuProps) {
     </Box>
   );
 }
-
