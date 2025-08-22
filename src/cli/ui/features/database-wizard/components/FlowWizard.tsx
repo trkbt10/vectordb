@@ -269,14 +269,17 @@ export function FlowWizard({
   }
 
   // UI step
-  const preview = step.preview?.(answers);
+  if (step.type !== "ui") return null;
+  const uiStep = step as UiStep;
+  const preview = uiStep.preview?.(answers);
   function renderPreview(): React.ReactNode | undefined {
     if (preview === undefined) return undefined;
     return <Text>{typeof preview === "string" ? preview : JSON.stringify(preview, null, 2)}</Text>;
   }
   // description renderer uses field.type when needed
   function renderDescription(): React.ReactNode | null {
-    if (step.field.type !== "select") return null;
+    // step is narrowed to UI above; safe to access field
+    if (uiStep.field.type !== "select") return null;
     if (descriptionLines.length <= 0) return null;
     return (
       <Box paddingTop={1}>
@@ -284,9 +287,9 @@ export function FlowWizard({
       </Box>
     );
   }
-  if (step.field.type === "boolean") {
-    const boolVal = Boolean((answers[step.field.name] as boolean | undefined) ?? step.field.defaultValue ?? false);
-    const backHandler = step.allowBack ? () => back() : undefined;
+  if (uiStep.field.type === "boolean") {
+    const boolVal = Boolean((answers[uiStep.field.name] as boolean | undefined) ?? uiStep.field.defaultValue ?? false);
+    const backHandler = uiStep.allowBack ? () => back() : undefined;
     return (
       <WizardShell
         title={schema.title || "Wizard"}
@@ -295,10 +298,10 @@ export function FlowWizard({
         footer="Use arrows to choose, Enter to confirm"
       >
         <QuestionForm
-          field={{ type: "boolean", name: step.field.name, label: step.field.label }}
+          field={{ type: "boolean", name: uiStep.field.name, label: uiStep.field.label }}
           value={boolVal}
-          onChange={(v) => setAnswers((a) => ({ ...a, [step.field.name]: v }))}
-          onNext={() => go(nextForUi(step, answers) ?? stepId)}
+          onChange={(v) => setAnswers((a) => ({ ...a, [uiStep.field.name]: v }))}
+          onNext={() => go(nextForUi(uiStep, answers) ?? stepId)}
           onBack={backHandler}
           preview={renderPreview()}
         />
@@ -306,8 +309,8 @@ export function FlowWizard({
     );
   }
   function valueForField(): string {
-    if (step.field.type !== "text" && step.field.type !== "number") return "";
-    return String((answers[step.field.name] as string | undefined) ?? step.field.defaultValue ?? "");
+    if (uiStep.field.type !== "text" && uiStep.field.type !== "number") return "";
+    return String((answers[uiStep.field.name] as string | undefined) ?? uiStep.field.defaultValue ?? "");
   }
   const v = valueForField();
   return (
@@ -319,7 +322,7 @@ export function FlowWizard({
     >
       <QuestionForm
         field={
-          step.field as {
+          uiStep.field as {
             type: "text" | "number" | "select" | "boolean";
             name: string;
             label: string;
@@ -327,9 +330,9 @@ export function FlowWizard({
           }
         }
         value={v}
-        onChange={(nv) => setAnswers((a) => ({ ...a, [step.field.name]: nv }))}
-        onNext={() => go(nextForUi(step, answers) ?? stepId)}
-        onBack={step.allowBack ? (() => back()) : undefined}
+        onChange={(nv) => setAnswers((a) => ({ ...a, [uiStep.field.name]: nv }))}
+        onNext={() => go(nextForUi(uiStep, answers) ?? stepId)}
+        onBack={uiStep.allowBack ? (() => back()) : undefined}
         preview={renderPreview()}
       />
       {renderDescription()}

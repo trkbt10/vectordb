@@ -7,6 +7,8 @@ import { createNodeFileIO } from "../../../../../storage/node";
 import { createMemoryFileIO } from "../../../../../storage/memory";
 import { createOPFSFileIO } from "../../../../../storage/opfs";
 import { connect } from "../../../../../index";
+import type { StorageConfig } from "../../../../../client/indexing";
+import type { VectorDBOptions } from "../../../../../types";
 import type { ClientWithDatabase } from "../../../../../client/index";
 
 type StorageKind = "node" | "memory" | "opfs";
@@ -24,7 +26,7 @@ export async function openFromConfig(pathToConfig: string): Promise<ClientWithDa
   if (!name) throw new Error("index.name is required in config");
   const storageKind = cfg.storage?.type;
   if (!storageKind) throw new Error("storage.type is required in config (node|memory|opfs)");
-  function resolveStorage(): { index: unknown; data: (key: string) => unknown } | { index: unknown; data: () => unknown } {
+  function resolveStorage(): StorageConfig {
     if (storageKind === "memory") return { index: createMemoryFileIO(), data: () => createMemoryFileIO() };
     if (storageKind === "opfs") return { index: createOPFSFileIO(), data: () => createOPFSFileIO() };
     const idxRoot = cfg.storage?.indexRoot;
@@ -35,8 +37,8 @@ export async function openFromConfig(pathToConfig: string): Promise<ClientWithDa
   }
   const storage = resolveStorage();
   const hasDb = Boolean(cfg.database);
-  function resolveExtra(): { database: unknown } | { onMissing: () => Promise<never> } {
-    if (hasDb) return { database: cfg.database } as const;
+  function resolveExtra(): { database: VectorDBOptions } | { onMissing: () => Promise<never> } {
+    if (hasDb) return { database: cfg.database as VectorDBOptions } as const;
     return {
       onMissing: async () => {
         throw new Error("State missing and no database options provided in config");

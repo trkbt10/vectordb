@@ -40,27 +40,28 @@ export function tuneHnsw<TMeta>(
   k: number,
 ): HnswTuneResult[] {
   if (!isHnswVL(vl)) return [];
+  const base = vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
   // vl is narrowed to HNSW here
-  const efList = (grid.efSearch && grid.efSearch.length ? grid.efSearch : [vl.ann.efSearch]).map((x) =>
+  const efList = (grid.efSearch && grid.efSearch.length ? grid.efSearch : [base.ann.efSearch]).map((x) =>
     Math.max(1, x | 0),
   );
-  const MList = (grid.M && grid.M.length ? grid.M : [vl.ann.M]).map((x) => Math.max(1, x | 0));
+  const MList = (grid.M && grid.M.length ? grid.M : [base.ann.M]).map((x) => Math.max(1, x | 0));
   const bfTopK = (q: Float32Array, kk: number): Set<number> =>
-    new Set(search(buildWithStrategy(vl, "bruteforce"), q, { k: kk }).map((h) => h.id));
+    new Set(search(buildWithStrategy(base, "bruteforce"), q, { k: kk }).map((h) => h.id));
   const results: HnswTuneResult[] = [];
   for (const M of MList) {
     // Build candidate HNSW state if M differs
     function candidateForM(m: number): VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState } {
-      if (m === vl.ann.M) return vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
-      return buildHNSWFromStore(vl, {
+      if (m === base.ann.M) return base as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+      return buildHNSWFromStore(base, {
         M: m,
-        efConstruction: vl.ann.efConstruction,
-        efSearch: vl.ann.efSearch,
+        efConstruction: base.ann.efConstruction,
+        efSearch: base.ann.efSearch,
       }) as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
     }
     const cand0 = candidateForM(M);
     // ensure cand is HNSW (buildHNSWFromStore returns HNSW)
-    const cand = isHnswVL(cand0) ? cand0 : (vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState });
+    const cand = isHnswVL(cand0) ? cand0 : base;
     const hnswCand = cand as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
     const origEf = hnswCand.ann.efSearch;
     for (const ef of efList) {
