@@ -8,7 +8,7 @@ import type { IndexOps } from "./indexing";
 import type { WalRuntime, WalRecord } from "../wal/index";
 import type { AsyncLock } from "../util/async_lock";
 import { createAsyncLock } from "../util/async_lock";
-import { add, remove, search, size, has, getOne as coreGet, setMeta as coreSetMeta } from "../attr/ops/core";
+import { add, remove, search, size as getSize, has, getOne as coreGet, setMeta as coreSetMeta } from "../attr/ops/core";
 import { searchWithExpr } from "../attr/search/with_expr";
 import { upsertMany } from "../attr/ops/bulk";
 
@@ -38,7 +38,7 @@ export function createDatabaseFromState<TMeta>(
   const base: Omit<VectorDB<TMeta>, "index"> = {
     state,
     get size() {
-      return size(state);
+      return getSize(state);
     },
     has: async (id: number) => has(state, id),
     get: async (id: number) => coreGet(state, id),
@@ -98,8 +98,15 @@ export function createDatabaseFromState<TMeta>(
   };
   // Wrap writes to append WAL first
   const client: VectorDB<TMeta> = {
-    ...base,
+    state,
+    get size() {
+      return getSize(state);
+    },
     index,
+    has: base.has,
+    get: base.get,
+    find: base.find,
+    findMany: base.findMany,
     delete: async (id: number) =>
       await lock.runExclusive(async () => {
         const rec: WalRecord = { type: "remove", id };
