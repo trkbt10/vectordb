@@ -50,20 +50,17 @@ export function tuneHnsw<TMeta>(
   const results: HnswTuneResult[] = [];
   for (const M of MList) {
     // Build candidate HNSW state if M differs
-    // eslint-disable-next-line no-restricted-syntax -- Performance: candidate HNSW state for tuning
-    let cand =
-      M === vl.ann.M
-        ? (vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState })
-        : (buildHNSWFromStore(vl, {
-            M,
-            efConstruction: vl.ann.efConstruction,
-            efSearch: vl.ann.efSearch,
-          }) as VectorStoreState<TMeta>);
-    // ensure cand is HNSW (buildHNSWFromStore returns HNSW)
-    if (!isHnswVL(cand)) {
-      // fall back to original
-      cand = vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+    function candidateForM(m: number): VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState } {
+      if (m === vl.ann.M) return vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
+      return buildHNSWFromStore(vl, {
+        M: m,
+        efConstruction: vl.ann.efConstruction,
+        efSearch: vl.ann.efSearch,
+      }) as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
     }
+    const cand0 = candidateForM(M);
+    // ensure cand is HNSW (buildHNSWFromStore returns HNSW)
+    const cand = isHnswVL(cand0) ? cand0 : (vl as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState });
     const hnswCand = cand as VectorStoreState<TMeta> & { strategy: "hnsw"; ann: HNSWState };
     const origEf = hnswCand.ann.efSearch;
     for (const ef of efList) {

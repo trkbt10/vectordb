@@ -62,11 +62,13 @@ export async function discoverConfigs({ roots = ["." , "./configs"], maxDepth = 
         continue;
       }
       const lower = ent.name.toLowerCase();
-      const isCandidate =
-        ent.isFile() &&
-        lower.endsWith(".json") &&
-        (lower === "vectordb.config.json" || (lower.includes("vectordb") && lower.includes("config")));
-      if (isCandidate) {
+      function isCandidateFile(): boolean {
+        if (!ent.isFile()) return false;
+        if (!lower.endsWith(".json")) return false;
+        if (lower === "vectordb.config.json") return true;
+        return lower.includes("vectordb") ? lower.includes("config") : false;
+      }
+      if (isCandidateFile()) {
         const abs = path.resolve(p);
         if (seen.has(abs)) continue;
         seen.add(abs);

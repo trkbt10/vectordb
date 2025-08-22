@@ -110,20 +110,23 @@ export function rebuildIndex<TMeta>(
   return rebuildIvf(vl, opts.params as IVFParams | undefined, ids);
 }
 
+function computeHnswParams(
+  old: unknown,
+  params: HNSWParams | undefined,
+  fallback: { M: number; efConstruction: number; efSearch: number },
+): HNSWParams {
+  if (params) return params;
+  // old may be null; caller passes appropriately typed values
+  if (old) {
+    const h = old as unknown as { M: number; efConstruction: number; efSearch: number; levelMult: number; allowReplaceDeleted: boolean };
+    return { M: h.M, efConstruction: h.efConstruction, efSearch: h.efSearch, levelMult: h.levelMult, allowReplaceDeleted: h.allowReplaceDeleted, seed: 42 } as HNSWParams;
+  }
+  return fallback as HNSWParams;
+}
+
 function rebuildHnsw<TMeta>(vl: VectorStoreState<TMeta>, params: HNSWParams | undefined, ids: number[] | null): number {
   const old = isHnswVL(vl) ? vl.ann : null;
-  const p: HNSWParams =
-    params ??
-    (old
-      ? {
-          M: old.M,
-          efConstruction: old.efConstruction,
-          efSearch: old.efSearch,
-          levelMult: old.levelMult,
-          allowReplaceDeleted: old.allowReplaceDeleted,
-          seed: 42,
-        }
-      : { M: 16, efConstruction: 200, efSearch: 50 });
+  const p = computeHnswParams(old as never, params, { M: 16, efConstruction: 200, efSearch: 50 });
   const newH = createHNSWState(p, vl.metric, vl.store._count || 1);
   vl.strategy = "hnsw";
   vl.ann = newH;

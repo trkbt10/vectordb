@@ -21,40 +21,44 @@ export function DatabaseForm({ onSubmit, onExit }: { onSubmit: (input: OpenInput
     { label: mode === "folder" ? "Switch to Config File" : "Switch to Folder", value: "switch" },
   ];
 
-  return (
-    <Box flexDirection="column">
-      <Text color="cyan">Open Database</Text>
-
-      {mode === "folder" ? (
-        <>
-          <Box>
-            <Box width={14}>
-              <Text>Index Root:</Text>
-            </Box>
-            <TextInput value={indexRoot} onChange={setIndexRoot} onSubmit={() => {}} />
-          </Box>
-          <Box>
-            <Box width={14}>
-              <Text>Data Root:</Text>
-            </Box>
-            <TextInput value={dataRoot} onChange={setDataRoot} onSubmit={() => {}} />
-          </Box>
-          <Box>
-            <Box width={14}>
-              <Text>Name:</Text>
-            </Box>
-            <TextInput value={name} onChange={setName} onSubmit={() => {}} />
-          </Box>
-        </>
-      ) : (
+  const content: React.ReactNode = (() => {
+    if (mode !== "folder") {
+      return (
         <Box>
           <Box width={14}>
             <Text>Config Path:</Text>
           </Box>
           <TextInput value={configPath} onChange={setConfigPath} onSubmit={() => {}} />
         </Box>
-      )}
-
+      );
+    }
+    return (
+      <>
+        <Box>
+          <Box width={14}>
+            <Text>Index Root:</Text>
+          </Box>
+          <TextInput value={indexRoot} onChange={setIndexRoot} onSubmit={() => {}} />
+        </Box>
+        <Box>
+          <Box width={14}>
+            <Text>Data Root:</Text>
+          </Box>
+          <TextInput value={dataRoot} onChange={setDataRoot} onSubmit={() => {}} />
+        </Box>
+        <Box>
+          <Box width={14}>
+            <Text>Name:</Text>
+          </Box>
+          <TextInput value={name} onChange={setName} onSubmit={() => {}} />
+        </Box>
+      </>
+    );
+  })();
+  return (
+    <Box flexDirection="column">
+      <Text color="cyan">Open Database</Text>
+      {content}
       <Box marginTop={1}>
         <SelectInput
           items={items}
@@ -69,4 +73,3 @@ export function DatabaseForm({ onSubmit, onExit }: { onSubmit: (input: OpenInput
     </Box>
   );
 }
-

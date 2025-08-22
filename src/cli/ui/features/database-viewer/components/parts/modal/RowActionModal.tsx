@@ -6,6 +6,10 @@ import { Text } from "ink";
 import SelectInput from "ink-select-input";
 import { Dialog } from "../Dialog";
 
+/**
+ * RowActionModal: 指定行に対する操作(メタ更新/削除/キャンセル)を選択するモーダルコンポーネント。
+ * 行番号の表示と選択に応じたコールバックの発火のみを担う。
+ */
 export function RowActionModal({
   open,
   rowId,
@@ -39,4 +43,3 @@ export function RowActionModal({
     </Dialog>
   );
 }
-

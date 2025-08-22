@@ -151,6 +151,7 @@ export function SchemaWizard({
 
   if (step.field.type === "text" || step.field.type === "number") {
     const v = value === undefined ? step.field.defaultValue ?? "" : String(value);
+    const backOrCancel = step.allowBack ? "Back" : "Cancel";
     return (
       <Box flexDirection="column">
         <Text color="cyan">{step.title}</Text>
@@ -163,15 +164,12 @@ export function SchemaWizard({
           <SelectInput
             items={[
               { label: "Next", value: "__next" },
-              { label: step.allowBack ? "Back" : "Cancel", value: "__back_or_cancel" },
+              { label: backOrCancel, value: "__back_or_cancel" },
             ]}
-            onSelect={(i) =>
-              i.value === "__back_or_cancel"
-                ? step.allowBack
-                  ? goBack()
-                  : onCancel()
-                : goNext(answers)
-            }
+            onSelect={(i) => {
+              if (i.value === "__back_or_cancel") return step.allowBack ? goBack() : onCancel();
+              goNext(answers);
+            }}
           />
         </Box>
       </Box>

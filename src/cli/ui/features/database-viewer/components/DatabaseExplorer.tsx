@@ -325,81 +325,86 @@ export function DatabaseExplorer({
     );
   }
 
+  const mainPanel: React.ReactNode = (() => {
+    if (panel === "table") return <Table rows={pageRows} allRows={rows} rowIdx={rowIdx} loading={loading} />;
+    if (panel === "stats" && client) return <StatsView ctx={{ name: registry[selected]?.name ?? "db", client }} onBack={() => setPanel("table")} />;
+    if (panel === "rebuild" && client) return <RebuildView ctx={{ name: registry[selected]?.name ?? "db", client }} onBack={() => setPanel("table")} />;
+    return <Box />;
+  })();
+  const rowMenu: React.ReactNode = (() => {
+    if (!showRowMenu) return null;
+    return (
+      <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
+        <RowActionModal
+          open={showRowMenu}
+          rowId={pageRows[selectedIdx]?.id}
+          onCancel={() => setShowRowMenu(false)}
+          onDelete={() => {
+            const rid = pageRows[selectedIdx]?.id;
+            if (rid != null) {
+              client?.delete(rid);
+              setRows((rs) => rs.filter((r) => r.id !== rid));
+              setStatus(`Deleted id ${rid}`);
+            }
+            setShowRowMenu(false);
+          }}
+          onEdit={() => {
+            const mt = JSON.stringify(pageRows[selectedIdx]?.meta ?? null);
+            setEditMetaText(mt);
+            setShowRowMenu(false);
+            setShowEditMeta(true);
+          }}
+        />
+      </Box>
+    );
+  })();
+  const editMeta: React.ReactNode = (() => {
+    if (!showEditMeta) return null;
+    return (
+      <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
+        <EditMetaModal
+          open={showEditMeta}
+          initialMetaText={editMetaText}
+          onCancel={() => setShowEditMeta(false)}
+          onSave={(text: string) => {
+            try {
+              const rid = pageRows[selectedIdx]?.id;
+              const vec = pageRows[selectedIdx]?.vector;
+              const meta = text ? JSON.parse(text) : null;
+              if (rid != null && vec) client?.set(rid, { vector: vec, meta }, { upsert: true });
+              setRows((rs) => rs.map((r) => (r.id === rid ? { ...r, meta } : r)));
+              setStatus(`Updated id ${rid}`);
+              setShowEditMeta(false);
+            } catch (e) {
+              setStatus(`Update failed: ${String((e as { message?: unknown })?.message ?? e)}`);
+            }
+          }}
+        />
+      </Box>
+    );
+  })();
+  const indexStrategy: React.ReactNode = (() => {
+    if (!showIndexStrategy) return null;
+    return (
+      <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
+        <IndexStrategyModal
+          open={showIndexStrategy}
+          onCancel={() => setShowIndexStrategy(false)}
+          onSelect={(strategy: string) => {
+            setStatus(`Selected index strategy: ${strategy} (apply via Rebuild)`);
+            setShowIndexStrategy(false);
+          }}
+        />
+      </Box>
+    );
+  })();
   return (
     <Box flexDirection="column" flexGrow={1}>
-      {/* Header */}
       <SearchHeader query={query} onChange={setQuery} isFocused={searchFocus} />
-      {/* Table / Tools */}
-      {panel === "table" ? (
-        <Table rows={pageRows} allRows={rows} rowIdx={rowIdx} loading={loading} />
-      ) : panel === "stats" && client ? (
-        <StatsView ctx={{ name: registry[selected]?.name ?? "db", client }} onBack={() => setPanel("table")} />
-      ) : panel === "rebuild" && client ? (
-        <RebuildView ctx={{ name: registry[selected]?.name ?? "db", client }} onBack={() => setPanel("table")} />
-      ) : (
-        <Box />
-      )}
-      {/* Status bar moved to footer */}
-      {/* Modal centered inline over main content area */}
-      {showRowMenu && (
-        <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-          <RowActionModal
-            open={showRowMenu}
-            rowId={pageRows[selectedIdx]?.id}
-            onCancel={() => setShowRowMenu(false)}
-            onDelete={() => {
-              const rid = pageRows[selectedIdx]?.id;
-              if (rid != null) {
-                client?.delete(rid);
-                setRows((rs) => rs.filter((r) => r.id !== rid));
-                setStatus(`Deleted id ${rid}`);
-              }
-              setShowRowMenu(false);
-            }}
-            onEdit={() => {
-              const mt = JSON.stringify(pageRows[selectedIdx]?.meta ?? null);
-              setEditMetaText(mt);
-              setShowRowMenu(false);
-              setShowEditMeta(true);
-            }}
-          />
-        </Box>
-      )}
-      {showEditMeta && (
-        <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-          <EditMetaModal
-            open={showEditMeta}
-            initialMetaText={editMetaText}
-            onCancel={() => setShowEditMeta(false)}
-            onSave={(text: string) => {
-              try {
-                const rid = pageRows[selectedIdx]?.id;
-                const vec = pageRows[selectedIdx]?.vector;
-                const meta = text ? JSON.parse(text) : null;
-                if (rid != null && vec) client?.set(rid, { vector: vec, meta }, { upsert: true });
-                setRows((rs) => rs.map((r) => (r.id === rid ? { ...r, meta } : r)));
-                setStatus(`Updated id ${rid}`);
-                setShowEditMeta(false);
-              } catch (e) {
-                setStatus(`Update failed: ${String((e as { message?: unknown })?.message ?? e)}`);
-              }
-            }}
-          />
-        </Box>
-      )}
-      {showIndexStrategy && (
-        <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-          <IndexStrategyModal
-            open={showIndexStrategy}
-            onCancel={() => setShowIndexStrategy(false)}
-            onSelect={(strategy: string) => {
-              setStatus(`Selected index strategy: ${strategy} (apply via Rebuild)`);
-              setShowIndexStrategy(false);
-            }}
-          />
-        </Box>
-      )}
-
+      {mainPanel}
+      {rowMenu}
+      {editMeta}
+      {indexStrategy}
     </Box>
   );
 }

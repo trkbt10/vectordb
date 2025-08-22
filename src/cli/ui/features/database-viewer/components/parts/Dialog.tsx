@@ -21,17 +21,21 @@ export function Dialog({
   if (!open) return null;
   const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
   const w = Math.min(width, Math.max(40, cols - 6));
+  const titleNode = (() => {
+    if (!title) return null;
+    return (
+      <Box marginBottom={1}>
+        <Text color="white">{title}</Text>
+      </Box>
+    );
+  })();
   return (
     <Box width="100%" flexDirection="column" alignItems="center" justifyContent="center">
       {/* Shadow + Card: stack to simulate bottom-right drop shadow */}
       <Box flexDirection="column">
         {/* Dialog card */}
         <Box borderStyle="round" paddingX={1} paddingY={0} width={w} flexDirection="column" backgroundColor="black">
-          {title ? (
-            <Box marginBottom={1}>
-              <Text color="white">{title}</Text>
-            </Box>
-          ) : null}
+          {titleNode}
           {children}
         </Box>
         {/* Bottom shadow bar */}

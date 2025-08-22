@@ -14,7 +14,9 @@ type NavigatorWithOPFS = { storage: { getDirectory(): Promise<OPFSDirectory> } }
 
 function hasOPFSNavigator(x: unknown): x is NavigatorWithOPFS {
   const storage = (x as Record<string, unknown> | undefined)?.storage;
-  return !!storage && typeof (storage as { getDirectory?: unknown }).getDirectory === "function";
+  if (!storage) return false;
+  const getDir = (storage as { getDirectory?: unknown }).getDirectory;
+  return typeof getDir === "function";
 }
 
 function requireRoot(): Promise<OPFSDirectory> {

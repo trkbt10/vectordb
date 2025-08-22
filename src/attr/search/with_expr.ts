@@ -50,13 +50,15 @@ export function searchWithExpr<TMeta>(
   const q = normalizeQuery(vl.metric, query);
   const pred = compilePredicate(expr);
   const idx = opts.index ?? null;
-  const idxReader: AttrIndexReader | null = idx
-    ? {
-        eq: (key: string, value: Scalar) => idx.eq(key, value),
-        exists: (key: string) => idx.exists(key),
-        range: (key: string, r: Range) => idx.range(key, r),
-      }
-    : null;
+  function makeIdxReader(x: AttrIndex | null | undefined): AttrIndexReader | null {
+    if (!x) return null;
+    return {
+      eq: (key: string, value: Scalar) => x.eq(key, value),
+      exists: (key: string) => x.exists(key),
+      range: (key: string, r: Range) => x.range(key, r),
+    };
+  }
+  const idxReader: AttrIndexReader | null = makeIdxReader(idx);
   const candidates = preselectCandidates(expr, idxReader);
 
   // HNSW hard-mode: score only candidates

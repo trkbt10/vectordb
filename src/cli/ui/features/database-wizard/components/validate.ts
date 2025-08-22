@@ -7,7 +7,8 @@ import type { FlowStep } from "./FlowWizard";
 export type Validation = { ok: true } | { ok: false; errors: string[] };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null;
+  if (typeof v !== "object") return false;
+  return v !== null;
 }
 
 function validateField(field: Field, ctx: string, errors: string[]) {

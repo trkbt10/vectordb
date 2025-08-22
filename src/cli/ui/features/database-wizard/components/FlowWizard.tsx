@@ -7,7 +7,7 @@ import SelectInput from "ink-select-input";
 // import TextInput from "ink-text-input"; // not used directly after commonization
 import path from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
-import { SchemaWizard, type Field, type WizardSchema } from "./SchemaWizard";
+import { SchemaWizard, type Field, type FieldOption, type WizardSchema } from "./SchemaWizard";
 import { WizardShell, QuestionForm, ActionBar } from "../../../components/ui";
 import TextInput from "ink-text-input";
 import { type FlowAnswers, type FlowCondition, type FlowTransition, nextForUi } from "./flowLogic";
@@ -104,11 +104,11 @@ export function FlowWizard({
   // Focus state must be declared before any conditional returns to keep hook order stable
   // Focus is handled inside QuestionForm; keep a no-op to maintain previous behavior if needed later
   useEffect(() => {
-    if (step?.type === "menu") {
-      setMenuTip(step.items[0]?.tooltip);
-    } else {
+    if (step?.type !== "menu") {
       setMenuTip(undefined);
+      return;
     }
+    setMenuTip(step.items[0]?.tooltip);
   }, [stepId]);
 
   const descriptionLines = useMemo(() => {
@@ -117,7 +117,7 @@ export function FlowWizard({
     return Array.isArray(step.description) ? step.description : [step.description];
   }, [step]);
 
-  const stepItems = [] as { id: string; label: string }[]; // hide steps sidebar per UX request
+  const stepItems: { id: string; label: string }[] = []; // hide steps sidebar per UX request
 
   function go(next: string | undefined) {
     if (!next) return onCancel();
@@ -252,8 +252,9 @@ export function FlowWizard({
           onSelect={(i: { label: string; value: string }) => {
             if (i.value === "__back_or_cancel__") return step.allowBack ? back() : onCancel();
             const chosen = step.items.find((m) => m.next === i.value || m.label === i.label);
-            if (chosen && step.storeTo && chosen.value !== undefined) {
-              setAnswers((a) => ({ ...a, [step.storeTo as string]: chosen.value as string }));
+            const key = step.storeTo;
+            if (chosen && typeof key === "string" && typeof chosen.value === "string") {
+              setAnswers((a) => ({ ...a, [key]: chosen.value }));
             }
             go(i.value);
           }}
@@ -269,9 +270,23 @@ export function FlowWizard({
 
   // UI step
   const preview = step.preview?.(answers);
-  const isSelect = step.field.type === "select";
+  function renderPreview(): React.ReactNode | undefined {
+    if (preview === undefined) return undefined;
+    return <Text>{typeof preview === "string" ? preview : JSON.stringify(preview, null, 2)}</Text>;
+  }
+  // description renderer uses field.type when needed
+  function renderDescription(): React.ReactNode | null {
+    if (step.field.type !== "select") return null;
+    if (descriptionLines.length <= 0) return null;
+    return (
+      <Box paddingTop={1}>
+        <Text color="gray">{descriptionLines.join("\n")}</Text>
+      </Box>
+    );
+  }
   if (step.field.type === "boolean") {
     const boolVal = Boolean((answers[step.field.name] as boolean | undefined) ?? step.field.defaultValue ?? false);
+    const backHandler = step.allowBack ? () => back() : undefined;
     return (
       <WizardShell
         title={schema.title || "Wizard"}
@@ -284,20 +299,17 @@ export function FlowWizard({
           value={boolVal}
           onChange={(v) => setAnswers((a) => ({ ...a, [step.field.name]: v }))}
           onNext={() => go(nextForUi(step, answers) ?? stepId)}
-          onBack={step.allowBack ? () => back() : undefined}
-          preview={
-            preview !== undefined ? (
-              <Text>{typeof preview === "string" ? preview : JSON.stringify(preview, null, 2)}</Text>
-            ) : undefined
-          }
+          onBack={backHandler}
+          preview={renderPreview()}
         />
       </WizardShell>
     );
   }
-  const v =
-    step.field.type === "text" || step.field.type === "number"
-      ? String((answers[step.field.name] as string | undefined) ?? step.field.defaultValue ?? "")
-      : "";
+  function valueForField(): string {
+    if (step.field.type !== "text" && step.field.type !== "number") return "";
+    return String((answers[step.field.name] as string | undefined) ?? step.field.defaultValue ?? "");
+  }
+  const v = valueForField();
   return (
     <WizardShell
       title={schema.title || "Wizard"}
@@ -317,20 +329,18 @@ export function FlowWizard({
         value={v}
         onChange={(nv) => setAnswers((a) => ({ ...a, [step.field.name]: nv }))}
         onNext={() => go(nextForUi(step, answers) ?? stepId)}
-        onBack={step.allowBack ? () => back() : undefined}
-        preview={
-          preview !== undefined ? (
-            <Text>{typeof preview === "string" ? preview : JSON.stringify(preview, null, 2)}</Text>
-          ) : undefined
-        }
+        onBack={step.allowBack ? (() => back()) : undefined}
+        preview={renderPreview()}
       />
-      {isSelect && descriptionLines.length > 0 && (
-        <Box paddingTop={1}>
-          <Text color="gray">{descriptionLines.join("\n")}</Text>
-        </Box>
-      )}
+      {renderDescription()}
     </WizardShell>
   );
+}
+
+type GroupField = { type: "group"; label: string };
+
+function isGroupField(it: Field | GroupField): it is GroupField {
+  return it.type === "group";
 }
 
 function MultiFieldForm({
@@ -340,7 +350,7 @@ function MultiFieldForm({
   onNext,
   onBack,
 }: {
-  fields: (Field | { type: "group"; label: string })[];
+  fields: (Field | GroupField)[];
   answers: FlowAnswers;
   onChange: (name: string, value: string | number | boolean) => void;
   onNext: () => void;
@@ -357,23 +367,25 @@ function MultiFieldForm({
       return; // ActionBar captures left/right/enter
     }
     const prevIdx = (() => {
-      let i = selected - 1;
-      while (i >= 0 && (fields[i] as any).type === "group") i--;
-      return i < 0 ? selected : i;
+      const idx = fields
+        .slice(0, selected)
+        .reduceRight<number>((acc, f, i) => (acc >= 0 ? acc : isGroupField(f) ? -1 : i), -1);
+      return idx < 0 ? selected : idx;
     })();
     const nextIdx = (() => {
-      let i = selected + 1;
-      while (i < fields.length && (fields[i] as any).type === "group") i++;
-      return i >= fields.length ? selected : i;
+      const rel = fields.slice(selected + 1).findIndex((f) => !isGroupField(f));
+      return rel < 0 ? selected : selected + 1 + rel;
     })();
     if (key.upArrow) setSelected(prevIdx);
     if (key.downArrow) setSelected(nextIdx);
     const lastIdx = (() => {
-      for (let i = fields.length - 1; i >= 0; i--) if ((fields[i] as any).type !== "group") return i;
-      return 0;
+      const idx = fields
+        .map((f, i) => (!isGroupField(f) ? i : -1))
+        .reduce((a, b) => (b > a ? b : a), -1);
+      return idx < 0 ? 0 : idx;
     })();
     if (key.downArrow && selected === lastIdx) setActionsFocus(true);
-    if (key.return && (fields[selected] as any).type !== "group") setMode("edit");
+    if (key.return && !isGroupField(fields[selected])) setMode("edit");
   });
 
   // const f = fields[selected]; // unused
@@ -385,67 +397,73 @@ function MultiFieldForm({
     <Box flexDirection="column">
       {fields.map((it, i) => {
         const isSelected = i === selected;
-        const isEditing = isSelected && mode === "edit";
-        const highlight = !actionsFocus && isSelected; // clear highlight when action bar has focus
+        const isEditing = isSelected ? mode === "edit" : false;
+        const highlight = !actionsFocus ? isSelected : false; // clear highlight when action bar has focus
         const lineColor: "white" | "gray" = actionsFocus ? "gray" : "white";
-        if ((it as any).type === "group") {
+        if (isGroupField(it)) {
           return (
-            <Box key={`group:${(it as any).label}`} flexDirection="row" marginTop={1} marginBottom={0}>
-              <Text color="cyan">{(it as any).label}</Text>
+            <Box key={`group:${it.label}`} flexDirection="row" marginTop={1} marginBottom={0}>
+              <Text color="cyan">{it.label}</Text>
             </Box>
           );
         }
-        const rawVal = (answers[(it as Field).name] as string | number | boolean | undefined) ?? (it as any).defaultValue;
-        // derive display value for passive view
-        let display: string = "";
-        if ((it as Field).type === "select") {
-          const found = ((it as any).options ?? []).find((o: any) => o.value === rawVal);
-          display = found ? found.label : String(rawVal ?? "");
-        } else if ((it as Field).type === "boolean") {
-          display = String(Boolean(rawVal));
-        } else {
-          display = String(rawVal ?? "");
+        const rawVal = (answers[it.name] as string | number | boolean | undefined) ?? it.defaultValue;
+        function displayFor(field: Field, value: unknown): string {
+          if (field.type === "select") {
+            const opts: FieldOption[] = field.options ?? [];
+            const found = opts.find((o) => o.value === value);
+            return found ? found.label : String(value ?? "");
+          }
+          if (field.type === "boolean") return String(Boolean(value));
+          return String(value ?? "");
         }
+        const display = displayFor(it, rawVal);
+        const renderCell = (field: Field, editing: boolean, disp: string, value: unknown): React.ReactNode => {
+          if (!editing) return <Text inverse={highlight}>{disp}</Text>;
+          if (field.type === "select") {
+            return (
+              <SelectInput
+                items={(field.options ?? []).map((o, idx) => ({ ...o, key: `${o.value}:${idx}` }))}
+                isFocused={true}
+                onSelect={(sel: { label: string; value: string }) => {
+                  onChange(field.name, sel.value);
+                  exitEdit();
+                }}
+              />
+            );
+          }
+          if (field.type === "boolean") {
+            return (
+              <SelectInput
+                items={[{ label: "No", value: "false" }, { label: "Yes", value: "true" }]}
+                isFocused={true}
+                onSelect={(sel) => {
+                  onChange(field.name, sel.value === "true");
+                  exitEdit();
+                }}
+              />
+            );
+          }
+          return (
+            <TextInput
+              value={String(value ?? "")}
+              focus={true}
+              onChange={(v) => onChange(field.name, field.type === "number" ? Number(v) : v)}
+              onSubmit={exitEdit}
+            />
+          );
+        };
         return (
-          <Box key={(it as Field).name} flexDirection="row" marginBottom={0}>
+          <Box key={it.name} flexDirection="row" marginBottom={0}>
             <Box width={leftWidth} marginRight={1}>
-              <Text inverse={highlight}>{(it as Field).label}</Text>
+              <Text inverse={highlight}>{it.label}</Text>
             </Box>
             <Box width={1}>
               <Text color={lineColor}>│</Text>
             </Box>
             <Box flexGrow={1}>
-              {isEditing ? (
-                (it as Field).type === "select" ? (
-                  <SelectInput
-                    items={((it as any).options ?? []).map((o: any, idx: number) => ({ ...o, key: `${o.value}:${idx}` }))}
-                    isFocused={true}
-                    onSelect={(sel: { label: string; value: string }) => {
-                      onChange((it as Field).name, sel.value);
-                      exitEdit();
-                    }}
-                  />
-                ) : (it as Field).type === "boolean" ? (
-                  <SelectInput
-                    items={[{ label: "No", value: "false" }, { label: "Yes", value: "true" }]}
-                    isFocused={true}
-                    onSelect={(sel) => {
-                      onChange((it as Field).name, sel.value === "true");
-                      exitEdit();
-                    }}
-                  />
-                ) : (
-                  <TextInput
-                    value={String(rawVal ?? "")}
-                    focus={true}
-                    onChange={(v) => onChange((it as Field).name, (it as Field).type === "number" ? Number(v) : v)}
-                    onSubmit={exitEdit}
-                  />
-                )
-              ) : (
-                <Text inverse={highlight}>{display}</Text>
-              )}
-              {isEditing && <EscCatcher onEsc={exitEdit} />}
+              {renderCell(it, isEditing, display, rawVal)}
+              {isEditing ? <EscCatcher onEsc={exitEdit} /> : null}
             </Box>
           </Box>
           

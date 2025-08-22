@@ -92,7 +92,7 @@ function compileLeaf(l: LeafExpr): (id: number, meta: MetaLike, attrs?: AttrsLik
     const want = !!l.exists;
     return (_id, meta, attrs) => {
       const v = getter(_id, meta, attrs);
-      const ex = v !== undefined && v !== null;
+      const ex = v !== undefined ? v !== null : false;
       return want ? ex : !ex;
     };
   }
@@ -131,7 +131,7 @@ export function compilePredicate(expr: FilterExpr): CompiledPredicate {
       return (id) => set.has(id >>> 0);
     }
     const restPred = compilePredicate(rest as FilterExpr);
-    return (id, meta, attrs) => set.has(id >>> 0) && restPred(id, meta, attrs);
+    return (id, meta, attrs) => (set.has(id >>> 0) ? restPred(id, meta, attrs) : false);
   }
   const l = expr as Partial<LeafExpr>;
   if (l && (l.match !== undefined || l.range !== undefined || l.exists !== undefined || l.is_null !== undefined)) {

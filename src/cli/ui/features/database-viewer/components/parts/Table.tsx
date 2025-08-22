@@ -42,57 +42,64 @@ function TableBase({
     const maxCols = Math.max(1, Math.floor(metaAreaW / 12));
     const metaCols = allKeys.slice(0, maxCols);
     const metaColWBase = Math.floor(metaAreaW / Math.max(1, metaCols.length || 1));
-    const metaWidths: number[] = metaCols.length > 0
-      ? metaCols.map((_, i) => (i === metaCols.length - 1 ? metaAreaW - metaColWBase * (metaCols.length - 1) : metaColWBase))
-      : [metaAreaW];
+    const metaWidths: number[] = (() => {
+      if (metaCols.length > 0) {
+        return metaCols.map((_, i) => (i === metaCols.length - 1 ? metaAreaW - metaColWBase * (metaCols.length - 1) : metaColWBase));
+      }
+      return [metaAreaW];
+    })();
     return { metaCols, metaWidths };
   }, [allRows, metaAreaW]);
 
   const idH = React.useMemo(() => "ID".padEnd(idW, " "), [idW]);
-  const metaH = React.useMemo(() => (
-    metaCols.length > 0
-      ? metaCols.map((k, i) => k.slice(0, metaWidths[i]).padEnd(metaWidths[i], " ")).join("")
-      : "Meta".slice(0, metaAreaW).padEnd(metaAreaW, " ")
-  ), [metaCols, metaWidths, metaAreaW]);
+  const metaH = React.useMemo(() => {
+    if (metaCols.length > 0) {
+      return metaCols.map((k, i) => k.slice(0, metaWidths[i]).padEnd(metaWidths[i], " ")).join("");
+    }
+    return "Meta".slice(0, metaAreaW).padEnd(metaAreaW, " ");
+  }, [metaCols, metaWidths, metaAreaW]);
   const vecH = React.useMemo(() => "Vector".slice(0, vecW).padEnd(vecW, " "), [vecW]);
   const header = `${idH}${metaH}${vecH}`;
 
+  function renderRows(): React.ReactNode {
+    if (loading) return <Text color="gray">Loading...</Text>;
+    return rows.map((r, i) => {
+      const selected = i === rowIdx;
+      const even = i % 2 === 1;
+      const bg = selected ? "yellow" : (even ? "gray" : undefined);
+      const fg = selected ? "black" : undefined;
+      const idStr = String(r.id).slice(0, idW).padEnd(idW, " ");
+      const shallow = metaCols.length > 0 ? isShallowObject(r.meta) : false;
+      const metaStr = formatMeta(r, shallow);
+      const vecText = vectorPreview(r.vector);
+      const vecStr = vecText.length > vecW ? vecText.slice(0, vecW) : (vecText.padEnd(vecW, " "));
+      const line = `${idStr}${metaStr}${vecStr}`;
+      return (
+        <Text key={r.id} backgroundColor={bg} color={fg}>
+          {line}
+        </Text>
+      );
+    });
+  }
+
+  function formatMeta(r: RecordRow, shallow: boolean): string {
+    if (shallow) {
+      return metaCols
+        .map((k, idx) => {
+          const v = (r.meta as Record<string, unknown>)[k];
+          const s = v == null ? "" : String(v);
+          return s.slice(0, metaWidths[idx]).padEnd(metaWidths[idx], " ");
+        })
+        .join("");
+    }
+    const s = truncate(JSON.stringify(r.meta ?? null), metaAreaW);
+    return s.slice(0, metaAreaW).padEnd(metaAreaW, " ");
+  }
   return (
     <Box flexDirection="column">
       <Text>{header}</Text>
       <Text color="gray">{"─".repeat(Math.max(40, (process.stdout?.columns ?? 80) - 2))}</Text>
-      {loading ? (
-        <Text color="gray">Loading...</Text>
-      ) : (
-        rows.map((r, i) => {
-          const selected = i === rowIdx;
-          const even = i % 2 === 1;
-          const bg = selected ? "yellow" : even ? "gray" : undefined;
-          const fg = selected ? "black" : undefined;
-          const idStr = String(r.id).slice(0, idW).padEnd(idW, " ");
-          const shallow = metaCols.length > 0 && isShallowObject(r.meta);
-          const metaStr = shallow
-            ? metaCols
-                .map((k, idx) => {
-                  const v = (r.meta as Record<string, unknown>)[k];
-                  const s = v == null ? "" : String(v);
-                  return s.slice(0, metaWidths[idx]).padEnd(metaWidths[idx], " ");
-                })
-                .join("")
-            : (() => {
-                const s = truncate(JSON.stringify(r.meta ?? null), metaAreaW);
-                return s.slice(0, metaAreaW).padEnd(metaAreaW, " ");
-              })();
-          const vecText = vectorPreview(r.vector);
-          const vecStr = vecText.length > vecW ? vecText.slice(0, vecW) : vecText.padEnd(vecW, " ");
-          const line = `${idStr}${metaStr}${vecStr}`;
-          return (
-            <Text key={r.id} backgroundColor={bg} color={fg}>
-              {line}
-            </Text>
-          );
-        })
-      )}
+      {renderRows()}
     </Box>
   );
 }

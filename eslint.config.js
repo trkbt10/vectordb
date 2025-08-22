@@ -8,10 +8,23 @@ import importPlugin from "eslint-plugin-import";
 import jsdocPlugin from "eslint-plugin-jsdoc";
 import eslintComments from "eslint-plugin-eslint-comments";
 import prettierConfig from "eslint-config-prettier";
+import ternaryLength from "./eslint-rules/ternary-length.ts";
+import noAndAsTernary from "./eslint-rules/no-and-as-ternary.ts";
 
 export default [
   // Ignore patterns
-  { ignores: ["node_modules/**", "dist/**", "build/**", "debug/**", "coverage/**", "bin/**"] },
+  {
+    ignores: [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "debug/**",
+      "coverage/**",
+      "bin/**",
+      "*.config.ts",
+      "eslint-rules/**",
+    ],
+  },
 
   // JS/TS recommended sets (Flat-compatible)
   ...tseslint.config(
@@ -32,11 +45,19 @@ export default [
         jsdoc: jsdocPlugin,
         "eslint-comments": eslintComments,
         "@typescript-eslint": tseslint.plugin,
+        custom: {
+          rules: {
+            "ternary-length": ternaryLength,
+            "no-and-as-ternary": noAndAsTernary,
+          },
+        },
       },
       settings: {
         jsdoc: { mode: "typescript" },
       },
       rules: {
+        "custom/ternary-length": "error",
+        "custom/no-and-as-ternary": "error",
         /* 1. File JSDoc required/warning */
         "no-empty": ["warn", { allowEmptyCatch: false }],
 
@@ -133,14 +154,32 @@ export default [
           "error",
           {
             paths: [
-              { name: "bun:test", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-              { name: "vitest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-              { name: "@jest/globals", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-              { name: "jest", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
-              { name: "mocha", message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              {
+                name: "bun:test",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "vitest",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "@jest/globals",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "jest",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
+              {
+                name: "mocha",
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
             ],
             patterns: [
-              { group: ["vitest/*", "jest/*", "mocha/*"], message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect)." },
+              {
+                group: ["vitest/*", "jest/*", "mocha/*"],
+                message: "Do not import test libraries. Use globals injected by the test runner (describe/it/expect).",
+              },
             ],
           },
         ],
@@ -165,19 +204,24 @@ export default [
           "error",
           { object: "jest", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "jest", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
-          { object: "jest", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          {
+            object: "jest",
+            property: "spyOn",
+            message: "Mock APIs are prohibited. Prefer DI or simple fakes instead.",
+          },
           { object: "vi", property: "mock", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "fn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           { object: "vi", property: "spyOn", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
           // Bun's bun:test mock helpers
-          { object: "mock", property: "module", message: "Mock APIs are prohibited. Prefer DI or simple fakes instead." },
+          {
+            object: "mock",
+            property: "module",
+            message: "Mock APIs are prohibited. Prefer DI or simple fakes instead.",
+          },
         ],
 
         // Warn on @ts-expect-error outside tests
-        "@typescript-eslint/ban-ts-comment": [
-          "warn",
-          { "ts-expect-error": true },
-        ],
+        "@typescript-eslint/ban-ts-comment": ["warn", { "ts-expect-error": true }],
       },
     },
 

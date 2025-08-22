@@ -44,7 +44,8 @@ export function createShardPlanByHash(ids: number[], shards: number): ShardPlan 
 
 /** Convenience wrapper: choose plan by 'range' or 'hash'. */
 export function createShardPlan(ids: number[], opts: { by: "range" | "hash"; shards: number }): ShardPlan {
-  return opts.by === "hash" ? createShardPlanByHash(ids, opts.shards) : createShardPlanByRange(ids, opts.shards);
+  if (opts.by === "hash") return createShardPlanByHash(ids, opts.shards);
+  return createShardPlanByRange(ids, opts.shards);
 }
 
 /**
@@ -59,9 +60,11 @@ export function searchParallel<TMeta>(
   const k = Math.max(1, opts.k | 0);
   const out: SearchHit<TMeta>[] = [];
   for (const shard of plan.shards) {
-    const expr: FilterExpr = opts.expr
-      ? { has_id: { values: shard.ids }, must: [opts.expr] }
-      : { has_id: { values: shard.ids } };
+    function shardExpr(): FilterExpr {
+      if (opts.expr) return { has_id: { values: shard.ids }, must: [opts.expr] };
+      return { has_id: { values: shard.ids } };
+    }
+    const expr = shardExpr();
     const res = searchWithExpr(vl, q, expr, { k });
     for (const h of res) {
       // eslint-disable-next-line no-restricted-syntax -- Insert position accumulator for small-k

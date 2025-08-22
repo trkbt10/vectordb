@@ -56,6 +56,16 @@ export function encodeIndexFile(header: IndexHeader, entries: IndexEntry[], annB
 }
 
 /** Decode an index file into header, entries, and optional ANN payload. */
+/**
+ * ReaderLike: minimal interface abstraction over binary reader used here.
+ */
+type ReaderLike = {
+  readU32(): number;
+  readBytes(n: number): Uint8Array;
+  offset(): number;
+};
+
+/** Decode an index file into header, entries, and optional ANN payload. */
 export function decodeIndexFile(u8: Uint8Array): { header: IndexHeader; entries: IndexEntry[]; ann?: Uint8Array } {
   if (u8.length < 16) throw new Error("index too short");
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
@@ -71,12 +81,15 @@ export function decodeIndexFile(u8: Uint8Array): { header: IndexHeader; entries:
   const strategyCode = r.readU32();
   const flags = r.readU32();
   const hasAnn = (flags & 1) === 1;
-  const ann: Uint8Array | undefined = hasAnn
-    ? (() => {
-        const annLen = r.readU32();
-        return r.readBytes(annLen);
-      })()
-    : undefined;
+/**
+ * parseAnn: Parse optional ANN section if present; returns payload bytes or undefined.
+ */
+function parseAnn(has: boolean, reader: ReaderLike): Uint8Array | undefined {
+    if (!has) return undefined;
+    const annLen = reader.readU32();
+    return reader.readBytes(annLen);
+  }
+  const ann: Uint8Array | undefined = parseAnn(hasAnn, r as unknown as ReaderLike);
   const entries: IndexEntry[] = [];
   while (r.offset() < body.length) {
     const id = r.readU32();

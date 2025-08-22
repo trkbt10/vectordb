@@ -89,33 +89,33 @@ export const defaultConfigFlow: FlowSchema = {
       type: "write",
       id: "writeConfig",
       pathFrom: (a) => String(a.savePath || "./vectordb.config.json"),
-      dataFrom: (a) => ({
-        name: String(a.name || "db"),
-        storage: (() => {
+      dataFrom: (a) => {
+        const name = String(a.name || "db");
+        const storage = (() => {
           const intent = String(a.intent || "local");
           if (intent === "memory") return { type: "memory" as const };
           if (intent === "browser") return { type: "opfs" as const };
           const base = String(a.baseDir || ".vectordb");
           return { type: "node" as const, indexRoot: `${base}/index`, dataRoot: `${base}/data` };
-        })(),
-        database: {
+        })();
+        const databaseBase = {
           dim: Number(a.dim || 3) || 3,
           metric: (a.metric as "cosine" | "l2" | "dot") || "cosine",
           strategy: (a.strategy as "bruteforce" | "hnsw" | "ivf") || "bruteforce",
-          ...(a.strategy === "hnsw"
-            ? { M: Number(a.hnswM || 16) || 16, efSearch: Number(a.hnswEfSearch || 64) || 64 }
-            : {}),
-          ...(a.strategy === "ivf" ? { nlist: Number(a.ivfNlist || 1024) || 1024 } : {}),
-        },
-        index: {
-          name: String(a.name || "db"),
+        } as const;
+        const hnswPart = a.strategy === "hnsw" ? { M: Number(a.hnswM || 16) || 16, efSearch: Number(a.hnswEfSearch || 64) || 64 } : {};
+        const ivfPart = a.strategy === "ivf" ? { nlist: Number(a.ivfNlist || 1024) || 1024 } : {};
+        const database = { ...databaseBase, ...hnswPart, ...ivfPart };
+        const index = {
+          name,
           includeAnn: Boolean(a.includeAnn ?? false),
           shards: Number(a.shards || 1) || 1,
           replicas: Number(a.replicas || 1) || 1,
           pgs: Number(a.pgs || 64) || 64,
           segmented: Boolean(a.segmented ?? true),
-        },
-      }),
+        };
+        return { name, storage, database, index };
+      },
     },
   },
 };

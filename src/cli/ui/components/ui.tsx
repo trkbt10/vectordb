@@ -156,64 +156,65 @@ export function QuestionForm({
   useInput((input, key) => {
     if (key.upArrow || key.downArrow) setFocus((f) => (f === "field" ? "actions" : "field"));
   });
-  return (
-    <Box flexDirection="column">
-      {preview}
-      {field.type === "select" ? (
+  const actionItems = [{ label: "Next", value: "__next" }, ...(onBack ? [{ label: "Back", value: "__back" }] : [])];
+  function renderBody(): React.ReactNode {
+    if (field.type !== "select" && field.type !== "boolean") {
+      return (
         <>
           <Text>{field.label}</Text>
-          {/* For options, still use ink-select-input for reliability */}
+          <TextInput value={String(value ?? "")} onChange={(v) => onChange(v)} focus={focus === "field"} />
+          <ActionBar items={actionItems} focus={focus === "actions"} onSelect={(val) => (val === "__back" ? onBack?.() : onNext())} />
+        </>
+      );
+    }
+    if (field.type === "select") {
+      const items = [
+        ...((field.options ?? []).map((o, idx) => ({ ...o, key: `${o.value}:${idx}` })) as {
+          label: string;
+          value: string;
+          key: string;
+        }[]),
+        ...((onBack ? [{ key: "__back__", label: "Back", value: "__back__" }] : []) as {
+          label: string;
+          value: string;
+          key: string;
+        }[]),
+      ];
+      return (
+        <>
+          <Text>{field.label}</Text>
           <SelectInput
-            items={[
-              ...((field.options ?? []).map((o, idx) => ({ ...o, key: `${o.value}:${idx}` })) as {
-                label: string;
-                value: string;
-                key: string;
-              }[]),
-              ...((onBack ? [{ key: "__back__", label: "Back", value: "__back__" }] : []) as {
-                label: string;
-                value: string;
-                key: string;
-              }[]),
-            ]}
+            items={items}
             isFocused={focus === "field"}
             onSelect={(i: { label: string; value: string }) => {
               if (i.value === "__back__") return onBack?.();
               onChange(i.value);
             }}
           />
-          <ActionBar
-            items={[{ label: "Next", value: "__next" }, ...(onBack ? [{ label: "Back", value: "__back" }] : [])]}
-            focus={focus === "actions"}
-            onSelect={(val) => (val === "__back" ? onBack?.() : onNext())}
-          />
+          <ActionBar items={actionItems} focus={focus === "actions"} onSelect={(val) => (val === "__back" ? onBack?.() : onNext())} />
         </>
-      ) : field.type === "boolean" ? (
-        <>
-          <Text>{field.label}</Text>
-          <ActionBar
-            items={[
-              { label: (value ? "Yes" : "No") + " (toggle)", value: "__toggle" },
-              { label: "Next", value: "__next" },
-              ...(onBack ? [{ label: "Back", value: "__back" }] : []),
-            ]}
-            focus={true}
-            onSelect={(val) =>
-              val === "__toggle" ? onChange(!(value as boolean)) : val === "__back" ? onBack?.() : onNext()
-            }
-          />
-        </>
-      ) : (
-        <>
-          <Text>{field.label}</Text>
-          <TextInput value={String(value ?? "")} onChange={(v) => onChange(v)} focus={focus === "field"} />
-          <ActionBar
-            items={[{ label: "Next", value: "__next" }, ...(onBack ? [{ label: "Back", value: "__back" }] : [])]}
-            focus={focus === "actions"}
-            onSelect={(val) => (val === "__back" ? onBack?.() : onNext())}
-          />
-        </>
-      )}
+      );
+    }
+    const boolLabel = (value ? "Yes" : "No") + " (toggle)";
+    return (
+      <>
+        <Text>{field.label}</Text>
+        <ActionBar
+          items={[{ label: boolLabel, value: "__toggle" }, ...actionItems]}
+          focus={true}
+          onSelect={(val) => {
+            if (val === "__toggle") return onChange(!(value as boolean));
+            if (val === "__back") return onBack?.();
+            onNext();
+          }}
+        />
+      </>
+    );
+  }
+  return (
+    <Box flexDirection="column">
+      {preview}
+      {renderBody()}
     </Box>
   );
 }

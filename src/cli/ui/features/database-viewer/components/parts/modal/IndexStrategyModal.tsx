@@ -5,6 +5,10 @@ import React from "react";
 import SelectInput from "ink-select-input";
 import { Dialog } from "../Dialog";
 
+/**
+ * IndexStrategyModal: インデックス方式(探索戦略)を選択するためのモーダルコンポーネント。
+ * 選択肢の提示と結果の通知を担い、実際の適用は呼び出し側に委ねる。
+ */
 export function IndexStrategyModal({
   open,
   onSelect,
@@ -33,4 +37,3 @@ export function IndexStrategyModal({
     </Dialog>
   );
 }
-

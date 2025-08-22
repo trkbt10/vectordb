@@ -7,6 +7,10 @@ import TextInput from "ink-text-input";
 import SelectInput from "ink-select-input";
 import { Dialog } from "../Dialog";
 
+/**
+ * EditMetaModal: 単一行のメタデータ(JSON文字列)を編集・保存するモーダルコンポーネント。
+ * 不正な入力検証は外部に委ね、ここではテキストの受け渡しと選択操作のみを扱う。
+ */
 export function EditMetaModal({
   open,
   initialMetaText,
@@ -38,4 +42,3 @@ export function EditMetaModal({
     </Dialog>
   );
 }
-
