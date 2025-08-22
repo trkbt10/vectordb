@@ -146,7 +146,7 @@ export default [
         ],
 
         /* 4. Always add block {} to if/else/for/while */
-        curly: ["warn", "multi-or-nest"],
+        curly: ["warn", "all"],
         // Prefer guard clauses to else/else-if
         "no-else-return": ["warn", { allowElseIf: false }],
 
