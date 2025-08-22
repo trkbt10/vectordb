@@ -21,6 +21,11 @@
       "import": "./dist/cli/index.js",
       "require": "./dist/cli/index.cjs"
     },
+    "./http-server": {
+      "types": "./dist/http-server/index.d.ts",
+      "import": "./dist/http-server/index.js",
+      "require": "./dist/http-server/index.cjs"
+    },
     "./storage/*": {
       "types": "./dist/storage/*.d.ts",
       "import": "./dist/storage/*.js",
@@ -46,7 +51,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest",
     "test:cov": "vitest run --coverage",
-    "cli": "bun run src/cli/main.tsx"
+    "cli": "bun run src/cli/main.tsx",
+    "serve": "node dist/http-server/index.cjs --config vectordb.config.json"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
@@ -69,6 +75,8 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.0",
+    "hono": "^4.9.4",
     "ink": "^6.2.2",
     "ink-select-input": "^6.2.0",
     "ink-spinner": "^5.0.0",

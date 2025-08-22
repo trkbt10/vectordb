@@ -26,6 +26,7 @@ export default defineConfig({
         index: "src/index.ts",
         "client/index": "src/client/index.ts",
         "cli/index": "src/cli/main.tsx",
+        "http-server/index": "src/http-server/index.ts",
         "storage/node": "src/storage/node.ts",
         "storage/memory": "src/storage/memory.ts",
         "storage/opfs": "src/storage/opfs.ts",
@@ -37,7 +38,7 @@ export default defineConfig({
       formats: ["cjs", "es"],
     },
     rollupOptions: {
-      external: ["ink", "react", "react-dom", /node:.+/],
+      external: ["ink", "react", "react-dom", "hono", "@hono/node-server", /node:.+/],
     },
   },
 });
