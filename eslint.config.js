@@ -30,6 +30,8 @@ export default [
   ...tseslint.config(
     js.configs.recommended,
     ...tseslint.configs.recommended,
+    // Disable conflicting Prettier rules (Flat-compatible eslint-config-prettier)
+    prettierConfig,
 
     // Project common rules from here
     {
@@ -267,8 +269,5 @@ export default [
         "@typescript-eslint/ban-ts-comment": "off",
       },
     },
-
-    // Disable conflicting Prettier rules (Flat-compatible eslint-config-prettier)
-    prettierConfig,
   ),
 ];
