@@ -11,6 +11,7 @@ import {
   WalTruncatedRecordError,
   WalDecodeError,
 } from "./errors";
+import { crc32, readWalChecksum } from "./checksum";
 import type { AttrIndex, Attrs } from "../attr/index";
 import type { VectorStoreState } from "../types";
 
@@ -203,4 +204,37 @@ export function applyWalWithIndex<TMeta>(
     add(vl, r.id, r.vector, meta, { upsert: true });
     index.setAttrs(r.id, projector(meta));
   }
+}
+
+/**
+ * Verify WAL structure and optional footer checksum.
+ */
+export function verifyWal(u8: Uint8Array): {
+  ok: boolean;
+  error?: Error;
+  checksum?: { present: boolean; ok?: boolean; value?: number; computed?: number };
+} {
+  const res: { ok: boolean; error?: Error; checksum?: { present: boolean; ok?: boolean; value?: number; computed?: number } } = {
+    ok: true,
+  };
+  try {
+    const ck = readWalChecksum(u8);
+    const body = ck.has ? u8.subarray(0, u8.length - 8) : u8;
+    // Decode to ensure structural correctness
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- decode for side-effects (verification)
+    const _ = decodeWal(body);
+    if (ck.has) {
+      const computed = crc32(body);
+      res.checksum = { present: true, ok: computed === ck.value, value: ck.value, computed };
+      if (computed !== ck.value) {
+        res.ok = false;
+      }
+    } else {
+      res.checksum = { present: false };
+    }
+  } catch (e) {
+    res.ok = false;
+    res.error = e as Error;
+  }
+  return res;
 }
