@@ -13,7 +13,7 @@ import { ensureNumericId } from "../../common/params";
  */
 export async function getById(c: Context, { client }: RouteContext) {
   const id = ensureNumericId(c, "id");
-  const rec = client.get(id);
+  const rec = await client.get(id);
   if (!rec) {
     return c.json({ error: { message: "Not found" } }, 404);
   }

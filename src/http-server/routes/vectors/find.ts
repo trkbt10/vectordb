@@ -17,6 +17,6 @@ export async function find(c: Context, { client }: RouteContext) {
   if (!vec) {
     return c.json({ error: { message: "vector:number[] required" } }, 400);
   }
-  const hit = client.find(normalizeVector(vec), { expr });
+  const hit = await client.find(normalizeVector(vec), { expr });
   return c.json({ hit });
 }

@@ -9,12 +9,12 @@ import { createOPFSFileIO } from "../../../../../storage/opfs";
 import { connect } from "../../../../../index";
 import type { StorageConfig } from "../../../../../client/indexing";
 import type { VectorDBOptions } from "../../../../../types";
-import type { ClientWithDatabase } from "../../../../../client/index";
+import type { VectorDB } from "../../../../../client/index";
 
 type StorageKind = "node" | "memory" | "opfs";
 
 /** Open a client from a configuration file path. */
-export async function openFromConfig(pathToConfig: string): Promise<ClientWithDatabase<Record<string, unknown>>> {
+export async function openFromConfig(pathToConfig: string): Promise<VectorDB<Record<string, unknown>>> {
   const raw = await readFile(path.resolve(pathToConfig), "utf8");
   type Cfg = {
     index?: { name?: string } & Record<string, unknown>;

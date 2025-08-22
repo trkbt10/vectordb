@@ -13,7 +13,7 @@ import { toNumberArray, normalizeVector } from "../../utils";
 /**
  * Handle PUT /vectors/:id (single upsert).
  */
-export async function putById(c: Context, { client, lock, wal, afterWrite }: RouteContext) {
+export async function putById(c: Context, { client }: RouteContext) {
   const id = ensureNumericId(c, "id");
   const body = await c.req.json<{ vector: number[]; meta?: Record<string, unknown> | null }>();
   const vec = toNumberArray(body?.vector);
@@ -21,11 +21,7 @@ export async function putById(c: Context, { client, lock, wal, afterWrite }: Rou
   if (!vec) {
     return c.json({ error: { message: "vector:number[] required" } }, 400);
   }
-  await lock.runExclusive(async () => {
-    const vector = normalizeVector(vec);
-    await wal.append([{ type: "upsert", id, vector, meta }]);
-    client.set(id, { vector, meta }, { upsert: true });
-    await afterWrite(1);
-  });
+  const vector = normalizeVector(vec);
+  await client.set(id, { vector, meta }, { upsert: true });
   return c.json({ ok: true });
 }

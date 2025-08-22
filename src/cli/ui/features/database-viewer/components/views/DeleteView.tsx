@@ -26,13 +26,13 @@ export function DeleteView({ ctx, onBack }: DeleteViewProps) {
           { label: "Delete", value: "delete" },
           { label: "Back", value: "back" },
         ]}
-        onSelect={(i: { label: string; value: string }) => {
+        onSelect={async (i: { label: string; value: string }) => {
           if (i.value === "back") {
             return onBack();
           }
           try {
             const rid = Number(id);
-            const ok = ctx.client.delete(rid);
+            const ok = await ctx.client.delete(rid);
             setMsg(ok ? "Deleted" : "Not found");
           } catch (e) {
             const m = (e as { message?: unknown })?.message;

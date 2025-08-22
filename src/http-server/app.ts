@@ -7,9 +7,7 @@ import type { AppConfig } from "./types";
 import { applyCors } from "./cors";
 import { mountEmbeddingsRoutes } from "./embeddings";
 import { redactConfig } from "./utils";
-import type { ClientWithDatabase } from "../client";
-import { create_async_lock } from "./lock";
-import { create_wal_runtime } from "./wal_runtime";
+import type { VectorDB } from "../client";
 import type { RouteContext } from "./routes/context";
 /* no direct type import to avoid unused warnings; use inline import() */
 import { getById } from "./routes/vectors/get_by_id";
@@ -26,38 +24,9 @@ import { find as findVector } from "./routes/vectors/find";
  *
  */
 /** Build and return a Hono app exposing REST endpoints over the database. */
-export function createApp(client: ClientWithDatabase<Record<string, unknown>>, cfg: AppConfig) {
+export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppConfig) {
   const app = new Hono();
-  const lock = create_async_lock();
-  const baseName = cfg.name ?? cfg.index?.name ?? "db";
-  const wal = create_wal_runtime({ dir: cfg.server?.wal?.dir ?? ".vectordb/wal", name: baseName });
-  // Replay WAL if present (best-effort)
-  void wal.replayInto(client.state);
-
-  // Auto-save controls
-  const autoOps = Math.max(0, cfg.server?.autoSave?.ops ?? 0);
-  const autoInterval = Math.max(0, cfg.server?.autoSave?.intervalMs ?? 0);
-  const counter = { opCount: 0 } as { opCount: number };
-  if (autoInterval > 0) {
-    const t = setInterval(() => {
-      void lock.runExclusive(async () => {
-        await client.index.saveState(client.state, { baseName });
-        await wal.truncate();
-      });
-    }, autoInterval);
-    // Node only: optionally unref timer if available
-    (t as unknown as { unref?: () => void }).unref?.();
-  }
-  async function afterWrite(nOps: number) {
-    if (autoOps > 0) {
-      counter.opCount += nOps;
-      if (counter.opCount >= autoOps) {
-        counter.opCount = 0;
-        await client.index.saveState(client.state, { baseName });
-        await wal.truncate();
-      }
-    }
-  }
+  const wrapped = client;
 
   app.onError((err: Error & { status?: number }) => {
     const message = err.message ?? String(err);
@@ -74,17 +43,17 @@ export function createApp(client: ClientWithDatabase<Record<string, unknown>>, c
   app.get("/health", (c) => c.json({ ok: true }));
   app.get("/stats", (c) =>
     c.json({
-      size: client.size,
-      dim: client.state.dim,
-      metric: client.state.metric,
-      strategy: client.state.strategy,
+      size: wrapped.size,
+      dim: wrapped.state.dim,
+      metric: wrapped.state.metric,
+      strategy: wrapped.state.strategy,
     }),
   );
   app.get("/config", (c) => c.json(redactConfig(cfg)));
 
   // Existence checkは GET /vectors/:id で 200/404 を利用
 
-  const ctx: RouteContext = { client, lock, wal, baseName, afterWrite };
+  const ctx: RouteContext = { client: wrapped };
   app.get("/vectors/:id", (c) => getById(c, ctx));
 
   app.delete("/vectors/:id", (c) => deleteById(c, ctx));
@@ -113,7 +82,7 @@ export function createApp(client: ClientWithDatabase<Record<string, unknown>>, c
   app.post("/vectors/find", (c) => findVector(c, ctx));
 
   app.post("/save", async (c: Context) => {
-    await client.index.saveState(client.state, { baseName: cfg.name ?? "db" });
+    await wrapped.index.saveState(wrapped.state, { baseName: cfg.name ?? "db" });
     return c.json({ ok: true });
   });
 

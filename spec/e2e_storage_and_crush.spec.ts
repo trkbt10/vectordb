@@ -70,7 +70,7 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
       index: { shards: 2, pgs: 8, segmented: true, includeAnn: false },
     });
     // insert a few rows
-    c.upsert(
+    await c.upsert(
       { id: 1, vector: makeVec(3, 1), meta: { tag: "a" } },
       { id: 2, vector: makeVec(3, 2), meta: { tag: "b" } },
       { id: 3, vector: makeVec(3, 3), meta: null },
@@ -85,7 +85,7 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
       index: { name: "db", shards: 2, pgs: 8, segmented: true, includeAnn: false },
       onMissing: async ({ index }) => index.openState({ baseName: "db" }),
     });
-    const hits = c2.findMany(makeVec(3, 1), { k: 2 });
+    const hits = await c2.findMany(makeVec(3, 1), { k: 2 });
     expect(hits.length).toBeGreaterThan(0);
   });
 
@@ -103,7 +103,7 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
       vector: makeVec(3, i + 1),
       meta: { tag: `t${i}` },
     }));
-    c.upsert(...rows);
+    await c.upsert(...rows);
     await clientB.index.saveState(c.state, { baseName: "db" });
 
     // Expect indexFS contains index artifacts
@@ -122,7 +122,7 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
       index: { name: "db", shards: 2, pgs: 8, segmented: true, includeAnn: true },
       onMissing: async ({ index }) => index.openState({ baseName: "db" }),
     });
-    const out = c2.findMany(makeVec(3, 2), { k: 3 });
+    const out = await c2.findMany(makeVec(3, 2), { k: 3 });
     expect(out.length).toBeGreaterThan(0);
   });
 
@@ -149,7 +149,7 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
       vector: makeVec(4, i + 1),
       meta: { tag: `t${i}` },
     }));
-    c.upsert(...rows);
+    await c.upsert(...rows);
     await clientC.index.saveState(c.state, { baseName: "db" });
 
     const counts: Record<string, number> = {};

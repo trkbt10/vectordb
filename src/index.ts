@@ -40,5 +40,6 @@ export type { FindOptions, FindManyOptions } from "./client/types";
  */
 export type { ClientOptions } from "./client/index";
 export { connect } from "./client/index";
-// Provide both abbreviated and non-abbreviated type names for ergonomics.
-export type { VectorDB as VectorDatabase } from "./client/types";
+// Re-export WAL helpers for convenience
+export { createWalRuntime, encodeWal, decodeWal, applyWal, applyWalWithIndex } from "./wal/index";
+export type { WalRuntime, WalRecord } from "./wal/index";

@@ -28,9 +28,9 @@ describe("persist/FileIO path isolation", () => {
       storage: { index: createNodeFileIO(outRoot), data: createNodeFileIO(outRoot) },
       database: { dim: 2, metric: "cosine", strategy: "bruteforce" },
     });
-    db.set(1, { vector: new Float32Array([1, 0]), meta: { tag: "a" } });
-    db.set(2, { vector: new Float32Array([0, 1]), meta: { tag: "b" } });
-    db.set(3, { vector: new Float32Array([0.5, 0.5]), meta: null });
+    await db.set(1, { vector: new Float32Array([1, 0]), meta: { tag: "a" } });
+    await db.set(2, { vector: new Float32Array([0, 1]), meta: { tag: "b" } });
+    await db.set(3, { vector: new Float32Array([0.5, 0.5]), meta: null });
 
     // bind env with prefixed IO, shards>1 to fan out data dirs
     const client2 = await connect<{ tag?: string }>({
@@ -85,7 +85,7 @@ describe("persist/FileIO path isolation", () => {
         index: { name: "db" },
         onMissing: async ({ index }) => index.openState({ baseName: "db" }),
       });
-      const hits = db2.findMany(new Float32Array([1, 0]), { k: 1 });
+      const hits = await db2.findMany(new Float32Array([1, 0]), { k: 1 });
       expect(hits.length).toBe(1);
       expect([1, 2, 3]).toContain(hits[0].id);
     } finally {

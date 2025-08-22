@@ -12,14 +12,10 @@ import { ensureNumericId } from "../../common/params";
 /**
  * Handle PATCH /vectors/:id/meta.
  */
-export async function patchMeta(c: Context, { client, lock, wal, afterWrite }: RouteContext) {
+export async function patchMeta(c: Context, { client }: RouteContext) {
   const id = ensureNumericId(c, "id");
   const body = await c.req.json<{ meta: Record<string, unknown> | null }>();
   const meta = (body?.meta ?? null) as Record<string, unknown> | null;
-  await lock.runExclusive(async () => {
-    await wal.append([{ type: "setMeta", id, meta }]);
-    client.setMeta(id, meta);
-    await afterWrite(1);
-  });
-  return c.json({ ok: true });
+  const ok = await client.setMeta(id, meta);
+  return c.json({ ok });
 }

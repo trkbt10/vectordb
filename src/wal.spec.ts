@@ -3,7 +3,7 @@
  */
 import { getOne, getMeta, search } from "./attr/ops/core";
 import { createState } from "./attr/state/create";
-import { encodeWal, applyWal, applyWalWithIndex, decodeWal, type WalRecord } from "./wal";
+import { encodeWal, applyWal, applyWalWithIndex, decodeWal, type WalRecord } from "./wal/index";
 import { createAttrIndex } from "./attr/index";
 
 test("WAL encode/apply upsert/remove works", () => {
@@ -24,6 +24,19 @@ test("WAL encode/apply upsert/remove works", () => {
   applyWal(db, encodeWal([{ type: "upsert", id: 1, vector: new Float32Array([1, 0]), meta: null }]));
   const hit = search(db, new Float32Array([1, 0]), { k: 1 })[0];
   expect(hit.id).toBe(1);
+});
+
+test("WAL encodes undefined meta as null (robustness)", () => {
+  const db = createState<{ tag?: string }>({ dim: 2 });
+  // upsert with undefined meta should be treated as null
+  const wal1 = encodeWal([{ type: "upsert", id: 2, vector: new Float32Array([0, 1]), meta: undefined as unknown as null }]);
+  applyWal(db, wal1);
+  expect(getMeta(db, 2)).toBeNull();
+
+  // setMeta with undefined should also be treated as null
+  const wal2 = encodeWal([{ type: "setMeta", id: 2, meta: undefined as unknown as null }]);
+  applyWal(db, wal2);
+  expect(getMeta(db, 2)).toBeNull();
 });
 
 test("decodeWal handles concatenated WAL segments", () => {

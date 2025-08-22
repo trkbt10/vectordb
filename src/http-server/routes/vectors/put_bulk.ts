@@ -5,7 +5,6 @@
 import type { Context } from "hono";
 import type { RouteContext } from "../context";
 import { parseBulkBody, normalizeVector, toNumberArray } from "../../utils";
-import type { WalRecord } from "../../../wal";
 
 /**
  *
@@ -13,7 +12,7 @@ import type { WalRecord } from "../../../wal";
 /**
  * Handle PUT /vectors (bulk upsert).
  */
-export async function putBulk(c: Context, { client, lock, wal, afterWrite }: RouteContext) {
+export async function putBulk(c: Context, { client }: RouteContext) {
   const body = await c.req.json<unknown>();
   const bulk = parseBulkBody(body);
   if (!bulk) {
@@ -21,7 +20,6 @@ export async function putBulk(c: Context, { client, lock, wal, afterWrite }: Rou
   }
   const rows = bulk.rows;
   const prepared: { id: number; vector: Float32Array; meta: Record<string, unknown> | null }[] = [];
-  const walRecs: WalRecord[] = [];
   const createdIds: number[] = [];
   const updatedIds: number[] = [];
   for (const r of rows) {
@@ -33,14 +31,8 @@ export async function putBulk(c: Context, { client, lock, wal, afterWrite }: Rou
     const vector = normalizeVector(vec);
     const meta = (r?.meta ?? null) as Record<string, unknown> | null;
     prepared.push({ id, vector, meta });
-    walRecs.push({ type: "upsert", id, vector, meta });
-    (client.has(id) ? updatedIds : createdIds).push(id);
+    (await client.has(id) ? updatedIds : createdIds).push(id);
   }
-  const count = await lock.runExclusive(async () => {
-    await wal.append(walRecs);
-    const n = client.upsert(...prepared);
-    await afterWrite(prepared.length);
-    return n;
-  });
+  const count = await client.upsert(...prepared);
   return c.json({ ok: true, count, created: createdIds.length, updated: updatedIds.length, createdIds, updatedIds });
 }

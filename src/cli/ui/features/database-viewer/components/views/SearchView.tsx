@@ -39,7 +39,7 @@ export function SearchView({ ctx, onBack }: SearchViewProps) {
               .map((x) => Number(x.trim()))
               .filter((x) => !Number.isNaN(x)),
           );
-          const res = db.findMany(arr, { k: Number(k) || 5 });
+          const res = await db.findMany(arr, { k: Number(k) || 5 });
           setOut(res.map((h) => ({ id: h.id, score: h.score, meta: h.meta })));
         }}
       />

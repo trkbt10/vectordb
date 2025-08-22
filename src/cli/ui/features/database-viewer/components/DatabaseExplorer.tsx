@@ -7,7 +7,7 @@ import { Box } from "ink";
 import { readRegistry, upsertRegistryEntry, discoverConfigs, writeRegistry } from "./registry";
 import type { DatabaseRegistryEntry } from "../../../../../types/registry";
 import { openFromConfig } from "./open_from_config";
-import type { ClientWithDatabase } from "../../../../../client/index";
+import type { VectorDB } from "../../../../../client/index";
 import { Runner } from "../../database-wizard/components/Runner";
 import type { FlowSchema } from "../../database-wizard/components/FlowWizard";
 import { readFile } from "node:fs/promises";
@@ -42,7 +42,7 @@ export function DatabaseExplorer({
 }) {
   const [registry, setRegistry] = useState<DatabaseRegistryEntry[]>([]);
   const [selected, setSelected] = useState<number>(-1);
-  const [client, setClient] = useState<ClientWithDatabase<Record<string, unknown>> | null>(null);
+  const [client, setClient] = useState<VectorDB<Record<string, unknown>> | null>(null);
   const [rows, setRows] = useState<RecordRow[]>([]);
   const [query, setQuery] = useState("");
   const [queryVec, setQueryVec] = useState<Float32Array | null>(null);
@@ -93,21 +93,22 @@ export function DatabaseExplorer({
           .includes(q),
     );
   }, [rows, query]);
-  const filteredVector = useMemo(() => {
-    if (!client) {
-      return rows;
-    }
-    const qv = queryVec ?? null;
-    if (!qv) {
-      return rows;
-    }
-    const hits = client.findMany(qv, { k: Math.min(500, rows.length) });
-    const ids = new Set(hits.map((h) => h.id));
-    const byId = new Map(rows.map((r) => [r.id, r] as const));
-    const ordered = hits.map((h) => byId.get(h.id)).filter((r): r is RecordRow => !!r);
-    const tail = rows.filter((r) => !ids.has(r.id));
-    return [...ordered, ...tail];
+  const [vectorSorted, setVectorSorted] = useState<RecordRow[]>(rows);
+  useEffect(() => {
+    (async () => {
+      if (!client || !queryVec) {
+        setVectorSorted(rows);
+        return;
+      }
+      const hits = await client.findMany(queryVec, { k: Math.min(500, rows.length) });
+      const ids = new Set(hits.map((h) => h.id));
+      const byId = new Map(rows.map((r) => [r.id, r] as const));
+      const ordered = hits.map((h) => byId.get(h.id)).filter((r): r is RecordRow => !!r);
+      const tail = rows.filter((r) => !ids.has(r.id));
+      setVectorSorted([...ordered, ...tail]);
+    })();
   }, [client, rows, queryVec]);
+  const filteredVector = vectorSorted;
 
   // Compute query vector when query or method changes (supports async OpenAI)
   useEffect(() => {

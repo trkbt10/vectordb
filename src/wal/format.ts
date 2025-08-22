@@ -1,39 +1,29 @@
 /**
  * @file Write-Ahead Log (WAL) implementation for crash recovery
- *
- * This module implements a Write-Ahead Log system that ensures durability
- * and crash recovery for VectorDB operations. Key features:
- * - Binary log format with magic number and version for validation
- * - Support for all mutation operations (upsert, remove, setMeta)
- * - Efficient binary encoding with little-endian format
- * - Replay capability to reconstruct database state after crashes
- * - Integration with attribute indexes for complete state recovery
- *
- * The WAL format is designed to be compact yet self-describing, allowing
- * reliable recovery even from partially written logs. Each record includes
- * type information and payload sizes for robust parsing.
- *
- * Format specification:
- * - Header: 'VLWA' (4 bytes), version u32 (1)
- * - Records: type u8, reserved u8, id u32, metaLen u32, vecLen u32, meta JSON bytes, vec bytes
- * - Types: 1=upsert, 2=remove, 3=setMeta
+ * Provides WAL binary format helpers and application routines.
  */
-
-import { add, remove, setMeta } from "./attr/ops/core";
-import type { AttrIndex, Attrs } from "./attr/index";
-import type { VectorStoreState } from "./types";
+import { add, remove, setMeta } from "../attr/ops/core";
+import {
+  WalTooShortError,
+  WalHeaderTruncatedError,
+  WalBadMagicError,
+  WalUnsupportedVersionError,
+  WalTruncatedRecordError,
+  WalDecodeError,
+} from "./errors";
+import type { AttrIndex, Attrs } from "../attr/index";
+import type { VectorStoreState } from "../types";
 
 const MAGIC = 0x564c5741; // 'VLWA'
 const VERSION = 1;
 
+/** WAL record union used by encoder/decoder. */
 export type WalRecord =
   | { type: "upsert"; id: number; vector: Float32Array; meta: unknown | null }
   | { type: "remove"; id: number }
   | { type: "setMeta"; id: number; meta: unknown | null };
 
-/**
- *
- */
+/** Encode WAL records into a binary segment (with header). */
 export function encodeWal(records: WalRecord[]): Uint8Array {
   const parts: Uint8Array[] = [];
   const header = new Uint8Array(8);
@@ -48,26 +38,25 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
       dv2.setUint8(0, 2);
       dv2.setUint8(1, 0);
       dv2.setUint32(2, r.id >>> 0, true);
-      dv2.setUint32(6, 0, true); // metaLen=0
-      dv2.setUint32(10, 0, true); // vecLen=0
+      dv2.setUint32(6, 0, true);
+      dv2.setUint32(10, 0, true);
       parts.push(rec);
       continue;
     }
     if (r.type === "setMeta") {
-      const metaBytes = new TextEncoder().encode(JSON.stringify(r.meta));
+      const metaBytes = new TextEncoder().encode(JSON.stringify(r.meta ?? null));
       const rec = new Uint8Array(1 + 1 + 4 + 4 + 4 + metaBytes.length);
       const dv2 = new DataView(rec.buffer);
       dv2.setUint8(0, 3);
       dv2.setUint8(1, 0);
       dv2.setUint32(2, r.id >>> 0, true);
       dv2.setUint32(6, metaBytes.length >>> 0, true);
-      dv2.setUint32(10, 0, true); // vecLen=0
+      dv2.setUint32(10, 0, true);
       rec.set(metaBytes, 14);
       parts.push(rec);
       continue;
     }
-    // upsert
-    const metaBytes = new TextEncoder().encode(JSON.stringify(r.meta));
+    const metaBytes = new TextEncoder().encode(JSON.stringify(r.meta ?? null));
     const vecBytes = new Uint8Array(
       r.vector.buffer.slice(r.vector.byteOffset, r.vector.byteOffset + r.vector.byteLength),
     );
@@ -82,14 +71,13 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
     rec.set(vecBytes, 14 + metaBytes.length);
     parts.push(rec);
   }
-  // concat
-  // eslint-disable-next-line no-restricted-syntax -- accumulate output size before allocation
+  // eslint-disable-next-line no-restricted-syntax -- accumulating output size
   let total = 0;
   for (const p of parts) {
     total += p.length;
   }
   const out = new Uint8Array(total);
-  // eslint-disable-next-line no-restricted-syntax -- track write offset while concatenating parts
+  // eslint-disable-next-line no-restricted-syntax -- tracking offset during concat
   let off = 0;
   for (const p of parts) {
     out.set(p, off);
@@ -98,36 +86,31 @@ export function encodeWal(records: WalRecord[]): Uint8Array {
   return out;
 }
 
-/**
- *
- */
+/** Decode a WAL buffer into records. Supports concatenated segments. */
 export function decodeWal(u8: Uint8Array): WalRecord[] {
   if (u8.length < 8) {
-    throw new Error("wal too short");
+    throw new WalTooShortError();
   }
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
-  // eslint-disable-next-line no-restricted-syntax -- track parse offset while decoding
+  // eslint-disable-next-line no-restricted-syntax -- parser offset state
   let off = 0;
-  // allow multiple concatenated WAL segments (each starts with header)
   function readHeader(at: number): number {
     if (at + 8 > u8.length) {
-      throw new Error("truncated wal header");
+      throw new WalHeaderTruncatedError();
     }
     const mg = dv.getUint32(at, true);
     if (mg !== MAGIC) {
-      throw new Error("bad wal magic");
+      throw new WalBadMagicError();
     }
     const ver = dv.getUint32(at + 4, true);
     if (ver !== VERSION) {
-      throw new Error("unsupported wal version");
+      throw new WalUnsupportedVersionError();
     }
     return at + 8;
   }
-  // initial header
   off = readHeader(0);
   const out: WalRecord[] = [];
   while (off < u8.length) {
-    // If a new segment header starts here, skip it and continue
     if (off + 8 <= u8.length && dv.getUint32(off, true) === MAGIC && dv.getUint32(off + 4, true) === VERSION) {
       off = readHeader(off);
       if (off >= u8.length) {
@@ -143,13 +126,18 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
     off += 4;
     const vecLen = dv.getUint32(off, true);
     off += 4;
-    // eslint-disable-next-line no-restricted-syntax -- mutable meta during decode loop
-    let meta: unknown | null = null;
-    if (metaLen > 0) {
-      const mb = u8.subarray(off, off + metaLen);
-      off += metaLen;
-      meta = JSON.parse(new TextDecoder().decode(mb));
+    // bounds check for meta block
+    if (metaLen >>> 0 !== metaLen || off + metaLen > u8.length) {
+      throw new WalTruncatedRecordError("meta");
     }
+    const meta: unknown | null = (() => {
+      if (metaLen > 0) {
+        const mb = u8.subarray(off, off + metaLen);
+        off += metaLen;
+        return JSON.parse(new TextDecoder().decode(mb));
+      }
+      return null;
+    })();
     if (type === 2) {
       out.push({ type: "remove", id });
       continue;
@@ -159,18 +147,21 @@ export function decodeWal(u8: Uint8Array): WalRecord[] {
       continue;
     }
     if (type === 1 && vecLen > 0) {
+      if (vecLen >>> 0 !== vecLen || off + vecLen > u8.length) {
+        throw new WalTruncatedRecordError("vector");
+      }
       const vb = u8.subarray(off, off + vecLen);
       off += vecLen;
       const vector = new Float32Array(vb.buffer.slice(vb.byteOffset, vb.byteOffset + vb.byteLength));
       out.push({ type: "upsert", id, vector, meta });
       continue;
     }
-    throw new Error("wal decode error: unknown type or missing vector");
+    throw new WalDecodeError();
   }
   return out;
 }
 
-/** Apply a WAL buffer to a VectorDB instance (idempotent upserts). */
+/** Apply WAL to a VectorStoreState (idempotent upserts). */
 export function applyWal<TMeta>(vl: VectorStoreState<TMeta>, walBytes: Uint8Array): void {
   const records = decodeWal(walBytes);
   for (const r of records) {
@@ -188,9 +179,7 @@ export function applyWal<TMeta>(vl: VectorStoreState<TMeta>, walBytes: Uint8Arra
 
 export type MetaToAttrs<TMeta> = (meta: TMeta | null) => Attrs | null;
 
-/**
- * Apply WAL and keep an attribute index in sync using a projector from meta to attrs.
- */
+/** Apply WAL and keep attribute index in sync via projector. */
 export function applyWalWithIndex<TMeta>(
   vl: VectorStoreState<TMeta>,
   walBytes: Uint8Array,
@@ -210,7 +199,6 @@ export function applyWalWithIndex<TMeta>(
       index.setAttrs(r.id, projector(meta));
       continue;
     }
-    // upsert
     const meta = r.meta as TMeta | null;
     add(vl, r.id, r.vector, meta, { upsert: true });
     index.setAttrs(r.id, projector(meta));

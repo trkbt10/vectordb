@@ -1,7 +1,7 @@
 /**
  * @file Node.js file system storage adapter for VectorDB
  */
-import { writeFile, readFile, rename, mkdir, rm } from "node:fs/promises";
+import { readFile, rename, mkdir, rm, open } from "node:fs/promises";
 import { dirname, join as joinPath } from "node:path";
 import type { FileIO } from "./types";
 import { toUint8 } from "./types";
@@ -22,19 +22,48 @@ export function createNodeFileIO(baseDir: string): FileIO {
     async write(path: string, data) {
       const full = joinPath(baseDir, path);
       await ensureDir(full);
-      await writeFile(full, toUint8(data));
+      const fd = await open(full, "w");
+      try {
+        await fd.writeFile(toUint8(data));
+        await fd.sync();
+      } finally {
+        await fd.close();
+      }
     },
     async append(path: string, data) {
       const full = joinPath(baseDir, path);
       await ensureDir(full);
-      await writeFile(full, toUint8(data), { flag: "a" as unknown as undefined });
+      const fd = await open(full, "a");
+      try {
+        await fd.writeFile(toUint8(data));
+        await fd.sync();
+      } finally {
+        await fd.close();
+      }
     },
     async atomicWrite(path: string, data) {
       const full = joinPath(baseDir, path);
       await ensureDir(full);
       const tmp = `${full}.tmp`;
-      await writeFile(tmp, toUint8(data));
+      const fd = await open(tmp, "w");
+      try {
+        await fd.writeFile(toUint8(data));
+        await fd.sync();
+      } finally {
+        await fd.close();
+      }
       await rename(tmp, full);
+      // Best-effort: sync parent directory to persist rename on some filesystems
+      try {
+        const dirFd = await open(dirname(full), "r");
+        try {
+          await dirFd.sync();
+        } finally {
+          await dirFd.close();
+        }
+      } catch {
+        // ignore directory fsync errors
+      }
     },
     async del(path: string) {
       const full = joinPath(baseDir, path);

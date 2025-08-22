@@ -18,6 +18,6 @@ export async function search(c: Context, { client }: RouteContext) {
   if (!vec) {
     return c.json({ error: { message: "vector:number[] required" } }, 400);
   }
-  const hits = client.findMany(normalizeVector(vec), { k: Number.isFinite(k) ? Math.max(1, k) : 5, expr });
+  const hits = await client.findMany(normalizeVector(vec), { k: Number.isFinite(k) ? Math.max(1, k) : 5, expr });
   return c.json({ hits });
 }

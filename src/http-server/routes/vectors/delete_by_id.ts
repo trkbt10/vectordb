@@ -6,20 +6,14 @@
 import type { Context } from "hono";
 import type { RouteContext } from "../context";
 import { ensureNumericId } from "../../common/params";
-import type { WalRecord } from "../../../wal";
 
 /**
  * Handle DELETE /vectors/:id.
  * @param c - Hono context (provides path params and respond helpers)
  * @param client - Route context: database client, WAL, lock, etc
  */
-export async function deleteById(c: Context, { client, lock, wal, afterWrite }: RouteContext) {
+export async function deleteById(c: Context, { client }: RouteContext) {
   const id = ensureNumericId(c, "id");
-  await lock.runExclusive(async () => {
-    const rec: WalRecord = { type: "remove", id };
-    await wal.append([rec]);
-    client.delete(id);
-    await afterWrite(1);
-  });
-  return c.json({ ok: true, deleted: true });
+  const ok = await client.delete(id);
+  return c.json({ ok, deleted: ok });
 }
