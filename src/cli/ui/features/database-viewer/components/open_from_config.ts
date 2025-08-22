@@ -63,5 +63,8 @@ export async function openFromConfig(pathToConfig: string): Promise<VectorDB<Rec
     } as const;
   }
   const extra = resolveExtra();
-  return await connect<Record<string, unknown>>({ storage, index: { name, ...(cfg.index ?? {}) }, ...extra });
+  if ("database" in extra) {
+    return await connect<Record<string, unknown>>({ storage, index: { name, ...(cfg.index ?? {}) }, database: extra.database });
+  }
+  return await connect<Record<string, unknown>>({ storage, index: { name, ...(cfg.index ?? {}) } }, { onMissing: extra.onMissing });
 }

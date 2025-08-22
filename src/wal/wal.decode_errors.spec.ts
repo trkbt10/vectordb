@@ -1,7 +1,7 @@
 /**
  * @file WAL decode error-path tests
  */
-import { decodeWal } from "./wal/index";
+import { decodeWal } from "./index";
 
 test("decodeWal throws on short buffer (< header)", () => {
   const tooShort = new Uint8Array([1, 2, 3, 4, 5, 6, 7]);

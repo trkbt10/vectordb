@@ -12,34 +12,30 @@ import type { FileIO } from "../storage/types";
 import type { VectorDBOptions } from "../types";
 import { createState } from "../attr/state/create";
 import { createWalRuntime } from "../wal/index";
+import { createAutoSaveAfterWrite } from "./autosave";
 export type { VectorDB } from "./types";
 export type { ClientOptions };
-
-/**
- * Client facade with persistence helpers attached.
- * Why: keep in-memory DB surface small while composing persistence ops explicitly.
- */
-// VectorDB already includes index; no additional base type needed
-
-// VectorDB<TMeta> is the unified async client surface
 
 /**
  * Connect options.
  * Why: prefer a single knex-like entry that always tries to open first; only creates when truly absent.
  */
 export type ConnectOptions<TMeta> = {
-  storage: StorageConfig;
-  database?: VectorDBOptions;
-  index?: ClientOptions & { name?: string };
+  /** Only state policy should remain here */
   onMissing?: (ctx: {
     create: <U extends Record<string, unknown>>(opts: VectorDBOptions) => VectorStoreState<U>;
     index: IndexOps<TMeta>;
     name: string;
   }) => Promise<VectorStoreState<TMeta>> | VectorStoreState<TMeta>;
-  // WAL + persistence policies (optional)
-  wal?: { io?: FileIO; name?: string };
-  afterWrite?: (nOps: number) => Promise<void> | void;
+};
+
+export type ConnectDeps<TMeta> = {
+  storage: StorageConfig;
+  database?: VectorDBOptions;
+  index?: ClientOptions & { name?: string };
+  wal?: { io: FileIO; name: string };
   lock?: AsyncLock;
+  autoSave?: { ops?: number; intervalMs?: number };
 };
 
 function isMissingStateError(e: unknown): boolean {
@@ -83,23 +79,32 @@ async function resolveState<TMeta>(
  * Connect to a vector DB snapshot.
  * Why: a single, predictable init path — attempt to open existing by name, else delegate creation.
  */
-export async function connect<TMeta extends Record<string, unknown>>({
-  storage,
-  database: databaseOptions,
-  index: indexOpts = {},
-  onMissing,
-  wal,
-  afterWrite,
-  lock,
-}: ConnectOptions<TMeta>): Promise<VectorDB<TMeta>> {
+export async function connect<TMeta extends Record<string, unknown>>(
+  deps: ConnectDeps<TMeta>,
+  opts?: ConnectOptions<TMeta>,
+): Promise<VectorDB<TMeta>> {
+  const { storage, database: databaseOptions, index: indexOpts = {}, wal, autoSave, lock } = deps;
   const name = (indexOpts as { name?: string })?.name ?? "db";
   const indexOperations = createIndexOps<TMeta>(storage, indexOpts);
-  const state = await resolveState<TMeta>(name, indexOperations, databaseOptions, onMissing);
+  const state = await resolveState<TMeta>(name, indexOperations, databaseOptions, opts?.onMissing);
   const walIO = wal?.io ?? storage.index;
   const walName = wal?.name ?? `${name}.wal`;
   const rt = createWalRuntime(walIO, walName);
   const lk = lock ?? createAsyncLock();
-  const wrapped = createDatabaseFromState<TMeta>(state, indexOperations, { wal: rt, lock: lk, afterWrite });
+  // Autosave policy: encapsulated in dedicated helper
+  const { afterWrite: autoAfterWrite } = createAutoSaveAfterWrite(
+    indexOperations,
+    state,
+    rt,
+    lk,
+    name,
+    autoSave,
+  );
+  const wrapped = createDatabaseFromState<TMeta>(state, indexOperations, {
+    wal: rt,
+    lock: lk,
+    afterWrite: autoAfterWrite,
+  });
   void rt.replayInto(wrapped.state);
   return wrapped;
 }

@@ -13,12 +13,15 @@ export type CorsOptions =
       credentials?: boolean;
     };
 
+import type { FileIO } from "../storage/types";
+
 export type ServerOptions = {
   port?: number;
   host?: string;
   strictPort?: boolean;
   cors?: CorsOptions;
-  wal?: { dir?: string };
+  /** Optional WAL binding for server; explicit io+name required when provided */
+  wal?: { io: FileIO; name: string };
   autoSave?: { ops?: number; intervalMs?: number };
   embeddings?: {
     provider?: "openai";
@@ -36,15 +39,12 @@ export type ServerOptions = {
 };
 
 import type { VectorDBOptions } from "../types";
-import type { ClientOptions } from "../client/indexing";
-
-export type NodeStorageConfig = { type: "node"; indexRoot: string; dataRoot: string };
-export type MemoryStorageConfig = { type: "memory" };
-export type StorageConfigInput = NodeStorageConfig | MemoryStorageConfig;
+import type { ClientOptions, StorageConfig } from "../client/indexing";
 
 export type AppConfig = {
   name?: string;
-  storage?: StorageConfigInput;
+  /** Concrete FileIOs required; no implicit resolution */
+  storage?: StorageConfig;
   database?: VectorDBOptions;
   index?: ClientOptions & { name?: string };
   server?: ServerOptions;

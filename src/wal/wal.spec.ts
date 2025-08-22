@@ -1,10 +1,10 @@
 /**
  * @file Unit tests for Write-Ahead Log (WAL) functionality
  */
-import { getOne, getMeta, search } from "./attr/ops/core";
-import { createState } from "./attr/state/create";
-import { encodeWal, applyWal, applyWalWithIndex, decodeWal, type WalRecord } from "./wal/index";
-import { createAttrIndex } from "./attr/index";
+import { getOne, getMeta, search } from "../attr/ops/core";
+import { createState } from "../attr/state/create";
+import { encodeWal, applyWal, applyWalWithIndex, decodeWal, type WalRecord } from "./index";
+import { createAttrIndex } from "../attr/index";
 
 test("WAL encode/apply upsert/remove works", () => {
   const db = createState<{ tag?: string }>({ dim: 2 });
