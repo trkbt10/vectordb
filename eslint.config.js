@@ -8,8 +8,8 @@ import importPlugin from "eslint-plugin-import";
 import jsdocPlugin from "eslint-plugin-jsdoc";
 import eslintComments from "eslint-plugin-eslint-comments";
 import prettierConfig from "eslint-config-prettier";
-import ternaryLength from "./eslint-rules/ternary-length.ts";
-import noAndAsTernary from "./eslint-rules/no-and-as-ternary.ts";
+import ternaryLength from "./eslint-rules/ternary-length";
+import noAndAsTernary from "./eslint-rules/no-and-as-ternary";
 
 export default [
   // Ignore patterns
