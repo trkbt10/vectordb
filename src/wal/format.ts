@@ -223,14 +223,14 @@ export function verifyWal(u8: Uint8Array): {
     // Decode to ensure structural correctness
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- decode for side-effects (verification)
     const _ = decodeWal(body);
-    if (ck.has) {
-      const computed = crc32(body);
-      res.checksum = { present: true, ok: computed === ck.value, value: ck.value, computed };
-      if (computed !== ck.value) {
-        res.ok = false;
-      }
-    } else {
+    if (!ck.has) {
       res.checksum = { present: false };
+      return res;
+    }
+    const computed = crc32(body);
+    res.checksum = { present: true, ok: computed === ck.value, value: ck.value, computed };
+    if (computed !== ck.value) {
+      res.ok = false;
     }
   } catch (e) {
     res.ok = false;

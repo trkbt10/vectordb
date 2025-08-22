@@ -8,6 +8,10 @@ import type { AsyncLock } from "../util/async_lock";
 
 export type AutoSaveOptions = { ops?: number; intervalMs?: number } | undefined;
 
+/**
+ * Create an autosave hook that persists the current state to index storage.
+ * Triggers by op-count and/or elapsed interval; truncates WAL after save.
+ */
 export function createAutoSaveAfterWrite<TMeta>(
   indexOps: IndexOps<TMeta>,
   state: VectorStoreState<TMeta>,
@@ -62,4 +66,3 @@ export function createAutoSaveAfterWrite<TMeta>(
 
   return { afterWrite, dispose };
 }
-

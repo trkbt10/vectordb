@@ -29,7 +29,7 @@ export type ConnectOptions<TMeta> = {
   }) => Promise<VectorStoreState<TMeta>> | VectorStoreState<TMeta>;
 };
 
-export type ConnectDeps<TMeta> = {
+export type ConnectDeps = {
   storage: StorageConfig;
   database?: VectorDBOptions;
   index?: ClientOptions & { name?: string };
@@ -80,7 +80,7 @@ async function resolveState<TMeta>(
  * Why: a single, predictable init path — attempt to open existing by name, else delegate creation.
  */
 export async function connect<TMeta extends Record<string, unknown>>(
-  deps: ConnectDeps<TMeta>,
+  deps: ConnectDeps,
   opts?: ConnectOptions<TMeta>,
 ): Promise<VectorDB<TMeta>> {
   const { storage, database: databaseOptions, index: indexOpts = {}, wal, autoSave, lock } = deps;
