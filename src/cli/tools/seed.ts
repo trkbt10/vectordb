@@ -74,7 +74,7 @@ async function main() {
       group: `g${axis}`, // group by axis for simple segmentation
       bucket: `b${(i % Math.min(rows, 64)).toString(36)}`,
     } as const;
-    client.set(id, { vector: vec, meta }, { upsert: true });
+    await client.set(id, { vector: vec, meta }, { upsert: true });
   }
   // Persist state so subsequent opens can see the data
   await client.index.saveState(client.state, { baseName: baseName! });
