@@ -77,57 +77,60 @@ export function createStorageFromRaw(
     throw new Error(`No index resolver for scheme: ${idxURL.protocol}`);
   }
 
-  const resolveData = (() => {
-    const dataCfg = raw.data;
-    const makeFromTemplate = (template: string, ns: string): FileIO => {
-      const replaced = template.indexOf("{ns}") !== -1 ? template.split("{ns}").join(ns) : template;
-      const url = toURL(replaced);
-      const scheme = url.protocol.replace(":", "");
-      const prov = registry[scheme];
-      if (!prov) {
-        throw new Error(`No resolver for scheme: ${url.protocol}`);
-      }
-      if (prov.dataFactory) {
-        const out = prov.dataFactory(url, ns);
-        return out;
-      }
-      if (prov.indexFactory) {
-        const out = prov.indexFactory(url);
-        return out;
-      }
-      throw new Error(`No data/index factory for scheme: ${url.protocol}`);
-    };
-    if (typeof dataCfg === "string") {
-      return (ns: string) => makeFromTemplate(dataCfg, ns);
-    }
-    const cache = new Map<string, FileIO>();
-    const entries = Object.entries(dataCfg);
-    for (const [, v] of entries) {
-      if (typeof v !== "string") {
-        throw new Error("storage.data map values must be strings (URIs)");
-      }
-    }
-    return (ns: string) => {
-      const uri = (() => {
-        for (const [k, v] of entries) {
-          if (k === ns) {
-            return v;
-          }
-        }
-        return undefined;
-      })();
-      if (!uri) {
-        throw new Error(`No data URI configured for target key '${ns}'`);
-      }
-      const existing = cache.get(ns);
-      if (existing) {
-        return existing;
-      }
-      const created = makeFromTemplate(uri, ns);
-      cache.set(ns, created);
-      return created;
-    };
-  })();
+  const resolveData = createDataResolverFromRaw(raw.data, registry);
 
   return { index: idxFactory(idxURL), data: resolveData };
+}
+
+/** Create a DataIO resolver from raw URI template or map. */
+export function createDataResolverFromRaw(
+  dataCfg: string | Record<string, string>,
+  registry: IORegistry,
+): (ns: string) => FileIO {
+  const makeFromTemplate = (template: string, ns: string): FileIO => {
+    const replaced = template.indexOf("{ns}") !== -1 ? template.split("{ns}").join(ns) : template;
+    const url = toURL(replaced);
+    const scheme = url.protocol.replace(":", "");
+    const prov = registry[scheme];
+    if (!prov) {
+      throw new Error(`No resolver for scheme: ${url.protocol}`);
+    }
+    if (prov.dataFactory) {
+      return prov.dataFactory(url, ns);
+    }
+    if (prov.indexFactory) {
+      return prov.indexFactory(url);
+    }
+    throw new Error(`No data/index factory for scheme: ${url.protocol}`);
+  };
+  if (typeof dataCfg === "string") {
+    return (ns: string) => makeFromTemplate(dataCfg, ns);
+  }
+  const cache = new Map<string, FileIO>();
+  const entries = Object.entries(dataCfg);
+  for (const [, v] of entries) {
+    if (typeof v !== "string") {
+      throw new Error("storage.data map values must be strings (URIs)");
+    }
+  }
+  return (ns: string) => {
+    const uri = (() => {
+      for (const [k, v] of entries) {
+        if (k === ns) {
+          return v;
+        }
+      }
+      return undefined;
+    })();
+    if (!uri) {
+      throw new Error(`No data URI configured for target key '${ns}'`);
+    }
+    const existing = cache.get(ns);
+    if (existing) {
+      return existing;
+    }
+    const created = makeFromTemplate(uri, ns);
+    cache.set(ns, created);
+    return created;
+  };
 }
