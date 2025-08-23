@@ -87,6 +87,11 @@ export default [
             message: "export * as is prohibited",
           },
           {
+            selector: "ExportAllDeclaration",
+            message: "export * from ... は使用禁止です。明示的に export してください。",
+          },
+
+          {
             selector: "ClassDeclaration",
             message: "Class implementation is not recommended. Please write as function-based as much as possible.",
           },

@@ -52,7 +52,9 @@
     "test": "vitest",
     "test:cov": "vitest run --coverage",
     "cli": "bun run src/cli/main.tsx",
-    "serve": "node dist/http-server/index.cjs --config vectordb.config.json"
+    "serve": "node dist/http-server/index.cjs --config vectordb.config.json",
+    "validate:config": "bun run src/cli/tools/validate_config.ts",
+    "doc:compile": "node bin/doc-compile.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
