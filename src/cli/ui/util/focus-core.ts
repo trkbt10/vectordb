@@ -22,10 +22,12 @@ export class FocusTree {
   private activeId: MaybeId;
   private nodes = new Map<FocusId, Node>();
   private kids = new Map<MaybeId, FocusId[]>();
+  private initialRoot: MaybeId;
 
   constructor(initialFocus?: FocusId) {
     this.focusId = initialFocus;
     this.activeId = undefined;
+    this.initialRoot = initialFocus;
   }
 
   register(id: FocusId, parentId?: FocusId): () => void {
@@ -69,14 +71,13 @@ export class FocusTree {
       return;
     }
     const parent = this.nodes.get(cur)?.parentId;
-    const grand = parent ? this.nodes.get(parent)?.parentId : undefined;
-    // Bubble to parent only if it has its own parent (avoid activating root-level)
-    if (grand) {
+    // Bubble to parent unless parent is the initial root container
+    if (parent && parent !== this.initialRoot) {
       this.activeId = parent;
       this.focusId = parent;
       return;
     }
-    // Leaving root-level: clear active and keep focus on the child we left
+    // Don't activate the initial root; clear active and keep focus on current
     this.activeId = undefined;
     this.focusId = cur;
   }
