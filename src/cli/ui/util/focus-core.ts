@@ -60,14 +60,15 @@ export class FocusTree {
     }
     const parent = this.nodes.get(cur)?.parentId;
     const grand = parent ? this.nodes.get(parent)?.parentId : undefined;
-    // Bubble to parent if exists; when leaving root-level, keep focus on the child we left
+    // Bubble to parent only if it has its own parent (avoid activating root-level)
     if (grand) {
       this.activeId = parent;
       this.focusId = parent;
-    } else {
-      this.activeId = undefined;
-      this.focusId = cur; // keep selection on the child to allow sibling navigation
+      return;
     }
+    // Leaving root-level: clear active and keep focus on the child we left
+    this.activeId = undefined;
+    this.focusId = cur;
   }
 
   nextSibling(): void {

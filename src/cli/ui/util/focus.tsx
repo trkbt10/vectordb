@@ -102,8 +102,15 @@ export function FocusProvider({ children, initialFocus }: { children: React.Reac
       return;
     }
     const parent = nodesRef.current.get(cur)?.parentId;
-    setActiveId(parent);
-    setFocusId(parent ?? focusId);
+    const grand = parent ? nodesRef.current.get(parent)?.parentId : undefined;
+    if (grand) {
+      setActiveId(parent);
+      setFocusId(parent);
+      return;
+    }
+    // Leaving root-level: clear active and keep focus on the child we left
+    setActiveId(undefined);
+    setFocusId(cur);
   };
 
   const isFocused = (id: FocusId) => focusId === id;

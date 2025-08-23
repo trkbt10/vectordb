@@ -182,9 +182,11 @@ function ExplorerInner({
     setRowIdx((i) => (pageRows.length === 0 ? 0 : Math.min(i, pageRows.length - 1)));
   }, [filtered.length, pageRows.length]);
 
-  let footerNode: React.ReactNode = null;
-  if (!wizard.running) {
-    footerNode = (
+  const footerNode: React.ReactNode = (() => {
+    if (wizard.running) {
+      return null;
+    }
+    return (
       <FooterBar
         status={status}
         total={rows.length}
@@ -198,7 +200,7 @@ function ExplorerInner({
         hovered={footerF.isFocused && !footerF.isActive}
       />
     );
-  }
+  })();
   useFooter(footerNode);
 
   const handleFooterAction = React.useCallback(
@@ -243,9 +245,9 @@ function ExplorerInner({
       if (input === "\t") {
         if (key.shift) {
           prevSibling();
-        } else {
-          nextSibling();
+          return;
         }
+        nextSibling();
         return;
       }
       if (input === "h" || input === "k" || key.leftArrow || key.upArrow) {
@@ -340,13 +342,11 @@ function ExplorerInner({
         if (footerActions.length === 0) {
           return;
         }
-        let i = footerIdx;
-        for (let k = 0; k < footerActions.length; k++) {
-          i = Math.min(Math.max(0, i + dir), footerActions.length - 1);
-          if (!skipFooter(footerActions[i]?.value)) {
-            setFooterIdx(i);
-            return;
-          }
+        const indices = footerActions.map((_, idx) => idx);
+        const candidates = dir === 1 ? indices.slice(footerIdx + 1) : indices.slice(0, footerIdx).reverse();
+        const next = candidates.find((idx) => !skipFooter(footerActions[idx]?.value));
+        if (next !== undefined) {
+          setFooterIdx(next);
         }
       };
       if (key.leftArrow) {

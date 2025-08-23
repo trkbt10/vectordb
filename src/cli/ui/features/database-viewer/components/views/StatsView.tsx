@@ -20,10 +20,20 @@ export function StatsView({ ctx, onBack }: StatsViewProps) {
     setReady(true);
   }, [ctx]);
   const items = [{ label: "Back", value: "back" }];
-  let body: React.ReactNode;
-  if (ready) {
-    body = (
-      <>
+  if (!ready) {
+    return (
+      <Dialog open={true} title="Stats / Diagnose" width={60}>
+        <Box flexDirection="column">
+          <Text>
+            <Spinner type="dots" /> Loading...
+          </Text>
+        </Box>
+      </Dialog>
+    );
+  }
+  return (
+    <Dialog open={true} title="Stats / Diagnose" width={60}>
+      <Box flexDirection="column">
         <Text>Dim: {ctx.client.state.dim}</Text>
         <Text>Metric: {ctx.client.state.metric}</Text>
         <Text>Strategy: {ctx.client.state.strategy}</Text>
@@ -31,18 +41,7 @@ export function StatsView({ ctx, onBack }: StatsViewProps) {
         <Box marginTop={1}>
           <SelectInput items={items} onSelect={() => onBack()} />
         </Box>
-      </>
-    );
-  } else {
-    body = (
-      <Text>
-        <Spinner type="dots" /> Loading...
-      </Text>
-    );
-  }
-  return (
-    <Dialog open={true} title="Stats / Diagnose" width={60}>
-      <Box flexDirection="column">{body}</Box>
+      </Box>
     </Dialog>
   );
 }
