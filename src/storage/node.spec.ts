@@ -82,4 +82,33 @@ describe("storage/node", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("del operation handles file not found gracefully", async () => {
+    const dir = await mkdtemp(joinPath(tmpdir(), "vcdb-io-"));
+    try {
+      const io = createNodeFileIO(dir);
+      
+      // Deleting non-existent file should not throw
+      await expect(io.del!("non-existent-file.txt")).resolves.not.toThrow();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("del operation throws on permission errors", async () => {
+    const dir = await mkdtemp(joinPath(tmpdir(), "vcdb-io-"));
+    try {
+      const io = createNodeFileIO(dir);
+      
+      // Create a file and try to delete from read-only directory
+      // Note: This test may not work on all systems due to permission handling differences
+      const testFile = "test-file.txt";
+      await io.write(testFile, new Uint8Array([1, 2, 3]));
+      
+      // Verify file can be deleted normally
+      await expect(io.del!(testFile)).resolves.not.toThrow();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

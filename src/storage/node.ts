@@ -16,6 +16,14 @@ function isRetryableError(error: unknown): boolean {
   return fsError.code === "EBUSY" || fsError.code === "EMFILE" || fsError.code === "ENFILE";
 }
 
+function isFileNotFoundError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const fsError = error as FileSystemError;
+  return fsError.code === "ENOENT";
+}
+
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -70,12 +78,26 @@ async function syncParentDirectory(filePath: string): Promise<void> {
   }
 }
 
-async function cleanupTempFile(tmpPath: string): Promise<void> {
+async function safeDelete(filePath: string, options: { silent?: boolean } = {}): Promise<void> {
   try {
-    await rm(tmpPath, { force: true });
-  } catch {
-    // Ignore cleanup errors
+    await rm(filePath, { force: true });
+  } catch (error) {
+    if (isFileNotFoundError(error)) {
+      // File doesn't exist - this is fine for delete operation
+      return;
+    }
+    if (options.silent) {
+      // Log error but don't throw (for cleanup operations)
+      console.warn(`Failed to delete file ${filePath}:`, error);
+      return;
+    }
+    // Re-throw other errors (permission denied, etc.)
+    throw error;
   }
+}
+
+async function cleanupTempFile(tmpPath: string): Promise<void> {
+  await safeDelete(tmpPath, { silent: true });
 }
 
 /** Prefixed Node FileIO. Why: keep all artifacts under a base directory. */
@@ -129,11 +151,7 @@ export function createNodeFileIO(baseDir: string): FileIO {
     },
     async del(path: string) {
       const full = joinPath(baseDir, path);
-      try {
-        await rm(full, { force: true });
-      } catch {
-        // Ignore errors - file may not exist
-      }
+      await safeDelete(full);
     },
   };
 }
