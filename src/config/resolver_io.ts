@@ -55,9 +55,12 @@ export function toURL(u: string): URL {
     if (hasScheme) {
       return new URL(u);
     }
-    return new URL(`file:${u}`);
+    // Resolve bare paths relative to CWD to avoid file:///. prefixes
+    const abs = path.resolve(u);
+    return new URL(`file:${abs}`);
   } catch {
-    return new URL(`file:${u}`);
+    const abs = path.resolve(u);
+    return new URL(`file:${abs}`);
   }
 }
 
@@ -88,12 +91,17 @@ export function createDataResolverFromRaw(
   registry: IORegistry,
 ): (ns: string) => FileIO {
   const makeFromTemplate = (template: string, ns: string): FileIO => {
-    const replaced = template.indexOf("{ns}") !== -1 ? template.split("{ns}").join(ns) : template;
+    const hadNs = template.indexOf("{ns}") !== -1;
+    const replaced = hadNs ? template.split("{ns}").join(ns) : template;
     const url = toURL(replaced);
     const scheme = url.protocol.replace(":", "");
     const prov = registry[scheme];
     if (!prov) {
       throw new Error(`No resolver for scheme: ${url.protocol}`);
+    }
+    // If template already injected ns, treat as a concrete location (indexFactory)
+    if (hadNs && prov.indexFactory) {
+      return prov.indexFactory(url);
     }
     if (prov.dataFactory) {
       return prov.dataFactory(url, ns);
