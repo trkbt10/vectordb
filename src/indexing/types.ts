@@ -37,6 +37,8 @@ export type SaveIndexingOptions = IndexingBaseOptions & {
   segmented?: boolean;
   segmentBytes?: number;
   includeAnn?: boolean;
+  /** Control how HEAD is updated during save; default 'direct'. */
+  headWrite?: "direct" | "none";
 };
 
 export type OpenIndexingOptions = IndexingBaseOptions & {

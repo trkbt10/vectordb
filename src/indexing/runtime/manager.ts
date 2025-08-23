@@ -67,11 +67,13 @@ export async function saveIndexing<TMeta>(vl: VectorStoreState<TMeta>, opts: Sav
     includeAnn: opts.includeAnn,
   });
   // 5) Update HEAD pointer (no CAS here; assume single-writer lock outside)
-  await writeHead(
-    opts.baseName,
-    { manifest: `${opts.baseName}.manifest.json`, epoch, commitTs },
-    { resolveIndexIO: opts.resolveIndexIO },
-  );
+  if (opts.headWrite !== "none") {
+    await writeHead(
+      opts.baseName,
+      { manifest: `${opts.baseName}.manifest.json`, epoch, commitTs },
+      { resolveIndexIO: opts.resolveIndexIO },
+    );
+  }
   // 6) Commit-wait for external consistency if epsilon > 0
   if (epsilon > 0) {
     const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));

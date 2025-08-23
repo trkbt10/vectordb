@@ -108,6 +108,8 @@ export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppCon
       const epoch = current?.epoch ?? 0;
       // Save with coordination parameters (excess property on variable avoids excess-prop check)
       const args: { baseName: string } & { [k: string]: unknown } = { baseName: base };
+      // Ensure save path does not write HEAD directly; we will CAS it below.
+      (args as { headWrite?: "direct" | "none" }).headWrite = "none";
       (
         args as { coord?: { clock?: typeof clock; epsilonMs?: number; lastCommittedTs?: number; epoch?: number } }
       ).coord = {
@@ -117,23 +119,32 @@ export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppCon
         epoch,
       };
       await wrapped.index.saveState(wrapped.state, args as { baseName: string });
-      // CAS update of HEAD using manifest metadata
-      try {
-        const mbytes = await resolveIndexIO().read(`${base}.manifest.json`);
-        const m = JSON.parse(new TextDecoder().decode(mbytes)) as { epoch?: number; commitTs?: number };
-        const next = {
-          manifest: `${base}.manifest.json`,
-          epoch: m.epoch ?? epoch,
-          commitTs: m.commitTs ?? lastCommittedTs,
-        };
-        const cur2 = await readHead(base, { resolveIndexIO });
-        const cas = tryUpdateHead(cur2, next);
-        if (cas.ok) {
-          await writeHead(base, cas.head, { resolveIndexIO });
+      // CAS update of HEAD using manifest metadata with bounded retries
+      async function casUpdate(retries: number): Promise<void> {
+        if (retries <= 0) {
+          return;
         }
-      } catch {
-        // best-effort; ignore
+        try {
+          const mbytes = await resolveIndexIO().read(`${base}.manifest.json`);
+          const m = JSON.parse(new TextDecoder().decode(mbytes)) as { epoch?: number; commitTs?: number };
+          const next = {
+            manifest: `${base}.manifest.json`,
+            epoch: m.epoch ?? epoch,
+            commitTs: m.commitTs ?? lastCommittedTs,
+          };
+          const cur2 = await readHead(base, { resolveIndexIO });
+          const cas = tryUpdateHead(cur2, next);
+          if (cas.ok) {
+            await writeHead(base, cas.head, { resolveIndexIO });
+            return;
+          }
+        } catch {
+          // ignore and retry
+        }
+        await new Promise<void>((r) => setTimeout(r, 10));
+        return casUpdate(retries - 1);
       }
+      await casUpdate(5);
       return c.json({ ok: true });
     } finally {
       lockProvider.release(lockName, acq.epoch, "server");

@@ -48,6 +48,7 @@ export function createIndexOps<TMeta>(
   const withSaveOptions = (args: { baseName: string } & Partial<SaveIndexingOptions>): SaveIndexingOptions => ({
     ...withIndexingBase(args.baseName),
     ...mergedSave(args),
+    headWrite: args.headWrite,
   });
   const withOpenOptions = (baseName: string, over?: Partial<OpenIndexingOptions>): OpenIndexingOptions => ({
     ...withIndexingBase(baseName),
