@@ -63,14 +63,14 @@ export async function createEncryptedFileIO(
         "deriveKey",
       ]);
 
-      // Resolve salt bytes from options
-      const saltBytes: Uint8Array = (() => {
+      // Resolve salt bytes from options with proper ArrayBuffer backing
+      const saltBytes = new Uint8Array(toArrayBuffer((() => {
         const s = options.pbkdf2!.salt;
         if (typeof s === 'string') {
           return new TextEncoder().encode(s);
         }
         return s;
-      })();
+      })()));
 
       const iterations = options.pbkdf2?.iterations ?? 310_000;
       const hash = options.pbkdf2?.hash ?? 'SHA-256';
