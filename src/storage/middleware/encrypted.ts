@@ -134,17 +134,12 @@ export async function createEncryptedFileIO(
     await baseFileIO.atomicWrite(path, encryptedData);
   };
 
-  const del = baseFileIO.del
-    ? async (path: string): Promise<void> => {
-        await baseFileIO.del!(path);
-      }
-    : undefined;
-
-  return {
-    read,
-    write,
-    append,
-    atomicWrite,
-    ...(del && { del }),
-  };
+  const base = { read, write, append, atomicWrite } as FileIO;
+  if (baseFileIO.del) {
+    const del = async (p: string): Promise<void> => {
+      await baseFileIO.del!(p);
+    };
+    return { ...base, del };
+  }
+  return base;
 }

@@ -3,7 +3,6 @@
  */
 import { createCompressedFileIO } from "./compressed";
 import { createMemoryFileIO } from "../memory";
-
 // Note: CompressionStream polyfill for test environments
 // In environments without native CompressionStream (like Bun v1.2.20), these tests will be skipped
 // A full polyfill would require dynamic imports of node:zlib and node:stream

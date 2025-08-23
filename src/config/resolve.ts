@@ -22,28 +22,22 @@ async function exists(p: string): Promise<boolean> {
 /** Resolve a config path: allow directory, bare name, or explicit file. */
 export async function resolveConfigPath(input?: string): Promise<string | null> {
   const base = input ? path.resolve(input) : path.resolve(DEFAULT_CONFIG_STEM);
-  if (await exists(base)) {
-    return base;
+  const ext = path.extname(base);
+  if (ext) {
+    return (await exists(base)) ? base : null;
   }
-  if (path.extname(base)) {
-    return null;
-  }
-  for (const ext of CONFIG_EXTS) {
-    const cand = `${base}${ext}`;
+  for (const e of CONFIG_EXTS) {
+    const cand = `${base}${e}`;
     if (await exists(cand)) {
       return cand;
     }
   }
-  try {
-    const statPath = path.join(base, DEFAULT_CONFIG_STEM);
-    for (const ext of CONFIG_EXTS) {
-      const cand = `${statPath}${ext}`;
-      if (await exists(cand)) {
-        return cand;
-      }
+  const nested = path.join(base, DEFAULT_CONFIG_STEM);
+  for (const e of CONFIG_EXTS) {
+    const cand = `${nested}${e}`;
+    if (await exists(cand)) {
+      return cand;
     }
-  } catch {
-    /* ignore */
   }
   return null;
 }

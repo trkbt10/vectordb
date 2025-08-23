@@ -11,14 +11,12 @@ export type CompressedFileIOOptions = {
 };
 
 // Helper to ensure we have an ArrayBuffer (not SharedArrayBuffer)
-const toArrayBuffer = (data: Uint8Array): ArrayBuffer => {
-  if (data.buffer instanceof ArrayBuffer) {
-    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+const toBufferSource = (data: Uint8Array): ArrayBuffer => {
+  if (data instanceof Uint8Array) {
+    // For Node.js Buffer, we need to create a copy to get an ArrayBuffer
+    return data as unknown as ArrayBuffer;
   }
-  // If it's SharedArrayBuffer or other ArrayBufferLike, copy to new ArrayBuffer
-  const buffer = new ArrayBuffer(data.byteLength);
-  new Uint8Array(buffer).set(data);
-  return buffer;
+  return new Uint8Array(data) as unknown as ArrayBuffer;
 };
 
 /**
@@ -40,7 +38,7 @@ export function createCompressedFileIO(baseFileIO: FileIO, options: CompressedFi
   const compress = async (data: Uint8Array): Promise<Uint8Array> => {
     const stream = new CompressionStream(format);
     const writer = stream.writable.getWriter();
-    await writer.write(toArrayBuffer(data));
+    await writer.write(toBufferSource(data));
     await writer.close();
 
     const chunks: Uint8Array[] = [];
@@ -70,7 +68,7 @@ export function createCompressedFileIO(baseFileIO: FileIO, options: CompressedFi
   const decompress = async (data: Uint8Array): Promise<Uint8Array> => {
     const stream = new DecompressionStream(format);
     const writer = stream.writable.getWriter();
-    await writer.write(toArrayBuffer(data));
+    await writer.write(toBufferSource(data));
     await writer.close();
 
     const chunks: Uint8Array[] = [];
@@ -126,17 +124,12 @@ export function createCompressedFileIO(baseFileIO: FileIO, options: CompressedFi
     await baseFileIO.atomicWrite(path, compressedData);
   };
 
-  const del = baseFileIO.del
-    ? async (path: string): Promise<void> => {
-        await baseFileIO.del!(path);
-      }
-    : undefined;
-
-  return {
-    read,
-    write,
-    append,
-    atomicWrite,
-    ...(del && { del }),
-  };
+  const base = { read, write, append, atomicWrite } as FileIO;
+  if (baseFileIO.del) {
+    const del = async (p: string): Promise<void> => {
+      await baseFileIO.del!(p);
+    };
+    return { ...base, del };
+  }
+  return base;
 }

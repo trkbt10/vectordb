@@ -57,4 +57,28 @@ describe("config discovery/load (shared)", () => {
       const found = await resolveResource(() => loader.resource.read());
       expect(found).toBeNull();
     }));
+
+  it("surfaces normalization error when storage is not resolvable", async () =>
+    withTempDir(async (dir) => {
+      await writeFile(
+        path.join(dir, `${DEFAULT_CONFIG_STEM}.mjs`),
+        [
+          "export default {",
+          "  name: 'bad',",
+          "  storage: { index: 'mem:', data: { a: 1 } },",
+          "};",
+          "",
+        ].join(os.EOL),
+        "utf8",
+      );
+      const loader = getConfigLoad(path.join(dir, DEFAULT_CONFIG_STEM));
+      try {
+        // read() should throw once normalized phase fails
+        await resolveResource(() => loader.resource.read());
+        throw new Error("expected error");
+      } catch {
+        const st = loader.getState();
+        expect(st.error && st.error.length > 0).toBe(true);
+      }
+    }));
 });

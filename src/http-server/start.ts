@@ -6,19 +6,11 @@ import { serve } from "@hono/node-server";
 import { createClientFromConfig } from "./client";
 import { DEFAULT_CONFIG_STEM } from "../config";
 import { loadConfigModule, normalizeConfig } from "../config";
-import type { FileIO } from "../storage/types";
 import { createApp } from "./app";
 import type { AppConfig } from "./types";
 
-/**
- *
- */
-export type StartServerOptions = {
-  io?: Record<string, { indexFactory?: (url: URL) => FileIO; dataFactory?: (url: URL, ns: string) => FileIO }>;
-};
-
 /** Start the Hono server from an executable config module path. */
-export async function startServerFromFile(configPath: string = DEFAULT_CONFIG_STEM, opts?: StartServerOptions) {
+export async function startServerFromFile(configPath: string = DEFAULT_CONFIG_STEM) {
   const p = path.resolve(configPath);
   const rawCfg = await loadConfigModule(p);
   const cfg: AppConfig = await normalizeConfig(rawCfg);

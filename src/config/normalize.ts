@@ -4,11 +4,14 @@
 import type { AppConfig, ServerOptions } from "./types";
 import type { StorageConfig } from "../types";
 import { isFileIO } from "../storage/guards";
+import { builtinRegistry, createStorageFromRaw } from "./resolver_io";
+
+export type RawStorageConfig = { index: string; data: string | Record<string, string> };
 
 export type RawAppConfig = {
   name?: string;
   /** Explicit FileIOs are required */
-  storage?: StorageConfig;
+  storage?: StorageConfig | RawStorageConfig;
   database?: AppConfig["database"];
   index?: AppConfig["index"];
   server?: ServerOptions;
@@ -30,8 +33,8 @@ export function validateRawAppConfig(raw: unknown): void {
   if (!storageRaw || typeof storageRaw !== "object") {
     throw new Error("config.storage is required");
   }
-  if (!isStorageConfigDirect(storageRaw)) {
-    throw new Error("storage must be explicit FileIOs (index + data)");
+  if (!isStorageConfigDirect(storageRaw) && !isStorageConfigRaw(storageRaw)) {
+    throw new Error("storage must be explicit FileIOs or resolvable URIs");
   }
 }
 
@@ -40,8 +43,8 @@ export async function normalizeConfig(raw: unknown): Promise<AppConfig> {
   validateRawAppConfig(raw);
   const cfg = raw as { [k: string]: unknown };
   const resolvedName = typeof cfg.name === "string" ? cfg.name : undefined;
-  const s = cfg.storage as StorageConfig;
-  const storage: StorageConfig = s;
+  const s = cfg.storage as StorageConfig | RawStorageConfig;
+  const storage: StorageConfig = isStorageConfigDirect(s) ? s : createStorageFromRaw(s, builtinRegistry);
   return {
     name: resolvedName,
     storage,
@@ -65,4 +68,27 @@ function isStorageConfigDirect(x: unknown): x is StorageConfig {
     return true;
   }
   return isFileIO(data);
+}
+
+function isStorageConfigRaw(x: unknown): x is RawStorageConfig {
+  if (!x || typeof x !== "object") {
+    return false;
+  }
+  const obj = x as { [k: string]: unknown };
+  if (typeof obj.index !== "string") {
+    return false;
+  }
+  const data = obj.data;
+  if (typeof data === "string") {
+    return true;
+  }
+  if (data && typeof data === "object") {
+    for (const [, v] of Object.entries(data as Record<string, unknown>)) {
+      if (typeof v !== "string") {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
 }

@@ -46,11 +46,10 @@ describe("config/index helpers", () => {
         "",
       ].join(os.EOL);
       await writeFile(file, body, "utf8");
-      const client = await openClientFromConfig(path.join(dir, DEFAULT_CONFIG_STEM));
+      const client = await openClientFromConfig(file);
       expect(client).toBeTruthy();
       // Validate that returned client has essential API surface
-      expect(typeof (client as { add?: unknown }).add).toBe("function");
-      expect(typeof (client as { search?: unknown }).search).toBe("function");
+      expect(typeof (client as { push?: unknown }).push).toBe("function");
+      expect(typeof (client as { findMany?: unknown }).findMany).toBe("function");
     }));
 });
-
