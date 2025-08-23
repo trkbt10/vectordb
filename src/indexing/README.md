@@ -12,9 +12,6 @@ Goal: separate concerns between index/data formats and the runtime that interpre
   - `placement/segmenter.ts` (write VLDT segments according to CRUSH)
   - `placement/rebalance.ts` (copy-first rebalancing + manifest update)
 
-- helpers (non-core, dev/local convenience)
-  - `helpers/local_crush.ts` (local directory-sharded environment factory)
-
 - runtime
   - `runtime/manager.ts` (open/save/rebuild orchestration; interpret index → data)
 

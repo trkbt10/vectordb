@@ -6,13 +6,20 @@ import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
 import { createState } from "../../attr/state/create";
 import { persistIndex, openFromIndex } from "../../attr/ops/index_persist";
-import { createLocalCrushEnv } from "../helpers/local_crush";
+import { createNodeFileIO } from "../../storage/node";
 import { planRebalance, applyRebalance } from "./rebalance";
 
 describe("indexing/rebalance", () => {
   it("moves segments to satisfy new crushmap and opens with updated placement", async () => {
     const base = await mkdtemp(joinPath(tmpdir(), "vlite-rebal-"));
-    const env = createLocalCrushEnv(base, 2, 16);
+    const makeEnv = (shards: number, pgs: number) => {
+      const targets = Array.from({ length: Math.max(1, shards | 0) }, (_, i) => ({ key: String(i) }));
+      const crush = { pgs: Math.max(1, pgs | 0), replicas: 1, targets } as const;
+      const resolveDataIO = (key: string) => createNodeFileIO(joinPath(base, "data", key));
+      const resolveIndexIO = () => createNodeFileIO(joinPath(base, ".vlindex"));
+      return { crush, resolveDataIO, resolveIndexIO };
+    };
+    const env = makeEnv(2, 16);
     const vl = createState({ dim: 2, metric: "cosine", strategy: "bruteforce" });
     for (let i = 0; i < 10; i++) {
       vl.store.ids[i] = i + 1;
@@ -31,7 +38,7 @@ describe("indexing/rebalance", () => {
     });
 
     // New crush with more shards
-    const env2 = createLocalCrushEnv(base, 4, 16);
+    const env2 = makeEnv(4, 16);
     const manifestIo = env.resolveIndexIO();
     const mbytes = await manifestIo.read("db.manifest.json");
     const manifest = JSON.parse(new TextDecoder().decode(mbytes)) as {
