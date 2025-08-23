@@ -95,30 +95,43 @@ export const defaultConfigFlow: FlowSchema = {
         const intent = String(a.intent || "local");
         const base = String(a.baseDir || ".vectordb");
         const storageDecl = (() => {
-          if (intent === "memory" || intent === "browser") {
-            return `index: createMemoryFileIO(),\n    data: () => createMemoryFileIO()`;
+          if (intent === "memory") {
+            // Use portable in-memory storage
+            return `index: 'mem:',\n    data: 'mem:'`;
           }
-          return `index: createNodeFileIO('${base}/index'),\n    data: (ns) => createNodeFileIO('${base}/data/' + ns)`;
+          if (intent === "browser") {
+            // Wizard indicates browser intent, but keep portable mem URIs here
+            return `index: 'mem:',\n    data: 'mem:'`;
+          }
+          // Local/shared filesystem using relative paths (resolved as file: scheme)
+          return `index: '${base}/index',\n    data: '${base}/data/{ns}'`;
         })();
-        const databaseBase = {
-          dim: Number(a.dim || 3) || 3,
-          metric: (a.metric as "cosine" | "l2" | "dot") || "cosine",
-          strategy: (a.strategy as "bruteforce" | "hnsw" | "ivf") || "bruteforce",
-        } as const;
-        const hnswPart =
-          a.strategy === "hnsw" ? { M: Number(a.hnswM || 16) || 16, efSearch: Number(a.hnswEfSearch || 64) || 64 } : {};
-        const ivfPart = a.strategy === "ivf" ? { nlist: Number(a.ivfNlist || 1024) || 1024 } : {};
-        const database = { ...databaseBase, ...hnswPart, ...ivfPart };
+        const database = (() => {
+          const base = {
+            dim: Number(a.dim || 3) || 3,
+            metric: (a.metric as "cosine" | "l2" | "dot") || "cosine",
+            strategy: (a.strategy as "bruteforce" | "hnsw" | "ivf") || "bruteforce",
+          } as const;
+          if (base.strategy === "hnsw") {
+            return {
+              ...base,
+              hnsw: { M: Number(a.hnswM || 16) || 16, efSearch: Number(a.hnswEfSearch || 64) || 64 },
+            };
+          }
+          if (base.strategy === "ivf") {
+            return { ...base, ivf: { nlist: Number(a.ivfNlist || 1024) || 1024 } };
+          }
+          return base;
+        })();
         const index = {
-          name,
           includeAnn: Boolean(a.includeAnn ?? false),
           shards: Number(a.shards || 1) || 1,
           replicas: Number(a.replicas || 1) || 1,
           pgs: Number(a.pgs || 64) || 64,
           segmented: Boolean(a.segmented ?? true),
         };
-        // Return JS ESM config content as a string
-        const js = `/** @file VectorDB executable config */\nimport { defineConfig } from 'vcdb/http-server';\nimport { createNodeFileIO } from 'vcdb/storage/node';\nimport { createMemoryFileIO } from 'vcdb/storage/memory';\n\nexport default defineConfig({\n  name: '${name}',\n  storage: {\n    ${storageDecl}\n  },\n  database: ${JSON.stringify(database)},\n  index: ${JSON.stringify(index)},\n  server: {\n    resultConsistency: true\n  }\n});\n`;
+        // Return JS ESM config content as a string (URI-based storage per spec)
+        const js = `/** @file VectorDB executable config */\nexport default {\n  name: '${name}',\n  storage: {\n    ${storageDecl}\n  },\n  database: ${JSON.stringify(database)},\n  index: ${JSON.stringify(index)},\n  server: {\n    resultConsistency: true\n  }\n};\n`;
         return js;
       },
     },

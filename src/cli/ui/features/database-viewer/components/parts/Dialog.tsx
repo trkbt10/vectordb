@@ -22,6 +22,7 @@ export function Dialog({
     return null;
   }
   const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
+  const rows = process.stdout?.rows ? Math.max(10, process.stdout.rows) : 24;
   const w = Math.min(width, Math.max(40, cols - 6));
   const titleNode = (() => {
     if (!title) {
@@ -34,14 +35,7 @@ export function Dialog({
     );
   })();
   return (
-    <Box
-      width="100%"
-      height="100%"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      position="absolute"
-    >
+    <Box position="absolute" width={cols} height={rows} flexDirection="column" alignItems="center" justifyContent="center">
       {/* Shadow + Card: stack to simulate bottom-right drop shadow */}
       <Box flexDirection="column">
         {/* Dialog card */}

@@ -6,6 +6,7 @@ import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
 import type { ClusterCtx } from "../types";
 import { buildHNSWFromStore, buildIVFFromStore } from "../../../../../../attr/ops/core";
+import { Dialog } from "../parts/Dialog";
 
 type RebuildViewProps = { ctx: ClusterCtx; onBack: () => void };
 
@@ -57,9 +58,13 @@ export function RebuildView({ ctx, onBack }: RebuildViewProps) {
     })();
   }, [ctx]);
   return (
-    <Box flexDirection="column">
-      <Text>{msg}</Text>
-      <SelectInput items={[{ label: "Back", value: "back" }]} onSelect={() => onBack()} />
-    </Box>
+    <Dialog open={true} title="Rebuild State" width={60}>
+      <Box flexDirection="column">
+        <Text>{msg}</Text>
+        <Box marginTop={1}>
+          <SelectInput items={[{ label: "Back", value: "back" }]} onSelect={() => onBack()} />
+        </Box>
+      </Box>
+    </Dialog>
   );
 }

@@ -5,6 +5,7 @@ import React from "react";
 import { Box, Text } from "ink";
 import { truncate, vectorPreview } from "../utils";
 import { isShallowObject } from "./utils";
+import { useTheme } from "../../../../ThemeContext";
 
 export type RecordRow = { id: number; meta: unknown; vector: Float32Array };
 
@@ -17,12 +18,15 @@ function TableBase({
   allRows,
   rowIdx,
   loading,
+  isFocused = false,
 }: {
   rows: RecordRow[];
   allRows: RecordRow[];
   rowIdx: number;
   loading: boolean;
+  isFocused?: boolean;
 }) {
+  const { theme } = useTheme();
   const { idW, vecW, metaAreaW } = React.useMemo(() => {
     const cols = process.stdout?.columns ? Math.max(40, process.stdout.columns) : 80;
     const idW = 8;
@@ -71,13 +75,14 @@ function TableBase({
 
   function renderRows(): React.ReactNode {
     if (loading) {
-      return <Text color="gray">Loading...</Text>;
+      return <Text color={theme.table.headerSep}>Loading...</Text>;
     }
     return rows.map((r, i) => {
       const selected = i === rowIdx;
       const even = i % 2 === 1;
-      const bg = selected ? "yellow" : even ? "gray" : undefined;
-      const fg = selected ? "black" : undefined;
+      const inverse = selected ? (isFocused ? true : false) : false;
+      const bg = selected ? (isFocused ? undefined : theme.table.selectedBg) : even ? theme.table.zebraBg : undefined;
+      const fg = selected ? (isFocused ? undefined : theme.table.selectedFg) : even ? theme.table.zebraFg : undefined;
       const idStr = String(r.id).slice(0, idW).padEnd(idW, " ");
       const shallow = metaCols.length > 0 ? isShallowObject(r.meta) : false;
       const metaStr = formatMeta(r, shallow);
@@ -85,7 +90,7 @@ function TableBase({
       const vecStr = vecText.length > vecW ? vecText.slice(0, vecW) : vecText.padEnd(vecW, " ");
       const line = `${idStr}${metaStr}${vecStr}`;
       return (
-        <Text key={r.id} backgroundColor={bg} color={fg}>
+        <Text key={r.id} backgroundColor={bg} color={inverse ? undefined : fg} inverse={inverse}>
           {line}
         </Text>
       );
@@ -107,8 +112,7 @@ function TableBase({
   }
   return (
     <Box flexDirection="column">
-      <Text>{header}</Text>
-      <Text color="gray">{"─".repeat(Math.max(40, (process.stdout?.columns ?? 80) - 2))}</Text>
+      <Text color={isFocused ? theme.table.headerSep : undefined}>{header}</Text>
       {renderRows()}
     </Box>
   );

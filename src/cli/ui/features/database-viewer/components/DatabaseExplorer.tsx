@@ -14,6 +14,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { truncate } from "./utils";
 import { useInput } from "ink";
+import { FocusProvider, useFocus, useFocusable } from "../../../util/focus";
+import { ThemeProvider, useTheme } from "../../../ThemeContext";
 import { StatsView } from "./views/StatsView";
 import { RebuildView } from "./views/RebuildView";
 import { QueryConfigView } from "./views/QueryConfigView";
@@ -22,6 +24,7 @@ import { SearchHeader } from "./parts/SearchHeader";
 import { queryToVector, queryToVectorOpenAI } from "./embedding";
 import { Table } from "./parts/Table";
 import { FooterBar } from "./parts/FooterBar";
+import { PaginationBar } from "./parts/PaginationBar";
 import { RowActionModal } from "./parts/modal/RowActionModal";
 import { EditMetaModal } from "./parts/modal/EditMetaModal";
 import { IndexStrategyModal } from "./parts/modal/IndexStrategyModal";
@@ -40,13 +43,37 @@ export function DatabaseExplorer({
   directConfigPath?: string;
   onExit?: () => void;
 }) {
+  return (
+    <ThemeProvider initial="classic">
+      <FocusProvider initialFocus="search">
+        <ExplorerInner configFlow={configFlow} directConfigPath={directConfigPath} onExit={onExit} />
+      </FocusProvider>
+    </ThemeProvider>
+  );
+}
+
+function ExplorerInner({
+  configFlow,
+  directConfigPath,
+  onExit,
+}: {
+  configFlow?: FlowSchema;
+  directConfigPath?: string;
+  onExit?: () => void;
+}) {
   const [registry, setRegistry] = useState<DatabaseRegistryEntry[]>([]);
   const [selected, setSelected] = useState<number>(-1);
   const [client, setClient] = useState<VectorDB<Record<string, unknown>> | null>(null);
   const [rows, setRows] = useState<RecordRow[]>([]);
   const [query, setQuery] = useState("");
   const [queryVec, setQueryVec] = useState<Float32Array | null>(null);
-  const [searchFocus, setSearchFocus] = useState<boolean>(false);
+  const { activeId, setFocus, activate, deactivate, nextSibling, prevSibling } = useFocus();
+  const { toggle } = useTheme();
+  const searchF = useFocusable("search");
+  const tableF = useFocusable("table");
+  const pagF = useFocusable("pagination");
+  const footerF = useFocusable("footer");
+  const active = activeId as "search" | "table" | "pagination" | "footer" | null;
   const [searchMode, setSearchMode] = useState<"meta" | "vector">("meta");
   const [status, setStatus] = useState<string>("Ready");
   const [loading, setLoading] = useState<boolean>(false);
@@ -55,10 +82,11 @@ export function DatabaseExplorer({
   const [rowIdx, setRowIdx] = useState<number>(0);
   const [showRowMenu, setShowRowMenu] = useState<boolean>(false);
   const [showEditMeta, setShowEditMeta] = useState<boolean>(false);
-  const [metaEditing, setMetaEditing] = useState<boolean>(false);
+  // modal editing state handled internally by modal; no external tracking
   const [showIndexStrategy, setShowIndexStrategy] = useState<boolean>(false);
   const [selectedStrategy, setSelectedStrategy] = useState<"bruteforce" | "hnsw" | "ivf" | undefined>(undefined);
   const [showQueryCfg, setShowQueryCfg] = useState<boolean>(false);
+  const [showStats, setShowStats] = useState<boolean>(false);
   const [queryCfg, setQueryCfg] = useState<
     { method: "auto" | "numeric" | "hash" | "openai"; name?: string } | undefined
   >(undefined);
@@ -66,9 +94,6 @@ export function DatabaseExplorer({
   const [editMetaText, setEditMetaText] = useState<string>("");
   const footerActions = useMemo(
     () => [
-      { label: "Search", value: "search" },
-      { label: "PgUp", value: "pgup" },
-      { label: "PgDn", value: "pgdn" },
       { label: "Stats / Diagnose", value: "stats" },
       { label: "Query Config", value: "qcfg" },
       { label: "Rebuild State", value: "rebuild" },
@@ -77,8 +102,16 @@ export function DatabaseExplorer({
     ],
     [],
   );
-  const [footerFocus, setFooterFocus] = useState<boolean>(false);
+  // footer focus derived from overall focus; only index is tracked
   const [footerIdx, setFooterIdx] = useState<number>(0);
+  const skipFooter = (v?: string) => v === "status";
+  useEffect(() => {
+    // ensure initial footer index lands on actionable item
+    if (skipFooter(footerActions[footerIdx]?.value)) {
+      const next = footerActions.findIndex((a) => !skipFooter(a.value));
+      setFooterIdx(next >= 0 ? next : 0);
+    }
+  }, []);
   // filtered rows for view and footer summary
   const filteredMeta = useMemo(() => {
     if (!query) {
@@ -149,11 +182,9 @@ export function DatabaseExplorer({
     setRowIdx((i) => (pageRows.length === 0 ? 0 : Math.min(i, pageRows.length - 1)));
   }, [filtered.length, pageRows.length]);
 
-  const footerNode = React.useMemo(() => {
-    if (wizard.running) {
-      return null;
-    }
-    return (
+  let footerNode: React.ReactNode = null;
+  if (!wizard.running) {
+    footerNode = (
       <FooterBar
         status={status}
         total={rows.length}
@@ -162,10 +193,12 @@ export function DatabaseExplorer({
         totalPages={filtered.length}
         per={30}
         actions={footerActions}
-        focusIndex={footerFocus ? footerIdx : -1}
+        focusIndex={footerF.isActive ? footerIdx : -1}
+        isFocused={footerF.isActive}
+        hovered={footerF.isFocused && !footerF.isActive}
       />
     );
-  }, [wizard.running, status, rows.length, filtered.length, start, rowIdx, footerActions, footerFocus, footerIdx]);
+  }
   useFooter(footerNode);
 
   const handleFooterAction = React.useCallback(
@@ -173,25 +206,8 @@ export function DatabaseExplorer({
       if (!sel) {
         return;
       }
-      if (sel === "search") {
-        setSearchFocus(true);
-        setFooterFocus(false);
-        return;
-      }
-      if (sel === "pgup") {
-        setFooterFocus(false);
-        setScroll((s) => Math.max(0, s - 29));
-        setRowIdx(0);
-        return;
-      }
-      if (sel === "pgdn") {
-        setFooterFocus(false);
-        setScroll((s) => Math.min(s + 29, Math.max(0, filtered.length - 30)));
-        setRowIdx(Math.min(29, filtered.length - 1));
-        return;
-      }
       if (sel === "stats" && client) {
-        setPanel("stats");
+        setShowStats(true);
         return;
       }
       if (sel === "rebuild" && client) {
@@ -200,7 +216,6 @@ export function DatabaseExplorer({
       }
       if (sel === "qcfg") {
         setShowQueryCfg(true);
-        setFooterFocus(false);
         return;
       }
       if (sel === "index") {
@@ -215,94 +230,139 @@ export function DatabaseExplorer({
   );
 
   useInput((input, key) => {
-    if (searchFocus) {
-      if (key.escape) {
-        setSearchFocus(false);
-      }
+    // When a popup/modal is open, delegate key handling entirely to it
+    if (showRowMenu || showEditMeta || showIndexStrategy || showQueryCfg || showStats) {
       return;
     }
-    if (input === "\t") {
-      setFooterFocus((f) => !f);
+    if (input === "t") {
+      toggle();
       return;
     }
-    if (showRowMenu || showEditMeta || showIndexStrategy) {
-      if (key.escape) {
-        if (showRowMenu) {
-          setShowRowMenu(false);
+    // When no section is active: only navigation keys work
+    if (active == null) {
+      if (input === "\t") {
+        if (key.shift) {
+          prevSibling();
+        } else {
+          nextSibling();
         }
-        if (showEditMeta && !metaEditing) {
-          setShowEditMeta(false);
-        }
-        if (showIndexStrategy) {
-          setShowIndexStrategy(false);
-        }
-      }
-      return;
-    }
-    if (input === "/" || input === "s") {
-      setSearchFocus(true);
-      return;
-    }
-    if (key.leftArrow) {
-      if (footerFocus) {
-        setFooterIdx((i) => (i > 0 ? i - 1 : 0));
-      }
-      return;
-    }
-    if (key.rightArrow) {
-      if (!footerFocus) {
-        setFooterFocus(true);
         return;
       }
-      setFooterIdx((i) => (i < footerActions.length - 1 ? i + 1 : i));
-      return;
-    }
-    if (key.upArrow) {
-      setFooterFocus(false);
-      if (rowIdx > 0) {
-        return setRowIdx((i) => i - 1);
+      if (input === "h" || input === "k" || key.leftArrow || key.upArrow) {
+        prevSibling();
+        return;
       }
-      if (start > 0) {
-        setScroll((s) => Math.max(0, s - 1));
+      if (input === "l" || input === "j" || key.rightArrow || key.downArrow) {
+        nextSibling();
+        return;
+      }
+      if (key.return) {
+        activate();
+        return;
+      }
+      if (input === "/" || input === "s") {
+        setFocus("search");
+        activate("search");
+        return;
+      }
+      if (input === "1") {
+        setFocus("search");
+        return;
+      }
+      if (input === "2") {
+        setFocus("table");
+        return;
+      }
+      if (input === "3") {
+        setFocus("pagination");
+        return;
+      }
+      if (input === "4") {
+        setFocus("footer");
+        return;
       }
       return;
     }
-    if (key.downArrow) {
-      setFooterFocus(false);
-      if (rowIdx < pageRows.length - 1) {
-        return setRowIdx((i) => i + 1);
+    // Active: Esc to deactivate; scoped keys per section
+    if (key.escape) {
+      deactivate();
+      return;
+    }
+    // Section-specific interactions
+    if (active === "table") {
+      if (key.upArrow) {
+        if (rowIdx > 0) {
+          return setRowIdx((i) => i - 1);
+        }
+        if (start > 0) {
+          setScroll((s) => Math.max(0, s - 1));
+        }
+        return;
       }
-      if (end < filtered.length) {
-        setScroll((s) => Math.min(s + 1, Math.max(0, filtered.length - 30)));
+      if (key.downArrow) {
+        if (rowIdx < pageRows.length - 1) {
+          return setRowIdx((i) => i + 1);
+        }
+        if (end < filtered.length) {
+          setScroll((s) => Math.min(s + 1, Math.max(0, filtered.length - 30)));
+        }
+        return;
+      }
+      if (key.return) {
+        if (pageRows[rowIdx]) {
+          setSelectedIdx(rowIdx);
+          setShowRowMenu(true);
+        }
+        return;
+      }
+      if (input === "v") {
+        setSearchMode((m) => (m === "meta" ? "vector" : "meta"));
+        setStatus(`Search mode: ${searchMode === "meta" ? "vector" : "meta"}`);
+        return;
       }
       return;
     }
-    if (key.pageUp) {
-      setFooterFocus(false);
-      setScroll((s) => Math.max(0, s - 29));
-      setRowIdx(0);
+    if (active === "pagination") {
+      if (key.pageUp) {
+        setScroll((s) => Math.max(0, s - 29));
+        setRowIdx(0);
+        return;
+      }
+      if (key.pageDown) {
+        setScroll((s) => Math.min(s + 29, Math.max(0, filtered.length - 30)));
+        setRowIdx(Math.min(29, filtered.length - 1));
+        return;
+      }
       return;
     }
-    if (key.pageDown) {
-      setFooterFocus(false);
-      setScroll((s) => Math.min(s + 29, Math.max(0, filtered.length - 30)));
-      setRowIdx(Math.min(29, filtered.length - 1));
-      return;
-    }
-    if (input === "v") {
-      setSearchMode((m) => (m === "meta" ? "vector" : "meta"));
-      setStatus(`Search mode: ${searchMode === "meta" ? "vector" : "meta"}`);
-      return;
-    }
-    if (key.return) {
-      if (footerFocus) {
+    if (active === "footer") {
+      const step = (dir: 1 | -1) => {
+        if (footerActions.length === 0) {
+          return;
+        }
+        let i = footerIdx;
+        for (let k = 0; k < footerActions.length; k++) {
+          i = Math.min(Math.max(0, i + dir), footerActions.length - 1);
+          if (!skipFooter(footerActions[i]?.value)) {
+            setFooterIdx(i);
+            return;
+          }
+        }
+      };
+      if (key.leftArrow) {
+        step(-1);
+        return;
+      }
+      if (key.rightArrow) {
+        step(1);
+        return;
+      }
+      if (key.return) {
         return handleFooterAction(footerActions[footerIdx]?.value);
       }
-      if (pageRows[rowIdx]) {
-        setSelectedIdx(rowIdx);
-        setShowRowMenu(true);
-      }
+      return;
     }
+    // active === 'search' -> TextInput handles characters directly
   });
 
   useEffect(() => {
@@ -463,14 +523,15 @@ export function DatabaseExplorer({
 
   const mainPanel: React.ReactNode = (() => {
     if (panel === "table") {
-      return <Table rows={pageRows} allRows={rows} rowIdx={rowIdx} loading={loading} />;
-    }
-    if (panel === "stats" && client) {
       return (
-        <StatsView
-          ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
-          onBack={() => setPanel("table")}
-        />
+        <Box flexDirection="column" width="100%">
+          <Box backgroundColor={tableF.isWithin ? "blue" : undefined}>
+            <Table rows={pageRows} allRows={rows} rowIdx={rowIdx} loading={loading} isFocused={tableF.isActive} />
+          </Box>
+          <Box backgroundColor={pagF.isWithin ? "blue" : undefined}>
+            <PaginationBar from={start + 1} to={end} total={filtered.length} isFocused={pagF.isActive} />
+          </Box>
+        </Box>
       );
     }
     if (panel === "rebuild" && client) {
@@ -529,39 +590,75 @@ export function DatabaseExplorer({
       />
     );
   })();
+  // searchF declared above
   return (
     <Box flexDirection="column" flexGrow={1}>
-      <SearchHeader query={query} onChange={setQuery} isFocused={searchFocus} />
-      {mainPanel}
+      <Box>
+        <SearchHeader
+          query={query}
+          onChange={setQuery}
+          isFocused={searchF.isFocused || searchF.isActive}
+          onEsc={() => deactivate()}
+        />
+      </Box>
+      {(() => {
+        if (panel === "table") {
+          return (
+            <Box flexDirection="column" flexGrow={1}>
+              <Box>
+                <Table
+                  rows={pageRows}
+                  allRows={rows}
+                  rowIdx={rowIdx}
+                  loading={loading}
+                  isFocused={tableF.isFocused || tableF.isActive}
+                />
+              </Box>
+              <Box>
+                <PaginationBar
+                  from={start + 1}
+                  to={end}
+                  total={filtered.length}
+                  isFocused={pagF.isFocused || pagF.isActive}
+                />
+              </Box>
+            </Box>
+          );
+        }
+        return mainPanel;
+      })()}
       {rowMenu}
+      {(showStats && client) && (
+        <StatsView
+          ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
+          onBack={() => setShowStats(false)}
+        />
+      )}
       {(() => {
         if (!showEditMeta) {
           return null;
         }
         return (
-          <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-            <EditMetaModal
-              open={showEditMeta}
-              initialMetaText={editMetaText}
-              onCancel={() => setShowEditMeta(false)}
-              onEditingChange={(e) => setMetaEditing(e)}
-              onSave={(text: string) => {
-                try {
-                  const rid = pageRows[selectedIdx]?.id;
-                  const vec = pageRows[selectedIdx]?.vector;
-                  const meta = text ? JSON.parse(text) : null;
-                  if (rid != null && vec) {
-                    client?.set(rid, { vector: vec, meta }, { upsert: true });
-                  }
-                  setRows((rs) => rs.map((r) => (r.id === rid ? { ...r, meta } : r)));
-                  setStatus(`Updated id ${rid}`);
-                  setShowEditMeta(false);
-                } catch (e) {
-                  setStatus(`Update failed: ${String((e as { message?: unknown })?.message ?? e)}`);
+          <EditMetaModal
+            open={showEditMeta}
+            initialMetaText={editMetaText}
+            onCancel={() => setShowEditMeta(false)}
+            onSave={(text: string) => {
+              try {
+                const rid = pageRows[selectedIdx]?.id;
+                const vec = pageRows[selectedIdx]?.vector;
+                const meta = text ? JSON.parse(text) : null;
+                if (rid != null && vec) {
+                  client?.set(rid, { vector: vec, meta }, { upsert: true });
                 }
-              }}
-            />
-          </Box>
+                setRows((rs) => rs.map((r) => (r.id === rid ? { ...r, meta } : r)));
+                setStatus(`Updated id ${rid}`);
+                setShowEditMeta(false);
+              } catch (e) {
+                setStatus(`Update failed: ${String((e as { message?: unknown })?.message ?? e)}`);
+              }
+            }}
+          />
         );
       })()}
       {indexStrategy}
@@ -570,19 +667,13 @@ export function DatabaseExplorer({
           return null;
         }
         if (!client) {
-          return (
-            <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-              <Box />
-            </Box>
-          );
+          return <Box />;
         }
         return (
-          <Box width="100%" flexGrow={1} alignItems="center" justifyContent="center">
-            <QueryConfigView
-              ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
-              onBack={() => setShowQueryCfg(false)}
-            />
-          </Box>
+          <QueryConfigView
+            ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
+            onBack={() => setShowQueryCfg(false)}
+          />
         );
       })()}
     </Box>
