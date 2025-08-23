@@ -18,7 +18,7 @@ export type { VectorDB } from "./client/types";
  * Construction options for VectorDB (dimensions, metric, strategy, etc.)
  * @public
  */
-export type { VectorDBOptions } from "./types";
+export type { DatabaseOptions } from "./types";
 /**
  * Search result types
  * @public

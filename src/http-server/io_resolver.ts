@@ -6,7 +6,7 @@ import path from "node:path";
 import { createNodeFileIO } from "../storage/node";
 import { createMemoryFileIO } from "../storage/memory";
 import type { FileIO } from "../storage/types";
-import type { StorageConfig } from "../client/indexing";
+import type { StorageConfig } from "../types";
 
 export type IORegistry = Record<
   string,

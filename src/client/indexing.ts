@@ -3,14 +3,18 @@
  */
 import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../indexing/runtime/manager";
 import type { SaveIndexingOptions, IndexingBaseOptions, OpenIndexingOptions } from "../indexing/types";
-import type { FileIO } from "../storage/types";
-import type { ClientOptions, StorageConfig } from "../../config/types";
+import type { StorageConfig } from "../types";
 import type { VectorStoreState } from "../types";
 import { planRebalance, applyRebalance, type MovePlan } from "../indexing/placement/rebalance";
 import type { Clock } from "../coordination/clock";
 
-export type DataIOResolver = FileIO | ((targetKey: string) => FileIO);
-export type { StorageConfig } from "../../config/types";
+export type { StorageConfig, DataIOResolver } from "../types";
+
+export type ClientOptions = Partial<Pick<SaveIndexingOptions, "segmented" | "segmentBytes" | "includeAnn">> & {
+  shards?: number;
+  pgs?: number;
+  replicas?: number;
+};
 
 /**
  * Compose persistence helpers for a client.

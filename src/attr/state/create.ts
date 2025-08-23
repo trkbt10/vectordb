@@ -12,7 +12,7 @@
  * ensures clean separation of concerns and makes the codebase more maintainable
  * and testable.
  */
-import type { VectorDBOptions } from "../../types";
+import type { DatabaseOptions } from "../../types";
 import type { Metric } from "../../types";
 import { createStore } from "../store/store";
 import { createBruteforceState } from "../../ann/bruteforce";
@@ -23,7 +23,7 @@ import type { VectorStoreState, ANNs } from "../../types";
 /**
  *
  */
-export function createState<TMeta = unknown>(opts: VectorDBOptions): VectorStoreState<TMeta> {
+export function createState<TMeta = unknown>(opts: DatabaseOptions): VectorStoreState<TMeta> {
   const dim = opts.dim;
   const metric: Metric = opts.metric ?? "cosine";
   const strategy = opts.strategy ?? "bruteforce";

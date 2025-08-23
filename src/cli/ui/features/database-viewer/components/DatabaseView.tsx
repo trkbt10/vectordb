@@ -6,7 +6,6 @@ import { DatabaseExplorer } from "./DatabaseExplorer";
 import type { FlowSchema } from "../../database-wizard/components/FlowWizard";
 import { defaultConfigFlow } from "../../database-wizard/components/flows/defaultConfigFlow";
 import { getConfigLoad, type LoadState, configPatternsLabel } from "../../../../../config";
-import { configPatternsLabel } from "../../../../../config";
 import { Box, Text } from "ink";
 
 /**

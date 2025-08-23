@@ -4,8 +4,14 @@
 import path from "node:path";
 import { createClientFromConfig } from "../http-server/client";
 import type { VectorDB } from "../client";
+import { CONFIG_EXTS, DEFAULT_CONFIG_STEM } from "./resolve";
+import { loadConfigModule } from "./loader";
+import { normalizeConfig } from "./normalize";
+export { createNodeFileIO } from "../storage/node";
+export { createMemoryFileIO } from "../storage/memory";
 
-export { resolveConfigPath, loadConfigModule, CONFIG_EXTS, DEFAULT_CONFIG_STEM } from "./resolve";
+export { resolveConfigPath, CONFIG_EXTS, DEFAULT_CONFIG_STEM } from "./resolve";
+export { loadConfigModule } from "./loader";
 export { normalizeConfig, defineConfig, type RawAppConfig } from "./normalize";
 export type { AppConfig, ServerOptions, CorsOptions } from "./types";
 
@@ -13,7 +19,7 @@ export type { AppConfig, ServerOptions, CorsOptions } from "./types";
 export async function openClientFromConfig(pathToConfig: string): Promise<VectorDB<Record<string, unknown>>> {
   const p = path.resolve(pathToConfig);
   const raw = await loadConfigModule(p);
-  const cfg = await normalizeConfig(raw, {});
+  const cfg = await normalizeConfig(raw);
   return await createClientFromConfig(cfg);
 }
 

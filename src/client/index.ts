@@ -2,14 +2,15 @@
  * @file Client entrypoint (composed by operation groups: db, index)
  */
 import { createDatabaseFromState } from "./db";
-import { createIndexOps, type ClientOptions, type StorageConfig, type IndexOps } from "./indexing";
+import { createIndexOps, type StorageConfig, type IndexOps } from "./indexing";
+import type { ClientOptions } from "./indexing";
 import type { VectorDB } from "./types";
 import type { VectorStoreState } from "../types";
 // import type { WalRuntime } from "../wal/index";
 import type { AsyncLock } from "../util/async_lock";
 import { createAsyncLock } from "../util/async_lock";
 import type { FileIO } from "../storage/types";
-import type { VectorDBOptions } from "../types";
+import type { DatabaseOptions } from "../types";
 import { createState } from "../attr/state/create";
 import { createWalRuntime } from "../wal/index";
 import { createAutoSaveAfterWrite } from "./autosave";
@@ -24,7 +25,7 @@ import type { Clock } from "../coordination/clock";
 export type ConnectOptions<TMeta> = {
   /** Only state policy should remain here */
   onMissing?: (ctx: {
-    create: <U extends Record<string, unknown>>(opts: VectorDBOptions) => VectorStoreState<U>;
+    create: <U extends Record<string, unknown>>(opts: DatabaseOptions) => VectorStoreState<U>;
     index: IndexOps<TMeta>;
     name: string;
   }) => Promise<VectorStoreState<TMeta>> | VectorStoreState<TMeta>;
@@ -32,7 +33,7 @@ export type ConnectOptions<TMeta> = {
 
 export type ConnectDeps = {
   storage: StorageConfig;
-  database?: VectorDBOptions;
+  database?: DatabaseOptions;
   index?: ClientOptions & { name?: string };
   wal?: { io: FileIO; name: string };
   lock?: AsyncLock;
@@ -53,9 +54,9 @@ function isMissingStateError(e: unknown): boolean {
 async function resolveState<TMeta>(
   name: string,
   indexOperations: IndexOps<TMeta>,
-  databaseOptions: VectorDBOptions | undefined,
+  databaseOptions: DatabaseOptions | undefined,
   onMissing?: (ctx: {
-    create: <U extends Record<string, unknown>>(opts: VectorDBOptions) => VectorStoreState<U>;
+    create: <U extends Record<string, unknown>>(opts: DatabaseOptions) => VectorStoreState<U>;
     index: IndexOps<TMeta>;
     name: string;
   }) => Promise<VectorStoreState<TMeta>> | VectorStoreState<TMeta>,

@@ -54,8 +54,8 @@ export type VectorInput<TMeta> = {
 /** Input row shape for writes (id + vector + optional meta). */
 export type RowInput<TMeta> = { id: number } & VectorInput<TMeta>;
 
-/** Public construction options. */
-export type VectorDBOptions = {
+/** Database construction options. */
+export type DatabaseOptions = {
   dim: number;
   metric?: Metric;
   capacity?: number;
@@ -63,8 +63,6 @@ export type VectorDBOptions = {
   hnsw?: HNSWParams;
   ivf?: IVFParams;
 };
-// Backward-compatible alias for external callers; prefer VectorDBOptions
-export type VectorLiteOptions = VectorDBOptions;
 
 /** HNSW algorithm parameters. */
 export type HNSWParams = {
@@ -88,6 +86,7 @@ import type { BruteforceState } from "./ann/bruteforce";
 import type { HNSWState } from "./ann/hnsw";
 import type { IVFState } from "./ann/ivf";
 import { CoreStore } from "./attr/store/store";
+import type { FileIO } from "./storage/types";
 
 export type ANNs = BruteforceState | HNSWState | IVFState;
 
@@ -98,3 +97,9 @@ export type VectorStoreState<TMeta> = {
   strategy: "bruteforce" | "hnsw" | "ivf";
   ann: ANNs;
 };
+
+// ---------------------------------------------------------------------------
+// Global IO-config types used across layers
+
+export type DataIOResolver = FileIO | ((targetKey: string) => FileIO);
+export type StorageConfig = { index: FileIO; data: DataIOResolver };

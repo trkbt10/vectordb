@@ -9,7 +9,7 @@ import { hasErrorCode } from "../util/is-error";
 
 // Pull primitives from server layer (single source of truth)
 import { CONFIG_EXTS, DEFAULT_CONFIG_STEM } from "./resolve";
-import { loadConfigModule } from "./resolve";
+import { loadConfigModule } from "./loader";
 import { normalizeConfig } from "./normalize";
 
 /** Suspense Resource wrapper (read throws while pending). */

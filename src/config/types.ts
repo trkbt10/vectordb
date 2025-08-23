@@ -37,13 +37,10 @@ export type ServerOptions = {
   resultConsistency?: boolean;
 };
 
-import type { VectorDBOptions } from "../types";
-import type { FileIO } from "../storage/types";
+import type { DatabaseOptions, StorageConfig } from "../types";
 
-export type DataIOResolver = FileIO | ((targetKey: string) => FileIO);
-export type StorageConfig = { index: FileIO; data: DataIOResolver };
-
-export type ClientOptions = {
+// Config-level index options; structurally compatible with client ClientOptions
+export type IndexOptions = {
   shards?: number;
   pgs?: number;
   replicas?: number;
@@ -55,7 +52,7 @@ export type ClientOptions = {
 export type AppConfig = {
   name?: string;
   storage?: StorageConfig;
-  database?: VectorDBOptions;
-  index?: ClientOptions;
+  database?: DatabaseOptions;
+  index?: IndexOptions;
   server?: ServerOptions;
 };

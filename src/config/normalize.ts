@@ -1,45 +1,22 @@
 /**
  * @file Config normalization + validation (raw -> AppConfig)
  */
-import type { AppConfig, ServerOptions, StorageConfig } from "./types";
-import { builtinRegistry, createStorageFromRaw, type IORegistry, mergeRegistry } from "./resolver_io";
+import type { AppConfig, ServerOptions } from "./types";
+import type { StorageConfig } from "../types";
+import { isFileIO } from "../storage/guards";
 
-export type RawStorage = { index: string; data: string | Record<string, string> };
 export type RawAppConfig = {
   name?: string;
-  storage?: RawStorage;
+  /** Explicit FileIOs are required */
+  storage?: StorageConfig;
   database?: AppConfig["database"];
   index?: AppConfig["index"];
-  server?: Omit<ServerOptions, "wal">;
+  server?: ServerOptions;
 };
 
 /** Authoring helper to get type inference in user configs. */
 export function defineConfig(x: RawAppConfig): RawAppConfig {
   return x;
-}
-
-function isRawStorageDecl(x: unknown): x is RawStorage {
-  if (typeof x !== "object" || x === null) {
-    return false;
-  }
-  const obj = x as { [k: string]: unknown };
-  const ix = obj["index"];
-  const dt = obj["data"];
-  if (typeof ix !== "string") {
-    return false;
-  }
-  if (typeof dt === "string") {
-    return true;
-  }
-  if (typeof dt !== "object" || dt === null) {
-    return false;
-  }
-  for (const [, v] of Object.entries(dt)) {
-    if (typeof v !== "string") {
-      return false;
-    }
-  }
-  return true;
 }
 
 /** Validate raw config shape. Throws with a descriptive message on invalid. */
@@ -53,22 +30,18 @@ export function validateRawAppConfig(raw: unknown): void {
   if (!storageRaw || typeof storageRaw !== "object") {
     throw new Error("config.storage is required");
   }
-  if (!isRawStorageDecl(storageRaw)) {
-    throw new Error("storage must declare { index, data } URIs");
+  if (!isStorageConfigDirect(storageRaw)) {
+    throw new Error("storage must be explicit FileIOs (index + data)");
   }
 }
 
 /** Normalize raw config into runtime AppConfig and resolve IOs. */
-export async function normalizeConfig(
-  raw: unknown,
-  resolvers?: { io?: IORegistry; baseDir?: string },
-): Promise<AppConfig> {
+export async function normalizeConfig(raw: unknown): Promise<AppConfig> {
   validateRawAppConfig(raw);
   const cfg = raw as { [k: string]: unknown };
   const resolvedName = typeof cfg.name === "string" ? cfg.name : undefined;
-  const reg = mergeRegistry(builtinRegistry, resolvers?.io);
-  const s = cfg.storage as RawStorage;
-  const storage: StorageConfig = createStorageFromRaw({ index: s.index, data: s.data }, reg);
+  const s = cfg.storage as StorageConfig;
+  const storage: StorageConfig = s;
   return {
     name: resolvedName,
     storage,
@@ -76,4 +49,20 @@ export async function normalizeConfig(
     index: { ...((cfg.index as AppConfig["index"] | undefined) ?? {}) },
     server: { ...((cfg.server as AppConfig["server"]) ?? {}) },
   } satisfies AppConfig;
+}
+
+function isStorageConfigDirect(x: unknown): x is StorageConfig {
+  if (!x || typeof x !== "object") {
+    return false;
+  }
+  const obj = x as { [k: string]: unknown };
+  const idx = obj["index"];
+  const data = obj["data"];
+  if (!isFileIO(idx)) {
+    return false;
+  }
+  if (typeof data === "function") {
+    return true;
+  }
+  return isFileIO(data);
 }

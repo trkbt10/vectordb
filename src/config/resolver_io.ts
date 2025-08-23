@@ -3,6 +3,7 @@
  */
 import path from "node:path";
 import type { FileIO } from "../storage/types";
+import type { StorageConfig } from "../types";
 
 export type IORegistry = Record<
   string,
@@ -60,8 +61,7 @@ export function toURL(u: string): URL {
   }
 }
 
-export type DataIOResolver = FileIO | ((targetKey: string) => FileIO);
-export type StorageConfig = { index: FileIO; data: DataIOResolver };
+// StorageConfig is defined in src/types to be shared across layers
 
 /**
  *

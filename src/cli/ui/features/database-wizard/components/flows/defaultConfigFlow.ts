@@ -2,7 +2,7 @@
  * @file Default configuration FlowSchema for quick project setup.
  */
 import type { FlowSchema } from "../FlowWizard";
-import { DEFAULT_CONFIG_STEM } from "../../../../../config";
+import { DEFAULT_CONFIG_STEM } from "../../../../../../config";
 
 export const defaultConfigFlow: FlowSchema = {
   title: "Config Wizard",
@@ -95,13 +95,10 @@ export const defaultConfigFlow: FlowSchema = {
         const intent = String(a.intent || "local");
         const base = String(a.baseDir || ".vectordb");
         const storageDecl = (() => {
-          if (intent === "memory") {
-            return `index: 'mem:',\n    data: 'mem:'`;
+          if (intent === "memory" || intent === "browser") {
+            return `index: createMemoryFileIO(),\n    data: () => createMemoryFileIO()`;
           }
-          if (intent === "browser") {
-            return `index: 'opfs:',\n    data: 'opfs:'`;
-          }
-          return `index: 'file:${base}/index',\n    data: 'file:${base}/data'`;
+          return `index: createNodeFileIO('${base}/index'),\n    data: (ns) => createNodeFileIO('${base}/data/' + ns)`;
         })();
         const databaseBase = {
           dim: Number(a.dim || 3) || 3,
@@ -121,7 +118,7 @@ export const defaultConfigFlow: FlowSchema = {
           segmented: Boolean(a.segmented ?? true),
         };
         // Return JS ESM config content as a string
-        const js = `/** @file VectorDB executable config */\nimport { defineConfig } from 'vcdb/http-server';\n\nexport default defineConfig({\n  name: '${name}',\n  storage: {\n    ${storageDecl}\n  },\n  database: ${JSON.stringify(database)},\n  index: ${JSON.stringify(index)},\n  server: {\n    resultConsistency: true\n  }\n});\n`;
+        const js = `/** @file VectorDB executable config */\nimport { defineConfig } from 'vcdb/http-server';\nimport { createNodeFileIO } from 'vcdb/storage/node';\nimport { createMemoryFileIO } from 'vcdb/storage/memory';\n\nexport default defineConfig({\n  name: '${name}',\n  storage: {\n    ${storageDecl}\n  },\n  database: ${JSON.stringify(database)},\n  index: ${JSON.stringify(index)},\n  server: {\n    resultConsistency: true\n  }\n});\n`;
         return js;
       },
     },

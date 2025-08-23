@@ -8,7 +8,7 @@
  * @file Unit tests for state creation
  */
 import { createState } from "./create";
-import type { Metric, VectorDBOptions } from "../../types";
+import type { Metric, DatabaseOptions } from "../../types";
 
 describe("VectorDB/create", () => {
   it("creates bruteforce by default with cosine metric", () => {
@@ -20,7 +20,7 @@ describe("VectorDB/create", () => {
   });
   it("throws on unsupported metric and strategy", () => {
     const invalidMetric = "manhattan" as unknown as Metric;
-    const invalidStrategy = "foo" as unknown as NonNullable<VectorDBOptions["strategy"]>;
+    const invalidStrategy = "foo" as unknown as NonNullable<DatabaseOptions["strategy"]>;
     expect(() => createState({ dim: 2, metric: invalidMetric, strategy: "bruteforce" })).toThrow(/Unsupported metric/);
     expect(() => createState({ dim: 2, metric: "cosine", strategy: invalidStrategy })).toThrow(/Unsupported strategy/);
   });

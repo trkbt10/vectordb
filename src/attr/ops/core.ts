@@ -24,7 +24,7 @@ import {
   SearchHit,
   HNSWParams,
   IVFParams,
-  VectorDBOptions,
+  DatabaseOptions,
   RowInput,
 } from "../../types";
 import { isHnswVL, isIvfVL, isBfVL } from "../../util/guards";
@@ -157,7 +157,7 @@ export function buildWithStrategy<TMeta>(
   next: "bruteforce" | "hnsw" | "ivf",
   params?: { hnsw?: HNSWParams; ivf?: IVFParams },
 ): VectorStoreState<TMeta> {
-  const opts: VectorDBOptions = {
+  const opts: DatabaseOptions = {
     dim: vl.dim,
     metric: vl.metric,
     capacity: vl.store._capacity,
