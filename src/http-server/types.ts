@@ -46,6 +46,8 @@ export type ServerOptions = {
     /** Mount OpenAI-compatible route at /v1/embeddings */
     openAICompatRoute?: boolean;
   };
+  /** Enable time-based result consistency (bounded-staleness read + HEAD usage); default: true */
+  resultConsistency?: boolean;
 };
 
 import type { VectorDBOptions } from "../types";

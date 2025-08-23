@@ -4,6 +4,7 @@
 import { serve } from "@hono/node-server";
 import { createClientFromConfig } from "./client";
 import { normalizeConfig } from "./config";
+import { validateConfigFile } from "./config_validate";
 import type { FileIO } from "../storage/types";
 import { createApp } from "./app";
 import type { AppConfig } from "./types";
@@ -20,6 +21,16 @@ export async function startServerFromFile(configPath = "vectordb.config.json", o
   const p = path.resolve(configPath);
   const raw = await fs.readFile(p, "utf8");
   const rawCfg = JSON.parse(raw) as unknown;
+  // Validate and always warn on errors (do not swallow)
+  try {
+    const res = await validateConfigFile(p);
+    if (!res.ok) {
+      console.error(`Invalid config at ${res.path}:\n- ${res.errors.join("\n- ")}`);
+    }
+  } catch (e) {
+    const msg = e && typeof e === "object" && "message" in e ? String((e as { message?: unknown }).message) : String(e);
+    console.error(`Config validation failed: ${msg}`);
+  }
   const cfg: AppConfig = await normalizeConfig(rawCfg, { io: opts?.io, baseDir: path.dirname(p) });
   const client = await createClientFromConfig(cfg);
   const app = createApp(client, cfg);

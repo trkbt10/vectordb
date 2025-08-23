@@ -24,7 +24,11 @@ export async function createClientFromConfig(config: AppConfig): Promise<VectorD
   const lock = createAsyncLock();
 
   // Inject coord defaults (clock/epsilon) into index ops
-  const coordDefaults = { clock: config.server?.clock ?? systemClock, epsilonMs: Math.max(0, config.server?.epsilonMs ?? 0) };
+  const coordDefaults = {
+    clock: config.server?.clock ?? systemClock,
+    epsilonMs: Math.max(0, config.server?.epsilonMs ?? 0),
+    useHeadForReads: config.server?.resultConsistency !== false,
+  };
 
   return await connect({
     storage,

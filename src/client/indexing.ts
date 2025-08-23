@@ -24,7 +24,7 @@ export type StorageConfig = { index: FileIO; data: DataIOResolver };
 export function createIndexOps<TMeta>(
   persist: StorageConfig,
   defaults: ClientOptions = {},
-  coordDefaults?: { clock?: Clock; epsilonMs?: number },
+  coordDefaults?: { clock?: Clock; epsilonMs?: number; useHeadForReads?: boolean },
 ) {
   const shards = Math.max(1, defaults.shards ?? 1);
   const pgs = Math.max(1, defaults.pgs ?? 64);
@@ -60,7 +60,7 @@ export function createIndexOps<TMeta>(
       args: { baseName: string } & Partial<SaveIndexingOptions>,
     ) {
       const saveOpts = withSaveOptions(args) as SaveIndexingOptions & {
-        coord?: { clock?: Clock; epsilonMs?: number };
+        coord?: { clock?: Clock; epsilonMs?: number; useHeadForReads?: boolean };
       };
       // Pass through coordination defaults for server-controlled clock/epsilon
       saveOpts.coord = { ...(saveOpts.coord ?? {}), ...(coordDefaults ?? {}) };
@@ -68,7 +68,7 @@ export function createIndexOps<TMeta>(
     },
     async openState(args: { baseName: string }): Promise<VectorStoreState<TMeta>> {
       const openOpts = withOpenOptions(args.baseName) as OpenIndexingOptions & {
-        coord?: { clock?: Clock; epsilonMs?: number };
+        coord?: { clock?: Clock; epsilonMs?: number; useHeadForReads?: boolean };
       };
       openOpts.coord = { ...(openOpts.coord ?? {}), ...(coordDefaults ?? {}) };
       return await openIndexing<TMeta>(openOpts);

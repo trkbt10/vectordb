@@ -151,6 +151,10 @@ export function validateRawAppConfig(raw: unknown): ValidationResult {
       if (port !== undefined && !(typeof port === "number" && port > 0 && port < 65536)) {
         errors.push("server.port: must be 1..65535");
       }
+      const resultConsistency = (srv as Record<string, unknown>).resultConsistency;
+      if (resultConsistency !== undefined && typeof resultConsistency !== "boolean") {
+        errors.push("server.resultConsistency: must be boolean");
+      }
   }
 
   if (errors.length > 0) {

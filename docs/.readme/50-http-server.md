@@ -33,6 +33,8 @@ Extend your `vectordb.config.json` with a `server` block:
   "server": {
     "port": 8787,
     "cors": true,
+    // Enable time-based result consistency (bounded-staleness read via HEAD); default: true
+    "resultConsistency": true,
     "embeddings": {
       "provider": "openai",
       "model": "text-embedding-3-small",
@@ -41,6 +43,15 @@ Extend your `vectordb.config.json` with a `server` block:
   }
 }
 ```
+
+#### Result consistency (bounded staleness)
+
+- `server.resultConsistency` (default `true`)
+  - `true`: readers prefer `.head.json` when its `commitTs` is readable at `clock.now() - epsilonMs`.
+  - `false`: readers ignore `.head.json` and open the default manifest `${name}.manifest.json` directly.
+- Related knobs (optional): `server.clock`, `server.epsilonMs`.
+
+Config validation prints errors to stderr when invalid (never silently ignored). Use `npx vcdb validate-config` or check server startup logs.
 
 Storage URIs are scheme-based:
 
@@ -71,4 +82,3 @@ Notes:
   - `POST /embeddings` or `/v1/embeddings` → forwards to OpenAI embeddings with configured model/key
 
 Error handling uses Hono's `onError` and `notFound` conventions (no try/catch in handlers).
-
