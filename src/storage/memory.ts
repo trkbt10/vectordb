@@ -2,7 +2,7 @@
  * @file In-memory FileIO implementation
  */
 import type { FileIO } from "./types";
-import { toUint8 } from "./types";
+import { toUint8 } from "../util/bin";
 
 /** In-memory FileIO. Why: lightweight backend for tests and demos. */
 export function createMemoryFileIO(initial?: Record<string, Uint8Array | ArrayBuffer>): FileIO {

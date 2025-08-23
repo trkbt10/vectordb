@@ -2,9 +2,8 @@
  * @file Index file binary format (pointers to data segments + optional ANN)
  */
 import type { FileIO } from "../../storage/types";
-import { toUint8 } from "../../storage/types";
 import type { IndexEntry } from "../types";
-import { createReader, createWriter } from "../../util/bin";
+import { createReader, createWriter, toUint8 } from "../../util/bin";
 
 // Index file that references external data segments (no vectors inside)
 // Header: MAGIC u32 ('VLIX'), VERSION u32 (1)

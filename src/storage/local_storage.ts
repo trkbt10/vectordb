@@ -2,7 +2,7 @@
  * @file Browser localStorage-backed FileIO
  */
 import type { FileIO } from "./types";
-import { toUint8 } from "./types";
+import { toUint8 } from "../util/bin";
 
 function requireStorage(kind: "localStorage" | "sessionStorage"): Storage {
   const g = globalThis as unknown as { [k: string]: unknown };

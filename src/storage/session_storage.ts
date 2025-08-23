@@ -2,7 +2,7 @@
  * @file Browser sessionStorage-backed FileIO
  */
 import type { FileIO } from "./types";
-import { toUint8 } from "./types";
+import { toUint8 } from "../util/bin";
 
 function requireSession(): Storage {
   const s = (globalThis as unknown as { sessionStorage?: Storage }).sessionStorage;

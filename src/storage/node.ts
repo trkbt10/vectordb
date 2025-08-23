@@ -4,7 +4,7 @@
 import { readFile, rename, mkdir, rm, open } from "node:fs/promises";
 import { dirname, join as joinPath } from "node:path";
 import type { FileIO } from "./types";
-import { toUint8 } from "./types";
+import { toUint8 } from "../util/bin";
 
 /** Prefixed Node FileIO. Why: keep all artifacts under a base directory. */
 export function createNodeFileIO(baseDir: string): FileIO {

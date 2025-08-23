@@ -3,7 +3,7 @@
  * Why: minimal helpers around OPFS to avoid repetitive boilerplate.
  */
 import type { FileIO } from "./types";
-import { toUint8 } from "./types";
+import { toUint8 } from "../util/bin";
 
 type FileWritable = { write(data: Uint8Array): Promise<void>; close(): Promise<void> };
 type FileHandleWritable = { createWritable(options?: { keepExistingData?: boolean }): Promise<FileWritable> };

@@ -2,7 +2,7 @@
  * @file IndexedDB-backed FileIO for browsers
  */
 import type { FileIO } from "./types";
-import { toUint8 } from "./types";
+import { toUint8 } from "../util/bin";
 
 type IDBReq<T> = IDBRequest<T>;
 

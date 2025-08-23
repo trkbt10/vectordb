@@ -10,9 +10,4 @@ export type FileIO = {
   del?(path: string): Promise<void>;
 };
 
-/** Convert ArrayBuffer to Uint8Array (no-copy when possible). */
-export function toUint8(data: Uint8Array | ArrayBuffer): Uint8Array {
-  return data instanceof Uint8Array ? data : new Uint8Array(data);
-}
-
 export type { FileIO as BloblikeIO };
