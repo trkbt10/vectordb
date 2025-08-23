@@ -12,10 +12,10 @@ describe("config/normalize", () => {
     expect(cfg.name).toBe("a");
   });
 
-  it("validateRawAppConfig enforces required storage and FileIOs", () => {
+  it("validateRawAppConfig enforces required storage shape", () => {
     expect(() => validateRawAppConfig(null)).toThrow(/config must be an object/);
     expect(() => validateRawAppConfig({})).toThrow(/config.storage is required/);
-    expect(() => validateRawAppConfig({ storage: {} })).toThrow(/explicit FileIOs/);
+    expect(() => validateRawAppConfig({ storage: {} })).toThrow(/storage must be/i);
   });
 
   it("normalizeConfig keeps provided values and clones nested objects", async () => {
@@ -36,4 +36,3 @@ describe("config/normalize", () => {
     expect(out.server && out.server.port).toBe(1234);
   });
 });
-
