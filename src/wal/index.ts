@@ -6,4 +6,11 @@ export type { WalRecord } from "./format";
 export { createWalRuntime } from "./runtime";
 export type { WalRuntime } from "./runtime";
 export { crc32, addWalChecksum, readWalChecksum } from "./checksum";
-export * from "./errors";
+export {
+  WalTooShortError,
+  WalHeaderTruncatedError,
+  WalBadMagicError,
+  WalUnsupportedVersionError,
+  WalTruncatedRecordError,
+  WalDecodeError,
+} from "./errors";
