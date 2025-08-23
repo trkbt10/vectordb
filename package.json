@@ -1,6 +1,7 @@
 {
   "name": "vcdb",
   "version": "0.0.1",
+  "description": "Minimal, dependency‑free vector database with pluggable ANN strategies (bruteforce, HNSW, IVF), attribute filtering, and a clean persistence model (index/data split with CRUSH placement). Runs in Node.js, browsers (OPFS), Electron, and Tauri.",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -44,6 +45,7 @@
   ],
   "scripts": {
     "build": "vite build",
+    "postbuild": "node scripts/check-node-deps.mjs",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -52,17 +54,16 @@
     "test": "vitest",
     "test:cov": "vitest run --coverage",
     "cli": "bun run src/cli/main.tsx",
-    "serve": "node dist/http-server/index.cjs --config vectordb.config.json",
-    "validate:config": "bun run src/cli/tools/validate_config.ts",
-    "doc:compile": "node bin/doc-compile.mjs"
+    "doc:compile": "node scripts/doc-compile.mjs",
+    "check:node-deps": "node scripts/check-node-deps.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
-    "@types/react": "^19.1.10",
+    "@types/react": "^19.1.11",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",
     "@vitest/coverage-v8": "^3.2.4",
-    "eslint": "^9.33.0",
+    "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^54.1.1",

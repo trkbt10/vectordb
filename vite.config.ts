@@ -5,7 +5,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
-
+import { getViteEntries, getAllExternals } from "./build.entries";
+import type { Plugin } from "vite";
 export default defineConfig({
   plugins: [
     react(),
@@ -18,27 +19,15 @@ export default defineConfig({
       // Generate d.ts alongside built entries
       rollupTypes: false,
     }),
-  ],
+  ] as Plugin[],
   build: {
     outDir: "dist",
     lib: {
-      entry: {
-        index: "src/index.ts",
-        "client/index": "src/client/index.ts",
-        "cli/index": "src/cli/main.tsx",
-        "http-server/index": "src/http-server/index.ts",
-        "storage/node": "src/storage/node.ts",
-        "storage/memory": "src/storage/memory.ts",
-        "storage/opfs": "src/storage/opfs.ts",
-        "storage/local_storage": "src/storage/local_storage.ts",
-        "storage/session_storage": "src/storage/session_storage.ts",
-        "storage/indexeddb": "src/storage/indexeddb.ts",
-        "storage/types": "src/storage/types.ts",
-      },
+      entry: getViteEntries(),
       formats: ["cjs", "es"],
     },
     rollupOptions: {
-      external: ["ink", "react", "react-dom", "hono", "@hono/node-server", /node:.+/],
+      external: getAllExternals(),
     },
   },
 });

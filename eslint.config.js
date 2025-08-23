@@ -23,6 +23,7 @@ export default [
       "bin/**",
       "*.config.ts",
       "eslint-rules/**",
+      "scripts/**",
     ],
   },
 
