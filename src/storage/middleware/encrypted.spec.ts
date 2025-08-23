@@ -31,13 +31,21 @@ describeCryptoTests("Encrypted FileIO", () => {
 
   test("write/read with string key (key derivation)", async () => {
     const baseIO = createMemoryFileIO();
-    const io = await createEncryptedFileIO(baseIO, "my-secret-password");
+    const io = await createEncryptedFileIO(baseIO, "my-secret-password", {
+      pbkdf2: { salt: "my-app-specific-salt", iterations: 310000, hash: "SHA-256" },
+    });
 
     const testData = new Uint8Array([10, 20, 30]);
     await io.write("data.enc", testData);
 
     const readData = await io.read("data.enc");
     expect(Array.from(readData)).toEqual(Array.from(testData));
+  });
+
+  test("throws when string key provided without PBKDF2 salt", async () => {
+    const baseIO = createMemoryFileIO();
+    await expect(createEncryptedFileIO(baseIO, "pw-only"))
+      .rejects.toThrow("PBKDF2 salt must be provided in options.pbkdf2");
   });
 
   test("append operation", async () => {

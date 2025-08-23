@@ -6,6 +6,15 @@ import { toUint8 } from "../../util/bin";
 
 export type EncryptedFileIOOptions = {
   crypto?: Crypto;
+  pbkdf2?: {
+    // Salt used for key derivation when a string password is provided.
+    // Provide as bytes or a UTF-8 string. Required for string keys.
+    salt: Uint8Array | string;
+    // Iteration count; default 310000 per modern guidance.
+    iterations?: number;
+    // Hash algorithm for PBKDF2; default 'SHA-256'.
+    hash?: 'SHA-256' | 'SHA-384' | 'SHA-512';
+  };
 };
 
 // Helper to ensure we have an ArrayBuffer (not SharedArrayBuffer)
@@ -43,23 +52,35 @@ export async function createEncryptedFileIO(
   const cryptoKey = await (async () => {
     if (typeof encryptionKey === "string") {
       // Derive key from string using PBKDF2
+      if (!options.pbkdf2 || options.pbkdf2.salt === undefined) {
+        throw new Error(
+          "PBKDF2 salt must be provided in options.pbkdf2 when using a string encryptionKey",
+        );
+      }
       const encoder = new TextEncoder();
       const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(encryptionKey), "PBKDF2", false, [
         "deriveBits",
         "deriveKey",
       ]);
 
-      // Use a fixed salt for simplicity (in production, you might want to store this)
-      const salt = new Uint8Array([
-        0x73, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f, 0x73, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f,
-      ]);
+      // Resolve salt bytes from options
+      const saltBytes: Uint8Array = (() => {
+        const s = options.pbkdf2!.salt;
+        if (typeof s === 'string') {
+          return new TextEncoder().encode(s);
+        }
+        return s;
+      })();
+
+      const iterations = options.pbkdf2?.iterations ?? 310_000;
+      const hash = options.pbkdf2?.hash ?? 'SHA-256';
 
       return await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
-          salt,
-          iterations: 100000,
-          hash: "SHA-256",
+          salt: saltBytes,
+          iterations,
+          hash,
         },
         keyMaterial,
         { name: "AES-GCM", length: 256 },
