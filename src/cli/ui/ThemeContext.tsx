@@ -34,6 +34,9 @@ const ThemeContext = React.createContext<ThemeContextType>({
   toggle: () => undefined,
 });
 
+/**
+ * ThemeProvider: supply a named theme and toggling helpers to children.
+ */
 export function ThemeProvider({ children, initial = "classic" as const }: { children: React.ReactNode; initial?: "classic" | "subtle" }) {
   const [name, setName] = React.useState<"classic" | "subtle">(initial);
   const setTheme = (n: "classic" | "subtle") => setName(n);
@@ -42,6 +45,7 @@ export function ThemeProvider({ children, initial = "classic" as const }: { chil
   return <ThemeContext.Provider value={{ theme, name, setTheme, toggle }}>{children}</ThemeContext.Provider>;
 }
 
+/** Access the current theme and helpers. */
 export function useTheme(): ThemeContextType {
   return React.useContext(ThemeContext);
 }

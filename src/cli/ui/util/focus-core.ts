@@ -7,6 +7,16 @@ type MaybeId = FocusId | undefined;
 
 type Node = { id: FocusId; parentId?: FocusId };
 
+/**
+ * FocusTree: headless hierarchical focus manager.
+ *
+ * Notes
+ * - Kept as a class for compatibility with existing tests and call sites
+ *   that instantiate via `new FocusTree(...)`.
+ * - Prefer functional style elsewhere; this module avoids `let` and uses
+ *   small helper guards to satisfy project lint rules.
+ */
+// eslint-disable-next-line no-restricted-syntax -- Maintain constructor API compatibility
 export class FocusTree {
   private focusId: MaybeId;
   private activeId: MaybeId;
@@ -108,15 +118,17 @@ export class FocusTree {
     if (this.activeId === id) {
       return true;
     }
-    let cur = this.activeId;
-    while (cur) {
+    const hasAncestor = (cur: MaybeId): boolean => {
+      if (!cur) {
+        return false;
+      }
       const p = this.nodes.get(cur)?.parentId;
       if (p === id) {
         return true;
       }
-      cur = p;
-    }
-    return false;
+      return hasAncestor(p);
+    };
+    return hasAncestor(this.activeId);
   }
 
   /** True if any node is currently active (locked). */
