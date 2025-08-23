@@ -1,8 +1,7 @@
 ## HTTP Server (Hono)
 
-- Built-in REST server using `hono` + `@hono/node-server`.
-- Start from the CLI with `--serve` and configure via `vectordb.config.json`.
-- Vite builds a dedicated server bundle at `dist/http-server/index.{js,cjs}`.
+- REST server using `hono` + `@hono/node-server`。
+- CLI の `--serve` で起動し、`vectordb.config.*` で設定します。
 
 ### Start
 
@@ -17,7 +16,7 @@ npx {{NAME}} --serve --config ./vectordb.config.json
 npm run serve
 ```
 
-### Config: server options (vite-like)
+### Config: server options
 
 Author a JS ESM config (executable) with a `server` block:
 
@@ -54,7 +53,7 @@ export default defineConfig({
   - `false`: readers ignore `.head.json` and open the default manifest `${name}.manifest.json` directly.
 - Related knobs (optional): `server.clock`, `server.epsilonMs`.
 
-Config validation prints errors to stderr when invalid (never silently ignored). Use `npx {{NAME}} validate-config` or check server startup logs.
+Invalid configs print errors to stderr. Check server startup logs when troubleshooting.
 
 Storage URIs are scheme-based:
 

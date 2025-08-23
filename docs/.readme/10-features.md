@@ -1,8 +1,8 @@
 ## Features
 
-- Pluggable ANN: bruteforce, HNSW, IVF (with retraining)
-- Attribute filtering: callback or expression based
-- Persistence: index/data separation, CRUSH placement, manifest + catalog
+- ANN strategies: bruteforce, HNSW, IVF
+- Attribute filtering: callback or expression
+- Persistence: index/data split, CRUSH placement, manifest + catalog
 - Storage backends: Node FS, Memory, OPFS, S3
-- Single, knex‑like `connect()` API to open or create
-- Tiny CLI for quick inspection, search, edit, rebuild
+- `connect()` API: open existing or create
+- CLI: inspect, search, edit, rebuild
