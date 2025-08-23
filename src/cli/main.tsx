@@ -11,6 +11,7 @@ import { startServerFromFile } from "../http-server";
 
 // Minimal arg parsing for --config or -c (no let)
 const argv = process.argv.slice(2);
+const wantsHelp = argv.includes("--help") || argv.includes("-h") || argv[0] === "help";
 const configPath: string | undefined = (() => {
   const idx = argv.findIndex((a) => a === "--config" || a === "-c");
   if (idx < 0) {
@@ -33,8 +34,14 @@ const configPath: string | undefined = (() => {
 const shouldServe = argv.includes("--serve") || argv.includes("serve");
 const portIdx = argv.findIndex((a) => a === "--port" || a === "-p");
 const portVal = portIdx >= 0 ? Number(argv[portIdx + 1]) : undefined;
+const hostIdx = argv.findIndex((a) => a === "--host" || a === "-H");
+const hostVal = hostIdx >= 0 ? String(argv[hostIdx + 1]) : undefined;
 
 async function main() {
+  if (wantsHelp) {
+    console.log(`\nUsage: vcdb [command] [options]\n\nCommands:\n  serve                 Start HTTP server using config (required)\n\nOptions:\n  --config, -c <path>   Path to executable config (vectordb.config.*)\n  --port, -p <number>   Override server.port from config\n  --host, -H <host>     Override server.host from config\n  --help, -h            Show this help\n\nExamples:\n  vcdb                   # Launch interactive UI\n  vcdb serve             # Start server using vectordb.config.*\n  vcdb serve -c ./vectordb.config.mjs\n  vcdb serve -p 8787 -H 0.0.0.0\n`);
+    return;
+  }
   // If a config was explicitly provided, validate and normalize it to a supported file first
   const cfgPath: string | undefined = await (async () => {
     if (!configPath) {
@@ -53,11 +60,8 @@ async function main() {
     render(<App initialConfigPath={cfgPath} />);
     return;
   }
-  // Serve mode
-  if (portVal !== undefined) {
-    console.warn(`--port override not supported for executable configs; set server.port in ${DEFAULT_CONFIG_STEM}*`);
-  }
-  await startServerFromFile(effectivePath);
+  // Serve mode: prefer config; override with CLI flags if provided.
+  await startServerFromFile(effectivePath, { port: portVal, host: hostVal });
 }
 
 main().catch((e) => {

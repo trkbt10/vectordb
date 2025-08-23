@@ -55,7 +55,8 @@
     "test:cov": "vitest run --coverage",
     "cli": "bun run src/cli/main.tsx",
     "doc:compile": "node scripts/doc-compile.mjs",
-    "check:node-deps": "node scripts/check-node-deps.mjs"
+    "check:node-deps": "node scripts/check-node-deps.mjs",
+    "seed": "bun run src/cli/tools/seed.ts"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
