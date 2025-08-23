@@ -1,0 +1,6 @@
+# List section files to exclude from README compilation.
+# Supports simple globs with '*'. Examples:
+# 50-http-server.md
+# 4*-*.md
+# *-experimental.md
+
