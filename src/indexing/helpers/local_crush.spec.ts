@@ -5,9 +5,9 @@
 import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
-import { createState } from "../attr/state/create";
-import { persistIndex, openFromIndex } from "../attr/ops/index_persist";
-import { createLocalCrushEnv } from "./helpers/local_crush";
+import { createState } from "../../attr/state/create";
+import { persistIndex, openFromIndex } from "../../attr/ops/index_persist";
+import { createLocalCrushEnv } from "./local_crush";
 
 describe("indexing/local_crush", () => {
   it("saves segments across shard directories and opens back", async () => {

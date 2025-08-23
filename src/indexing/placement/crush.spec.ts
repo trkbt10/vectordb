@@ -2,8 +2,8 @@
  * @file Tests for CRUSH-like deterministic mapping
  */
 
-import { crushLocate } from "./placement/crush";
-import type { CrushMap } from "./types";
+import { crushLocate } from "./crush";
+import type { CrushMap } from "../types";
 
 describe("indexing/crush", () => {
   it("maps same id deterministically to the same pg/primary", () => {

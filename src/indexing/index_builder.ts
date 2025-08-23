@@ -2,7 +2,7 @@
  * @file Index builder for separated layout (writes index + manifest)
  */
 import type { VectorStoreState } from "../types";
-import type { IndexEntry } from "./types";
+import type { IndexEntry, IndexIOCtx } from "./types";
 import { encodeIndexFile } from "./formats/index_file";
 import type { ResolveIndexIO } from "./types";
 import { encodeMetric, encodeStrategy } from "../constants/format";
@@ -48,8 +48,8 @@ export async function writeIndexFile<TMeta>(
 /** Write a placement manifest (segment name -> targetKey) for observability. */
 export async function writePlacementManifest(
   baseName: string,
-  manifest: { segments: { name: string; targetKey: string }[]; crush?: unknown },
-  opts: { resolveIndexIO: ResolveIndexIO },
+  manifest: { segments: { name: string; targetKey: string }[]; crush?: unknown; epoch?: number; commitTs?: number },
+  opts: IndexIOCtx,
 ): Promise<void> {
   const m = { base: baseName, ...manifest };
   const bytes = new TextEncoder().encode(JSON.stringify(m));

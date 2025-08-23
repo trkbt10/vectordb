@@ -36,6 +36,9 @@ describe("result-consistency: multiple clients on shared WAL + storage", () => {
     expect(await reader.has(2)).toBe(true);
     expect(await reader.has(3)).toBe(true);
     expect(await reader.has(4)).toBe(true);
+    // Metadata should match what writers produced
+    expect((await reader.get(1))?.meta).toEqual({ tag: "a" });
+    expect((await reader.get(4))?.meta).toEqual({ tag: "d" });
 
     // Optional: save a snapshot from the reader to persist the current state
     await reader.index.saveState(reader.state, { baseName: "db" });
@@ -44,5 +47,7 @@ describe("result-consistency: multiple clients on shared WAL + storage", () => {
     expect(await reader2.has(2)).toBe(true);
     expect(await reader2.has(3)).toBe(true);
     expect(await reader2.has(4)).toBe(true);
+    expect((await reader2.get(2))?.meta).toEqual({ tag: "b" });
+    expect((await reader2.get(3))?.meta).toEqual({ tag: "c" });
   });
 });

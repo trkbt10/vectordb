@@ -4,6 +4,7 @@
 import { connect, type VectorDB } from "../client";
 import type { AppConfig } from "./types";
 import { createAsyncLock } from "../util/async_lock";
+import { systemClock } from "../coordination/clock";
 // no unused types
 
 /** Create a client from an AppConfig (storage + DB + index). */
@@ -22,10 +23,14 @@ export async function createClientFromConfig(config: AppConfig): Promise<VectorD
   // WAL + lock + afterWrite policy based on config
   const lock = createAsyncLock();
 
+  // Inject coord defaults (clock/epsilon) into index ops
+  const coordDefaults = { clock: config.server?.clock ?? systemClock, epsilonMs: Math.max(0, config.server?.epsilonMs ?? 0) };
+
   return await connect({
     storage,
     database,
     index: { ...(index ?? {}), name },
     lock,
+    coordDefaultsForIndexing: coordDefaults,
   });
 }

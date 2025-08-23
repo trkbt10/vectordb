@@ -6,6 +6,7 @@ import type { SaveIndexingOptions, IndexingBaseOptions, OpenIndexingOptions } fr
 import type { FileIO } from "../storage/types";
 import type { VectorStoreState } from "../types";
 import { planRebalance, applyRebalance, type MovePlan } from "../indexing/placement/rebalance";
+import type { Clock } from "../coordination/clock";
 
 export type ClientOptions = Partial<Pick<SaveIndexingOptions, "segmented" | "segmentBytes" | "includeAnn">> & {
   shards?: number;
@@ -20,7 +21,11 @@ export type StorageConfig = { index: FileIO; data: DataIOResolver };
  * Compose persistence helpers for a client.
  * Why: centralize CRUSH placement and IO resolution so callers don't handle paths or target mapping directly.
  */
-export function createIndexOps<TMeta>(persist: StorageConfig, defaults: ClientOptions = {}) {
+export function createIndexOps<TMeta>(
+  persist: StorageConfig,
+  defaults: ClientOptions = {},
+  coordDefaults?: { clock?: Clock; epsilonMs?: number },
+) {
   const shards = Math.max(1, defaults.shards ?? 1);
   const pgs = Math.max(1, defaults.pgs ?? 64);
   const replicas = Math.max(1, defaults.replicas ?? 1);
@@ -50,12 +55,23 @@ export function createIndexOps<TMeta>(persist: StorageConfig, defaults: ClientOp
     ...(over ?? {}),
   });
   return {
-    async saveState(state: VectorStoreState<TMeta>, args: { baseName: string } & Partial<SaveIndexingOptions>) {
-      const saveOpts = withSaveOptions(args);
+    async saveState(
+      state: VectorStoreState<TMeta>,
+      args: { baseName: string } & Partial<SaveIndexingOptions>,
+    ) {
+      const saveOpts = withSaveOptions(args) as SaveIndexingOptions & {
+        coord?: { clock?: Clock; epsilonMs?: number };
+      };
+      // Pass through coordination defaults for server-controlled clock/epsilon
+      saveOpts.coord = { ...(saveOpts.coord ?? {}), ...(coordDefaults ?? {}) };
       await saveIndexing(state, saveOpts);
     },
     async openState(args: { baseName: string }): Promise<VectorStoreState<TMeta>> {
-      return await openIndexing<TMeta>(withOpenOptions(args.baseName));
+      const openOpts = withOpenOptions(args.baseName) as OpenIndexingOptions & {
+        coord?: { clock?: Clock; epsilonMs?: number };
+      };
+      openOpts.coord = { ...(openOpts.coord ?? {}), ...(coordDefaults ?? {}) };
+      return await openIndexing<TMeta>(openOpts);
     },
     async rebuildState(args: { baseName: string }): Promise<VectorStoreState<TMeta>> {
       return await rebuildIndexingFromData<TMeta>(withOpenOptions(args.baseName));

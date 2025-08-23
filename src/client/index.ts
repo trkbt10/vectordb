@@ -15,6 +15,7 @@ import { createWalRuntime } from "../wal/index";
 import { createAutoSaveAfterWrite } from "./autosave";
 export type { VectorDB } from "./types";
 export type { ClientOptions };
+import type { Clock } from "../coordination/clock";
 
 /**
  * Connect options.
@@ -36,6 +37,8 @@ export type ConnectDeps = {
   wal?: { io: FileIO; name: string };
   lock?: AsyncLock;
   autoSave?: { ops?: number; intervalMs?: number };
+  /** Server-injected defaults for clock/epsilon used by open/save */
+  coordDefaultsForIndexing?: { clock?: Clock; epsilonMs?: number };
 };
 
 function isMissingStateError(e: unknown): boolean {
@@ -85,7 +88,7 @@ export async function connect<TMeta extends Record<string, unknown>>(
 ): Promise<VectorDB<TMeta>> {
   const { storage, database: databaseOptions, index: indexOpts = {}, wal, autoSave, lock } = deps;
   const name = (indexOpts as { name?: string })?.name ?? "db";
-  const indexOperations = createIndexOps<TMeta>(storage, indexOpts);
+  const indexOperations = createIndexOps<TMeta>(storage, indexOpts, deps.coordDefaultsForIndexing);
   const state = await resolveState<TMeta>(name, indexOperations, databaseOptions, opts?.onMissing);
   const walIO = wal?.io ?? storage.index;
   const walName = wal?.name ?? `${name}.wal`;

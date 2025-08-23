@@ -13,6 +13,10 @@ import { createState } from "../../attr/state/create";
 import { normalizeVectorInPlace } from "../../util/math";
 import { writeSegments } from "../placement/segmenter";
 import { writeIndexFile, writePlacementManifest } from "../index_builder";
+import { writeHead, readHead } from "../head_io";
+import { computeCommitTs, commitWait } from "../../coordination/commit";
+import { systemClock, type Clock } from "../../coordination/clock";
+import { isReadableAt } from "../../coordination/head";
 import { writeCatalog, readCatalog } from "../catalog";
 import { encodeMetric, encodeStrategy, decodeMetric, decodeStrategy } from "../../constants/format";
 import { buildHNSWFromStore, buildIVFFromStore } from "../../attr/ops/core";
@@ -27,16 +31,31 @@ export async function saveIndexing<TMeta>(vl: VectorStoreState<TMeta>, opts: Sav
     segmented: opts.segmented,
     segmentBytes: opts.segmentBytes,
   });
-  // 2) Write placement manifest (index-only IO)
-  await writePlacementManifest(
-    opts.baseName,
-    { segments: manifest.segments, crush: opts.crush },
-    { resolveIndexIO: opts.resolveIndexIO },
-  );
-  // 3) Write catalog (index-only IO)
+  // Coordination parameters (optional)
+  const coord = (opts as unknown as {
+    coord?: { lastCommittedTs?: number; epoch?: number; epsilonMs?: number; clock?: Clock };
+  }).coord;
+  const clock = coord?.clock ?? systemClock;
+  const epsilon = Math.max(0, coord?.epsilonMs ?? 0);
+  const prepareTs = clock.now();
+
+  // 2) Write catalog (index-only IO)
   await writeCatalog(
     opts.baseName,
     { dim: vl.dim, metricCode: encodeMetric(vl.metric), strategyCode: encodeStrategy(vl.strategy) },
+    { resolveIndexIO: opts.resolveIndexIO },
+  );
+  // 3) Write placement manifest with epoch/commitTs metadata (before index build)
+  const commitTs = computeCommitTs({
+    prepareTs,
+    lastCommittedTs: coord?.lastCommittedTs ?? 0,
+    nowTs: clock.now(),
+    delta: 1,
+  });
+  const epoch = coord?.epoch ?? 0;
+  await writePlacementManifest(
+    opts.baseName,
+    { segments: manifest.segments, crush: opts.crush, epoch, commitTs },
     { resolveIndexIO: opts.resolveIndexIO },
   );
   // 4) Build index file (index-only IO)
@@ -45,11 +64,27 @@ export async function saveIndexing<TMeta>(vl: VectorStoreState<TMeta>, opts: Sav
     resolveIndexIO: opts.resolveIndexIO,
     includeAnn: opts.includeAnn,
   });
+  // 5) Update HEAD pointer (no CAS here; assume single-writer lock outside)
+  await writeHead(
+    opts.baseName,
+    { manifest: `${opts.baseName}.manifest.json`, epoch, commitTs },
+    { resolveIndexIO: opts.resolveIndexIO },
+  );
+  // 6) Commit-wait for external consistency if epsilon > 0
+  if (epsilon > 0) {
+    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    await commitWait(commitTs, epsilon, () => clock.now(), sleep);
+  }
 }
 
 /** Open a separated index/data layout using CRUSH to resolve segment locations. */
 export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): Promise<VectorStoreState<TMeta>> {
   const base = opts.baseName;
+  // Coordination for bounded staleness on read
+  const coord = (opts as unknown as { coord?: { epsilonMs?: number; clock?: Clock } }).coord;
+  const clock = coord?.clock ?? systemClock;
+  const epsilon = Math.max(0, coord?.epsilonMs ?? 0);
+  const readTs = clock.now() - epsilon;
   const idxU8 = await (async () => {
     try {
       return await opts.resolveIndexIO().read(`${base}.index`);
@@ -73,10 +108,12 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
   // resolve per-segment IO via CRUSH(id)
   const segReaders = new Map<string, DataSegmentReader>();
   const segTarget = new Map<string, string>();
-  // Prefer manifest mapping if available (stable under crushmap changes)
+  // Prefer manifest mapping selected via HEAD (bounded staleness), else default manifest
   const manifest = await (async () => {
     try {
-      const m = await opts.resolveIndexIO().read(`${base}.manifest.json`);
+      const head = await readHead(base, { resolveIndexIO: opts.resolveIndexIO });
+      const manifestPath = head && isReadableAt(head, readTs) ? head.manifest : `${base}.manifest.json`;
+      const m = await opts.resolveIndexIO().read(manifestPath);
       return JSON.parse(new TextDecoder().decode(m)) as { segments: { name: string; targetKey: string }[] };
     } catch {
       return null;

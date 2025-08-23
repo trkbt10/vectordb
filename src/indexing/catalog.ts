@@ -1,7 +1,7 @@
 /**
  * @file Catalog for separated index/data: persists global params for rebuilds
  */
-import type { ResolveIndexIO } from "./types";
+import type { IndexIOCtx } from "./types";
 
 export type Catalog = {
   version: number;
@@ -16,7 +16,7 @@ const CATALOG_VERSION = 1;
 export async function writeCatalog(
   baseName: string,
   data: { dim: number; metricCode: number; strategyCode: number },
-  opts: { resolveIndexIO: ResolveIndexIO },
+  opts: IndexIOCtx,
 ): Promise<void> {
   const cat: Catalog = {
     version: CATALOG_VERSION,
@@ -29,7 +29,7 @@ export async function writeCatalog(
 }
 
 /** Read catalog.json if present; returns null when absent/invalid. */
-export async function readCatalog(baseName: string, opts: { resolveIndexIO: ResolveIndexIO }): Promise<Catalog | null> {
+export async function readCatalog(baseName: string, opts: IndexIOCtx): Promise<Catalog | null> {
   try {
     const u8 = await opts.resolveIndexIO().read(`${baseName}.catalog.json`);
     const cat = JSON.parse(new TextDecoder().decode(u8)) as Catalog;

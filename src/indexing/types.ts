@@ -20,6 +20,11 @@ export type LocateResult = { pg: number; primaries: string[] };
 export type ResolveDataIO = (targetKey: string) => FileIO;
 export type ResolveIndexIO = () => FileIO;
 
+/** Common context: provides index IO resolver. */
+export type IndexIOCtx = { resolveIndexIO: ResolveIndexIO };
+/** Common context: provides both data and index IO resolvers. */
+export type DataIndexIOCtx = { resolveDataIO: ResolveDataIO; resolveIndexIO: ResolveIndexIO };
+
 export type IndexingBaseOptions = {
   baseName: string;
   indexDir?: string; // default '.vlindex'

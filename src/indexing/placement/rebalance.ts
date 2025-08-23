@@ -1,7 +1,7 @@
 /**
  * @file Rebalance utilities for CRUSH map updates (segment relocation)
  */
-import type { CrushMap, ResolveDataIO, ResolveIndexIO } from "../types";
+import type { CrushMap, IndexIOCtx, DataIndexIOCtx } from "../types";
 
 export type PlacementManifest = { segments: { name: string; targetKey: string }[] };
 
@@ -27,7 +27,7 @@ function targetForPg(pg: number, crush: CrushMap): string {
  */
 export async function readManifest(
   baseName: string,
-  opts: { resolveIndexIO: ResolveIndexIO },
+  opts: IndexIOCtx,
 ): Promise<PlacementManifest | null> {
   try {
     const u8 = await opts.resolveIndexIO().read(`${baseName}.manifest.json`);
@@ -43,7 +43,7 @@ export async function readManifest(
 export async function writeManifest(
   baseName: string,
   m: PlacementManifest,
-  opts: { resolveIndexIO: ResolveIndexIO },
+  opts: IndexIOCtx,
 ): Promise<void> {
   const u8 = new TextEncoder().encode(JSON.stringify(m));
   await opts.resolveIndexIO().atomicWrite(`${baseName}.manifest.json`, u8);
@@ -71,7 +71,7 @@ export function planRebalance(manifest: PlacementManifest, next: CrushMap): Move
 export async function applyRebalance(
   baseName: string,
   plan: MovePlan[],
-  opts: { resolveDataIO: ResolveDataIO; resolveIndexIO: ResolveIndexIO; verify?: boolean; cleanup?: boolean },
+  opts: DataIndexIOCtx & { verify?: boolean; cleanup?: boolean },
 ): Promise<void> {
   const manifest = (await readManifest(baseName, { resolveIndexIO: opts.resolveIndexIO })) ?? { segments: [] };
   const map = new Map<string, string>(manifest.segments.map((s) => [s.name, s.targetKey]));

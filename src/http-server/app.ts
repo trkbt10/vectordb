@@ -9,6 +9,10 @@ import { mountEmbeddingsRoutes } from "./embeddings";
 import { redactConfig } from "./utils";
 import type { VectorDB } from "../client";
 import type { RouteContext } from "./routes/context";
+import { createMemoryLock } from "../coordination/lock";
+import { systemClock } from "../coordination/clock";
+import { readHead, writeHead } from "../indexing/head_io";
+import { tryUpdateHead } from "../coordination/head";
 /* no direct type import to avoid unused warnings; use inline import() */
 import { getById } from "./routes/vectors/get_by_id";
 import { deleteById } from "./routes/vectors/delete_by_id";
@@ -27,6 +31,11 @@ import { find as findVector } from "./routes/vectors/find";
 export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppConfig) {
   const app = new Hono();
   const wrapped = client;
+  const clock = cfg.server?.clock ?? systemClock;
+  const epsilonMs = Math.max(0, cfg.server?.epsilonMs ?? 0);
+  const lockProvider = cfg.server?.lock ?? createMemoryLock(clock);
+  const lockName = cfg.server?.lockName ?? (cfg.name ?? "db");
+  const lockTtlMs = Math.max(1, cfg.server?.lockTtlMs ?? 30000);
 
   app.onError((err: Error & { status?: number }) => {
     const message = err.message ?? String(err);
@@ -82,8 +91,47 @@ export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppCon
   app.post("/vectors/find", (c) => findVector(c, ctx));
 
   app.post("/save", async (c: Context) => {
-    await wrapped.index.saveState(wrapped.state, { baseName: cfg.name ?? "db" });
-    return c.json({ ok: true });
+    const base = cfg.name ?? "db";
+    if (!cfg.storage) {
+      return c.json({ ok: false, error: { message: "storage_not_configured" } }, 500);
+    }
+    const resolveIndexIO = () => cfg.storage!.index;
+    // Acquire shared lock (single-writer) with TTL
+    const acq = lockProvider.acquire(lockName, lockTtlMs, "server");
+    if (!acq.ok) {
+      return c.json({ ok: false, error: { message: "lock_unavailable" } }, 409);
+    }
+    try {
+      // Read current HEAD for epoch/lastCommittedTs
+      const current = await readHead(base, { resolveIndexIO });
+      const lastCommittedTs = current?.commitTs ?? 0;
+      const epoch = current?.epoch ?? 0;
+      // Save with coordination parameters (excess property on variable avoids excess-prop check)
+      const args: { baseName: string } & { [k: string]: unknown } = { baseName: base };
+      (args as { coord?: { clock?: typeof clock; epsilonMs?: number; lastCommittedTs?: number; epoch?: number } }).coord = {
+        clock,
+        epsilonMs,
+        lastCommittedTs,
+        epoch,
+      };
+      await wrapped.index.saveState(wrapped.state, args as { baseName: string });
+      // CAS update of HEAD using manifest metadata
+      try {
+        const mbytes = await resolveIndexIO().read(`${base}.manifest.json`);
+        const m = JSON.parse(new TextDecoder().decode(mbytes)) as { epoch?: number; commitTs?: number };
+        const next = { manifest: `${base}.manifest.json`, epoch: m.epoch ?? epoch, commitTs: m.commitTs ?? lastCommittedTs };
+        const cur2 = await readHead(base, { resolveIndexIO });
+        const cas = tryUpdateHead(cur2, next);
+        if (cas.ok) {
+          await writeHead(base, cas.head, { resolveIndexIO });
+        }
+      } catch {
+        // best-effort; ignore
+      }
+      return c.json({ ok: true });
+    } finally {
+      lockProvider.release(lockName, acq.epoch, "server");
+    }
   });
 
   if (cfg.server?.embeddings) {

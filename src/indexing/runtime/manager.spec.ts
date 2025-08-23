@@ -1,13 +1,13 @@
 /**
  * @file Integration test for indexing manager (save/open)
  */
-import { createState } from "../attr/state/create";
-import { saveIndexing, openIndexing } from "./runtime/manager";
-import type { CrushMap } from "./types";
-import { createMemoryFileIO } from "../storage/memory";
-import { DataSegmentWriter } from "./formats/data_segment";
-import { encodeIndexFile } from "./formats/index_file";
-import { encodeMetric, encodeStrategy } from "../constants/format";
+import { createState } from "../../attr/state/create";
+import { saveIndexing, openIndexing } from "./manager";
+import type { CrushMap } from "../types";
+import { createMemoryFileIO } from "../../storage/memory";
+import { DataSegmentWriter } from "../formats/data_segment";
+import { encodeIndexFile } from "../formats/index_file";
+import { encodeMetric, encodeStrategy } from "../../constants/format";
 
 describe("indexing/manager", () => {
   it("saves to segments and opens via index + CRUSH", async () => {
