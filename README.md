@@ -244,31 +244,74 @@ All adapters implement the same `FileIO` interface:
 import type { FileIO } from "vcdb/storage/types";
 ```
 
+## CLI
+
+The `vcdb` CLI supports an interactive TUI and a server mode.
+
+- Default: run the interactive UI.
+- `serve`: start the HTTP server from an executable config.
+
+Usage:
+
+```
+vcdb [command] [options]
+
+Commands:
+  serve                 Start HTTP server using config (required)
+
+Options:
+  --config, -c <path>   Path to executable config (vectordb.config.*)
+  --port, -p <number>   Override server.port from config
+  --host, -H <host>     Override server.host from config
+  --help, -h            Show CLI help
+```
+
+Examples:
+
+```
+# Launch interactive UI
+vcdb
+
+# Start server using the executable config (looks for vectordb.config.*)
+vcdb serve
+
+# Explicit config path
+vcdb serve -c ./vectordb.config.mjs
+
+# Override host/port (falls back to config when not provided)
+vcdb serve -p 8787 -H 0.0.0.0
+```
+
+Notes:
+
+- `serve` requires a valid executable config. If no config is found, the CLI exits with an error.
+- When both CLI flags and config provide `server.port`/`server.host`, CLI flags take precedence.
+
 ## HTTP Server (Hono)
 
 - REST server using `hono` + `@hono/node-server`。
-- CLI の `--serve` で起動し、`vectordb.config.*` で設定します。
+- CLI の `serve` で起動し、`vectordb.config.*`（実行可能な JS/TS）で設定します。
 
 ### Start
 
 ```bash
-# Build outputs (includes http-server)
-npm run build
+# Start via CLI (uses vectordb.config.*)
+vcdb serve
 
-# Start via CLI (uses vectordb.config.json)
-npx vcdb --serve --config ./vectordb.config.json
+# With an explicit config path
+vcdb serve --config ./vectordb.config.mjs
 
-# Or directly run the built server bundle
-npm run serve
+# Override port/host (CLI flags take precedence over config)
+vcdb serve -p 8787 -H 0.0.0.0
 ```
 
 ### Config: server options
 
-Author a JS ESM config (executable) with a `server` block:
+Author an executable config with a `server` block (mjs, mts, ts, js, cjs supported; JSON is not supported):
 
 ```js
-// vectordb.config.* (mjs, js, cjs, mts, cts, ts)
-import { defineConfig } from "vcdb/http-server";
+// vectordb.config.* (mjs, mts, ts, js, cjs)
+import { defineConfig } from "vcdb/config";
 
 export default defineConfig({
   name: "db",
@@ -279,6 +322,7 @@ export default defineConfig({
   database: { dim: 3, metric: "cosine", strategy: "bruteforce" },
   index: { name: "db", segmented: true },
   server: {
+    host: "0.0.0.0",
     port: 8787,
     cors: true,
     // Enable time-based result consistency (bounded-staleness read via HEAD); default: true
@@ -313,8 +357,8 @@ Notes:
 
 - `server.cors`: `true` to allow all, or an object matching Hono's CORS options.
 - `server.embeddings.provider: "openai"` exposes POST `/embeddings` and `/v1/embeddings` (OpenAI-compatible). API key is read from `OPENAI_API_KEY` or `server.embeddings.apiKey`.
-- Optional `--port` or `-p` CLI flag overrides `server.port` when using `--serve`.
-- Config formats supported by loader: mjs, js, cjs, mts, cts, ts (discovery order). JSON is not supported.
+- CLI flags `--port/-p` と `--host/-H` は config の値より優先されます。
+- Config formats supported by loader: mjs, mts, ts, js, cjs（JSON は未対応）。
 
 ### REST endpoints
 
@@ -323,14 +367,14 @@ Notes:
 - `GET /config` → server config (secrets redacted)
 - `GET /vectors/:id` → `{ id, vector, meta }`
 - `DELETE /vectors/:id` → `{ ok }`
-- `POST /vectors` → body `{ id, vector:number[], meta?, upsert? }`
-- `POST /vectors/bulk` → body `{ rows:[{ id, vector, meta? }], upsert? }` returns `{ ok, count }`
-- `POST /search` → body `{ vector:number[], k?, expr? }` returns `{ hits }`
-- `POST /save` → persist current state via index ops
+- `POST /vectors` → Insert-only. Single `{ id, vector:number[], meta? }` or bulk `{ rows:[{ id, vector, meta? }] }`
+- `PUT /vectors` → Bulk upsert. Body `{ rows:[{ id, vector, meta? }] }`
+- `PUT /vectors/:id` → Single upsert. Body `{ vector:number[], meta? }`
+- `POST /vectors/search` → Body `{ vector:number[], k?, expr? }` returns `{ hits }`
+- `POST /vectors/find` → Body `{ vector:number[], expr? }` returns `{ hit }`
+- `POST /save` → Persist current state via index ops (single-writer enforced)
 - Embeddings (if enabled):
   - `POST /embeddings` or `/v1/embeddings` → forwards to OpenAI embeddings with configured model/key
-
-Error handling uses Hono's `onError` and `notFound` conventions (no try/catch in handlers).
 
 ### Example: CRUSH + S3 (AWS SDK) + Lambda frontend
 
