@@ -11,7 +11,7 @@
 npm run build
 
 # Start via CLI (uses vectordb.config.json)
-npx vcdb --serve --config ./vectordb.config.json
+npx {{NAME}} --serve --config ./vectordb.config.json
 
 # Or directly run the built server bundle
 npm run serve
@@ -19,29 +19,32 @@ npm run serve
 
 ### Config: server options (vite-like)
 
-Extend your `vectordb.config.json` with a `server` block:
+Author a JS ESM config (executable) with a `server` block:
 
-```jsonc
-{
-  "name": "db",
-  "storage": {
-    "index": "file:.vectordb/index",        // index artifacts
-    "data":  "file:.vectordb/data"          // data segments (can be URI or key→URI map)
+```js
+// vectordb.config.* (mjs, js, cjs, mts, cts, ts)
+import { defineConfig } from "{{NAME}}/http-server";
+
+export default defineConfig({
+  name: "db",
+  storage: {
+    index: "file:.vectordb/index", // index artifacts
+    data: "file:.vectordb/data", // data segments (can be URI or key→URI map)
   },
-  "database": { "dim": 3, "metric": "cosine", "strategy": "bruteforce" },
-  "index": { "name": "db", "segmented": true },
-  "server": {
-    "port": 8787,
-    "cors": true,
+  database: { dim: 3, metric: "cosine", strategy: "bruteforce" },
+  index: { name: "db", segmented: true },
+  server: {
+    port: 8787,
+    cors: true,
     // Enable time-based result consistency (bounded-staleness read via HEAD); default: true
-    "resultConsistency": true,
-    "embeddings": {
-      "provider": "openai",
-      "model": "text-embedding-3-small",
-      "openAICompatRoute": true
-    }
-  }
-}
+    resultConsistency: true,
+    embeddings: {
+      provider: "openai",
+      model: "text-embedding-3-small",
+      openAICompatRoute: true,
+    },
+  },
+});
 ```
 
 #### Result consistency (bounded staleness)
@@ -51,7 +54,7 @@ Extend your `vectordb.config.json` with a `server` block:
   - `false`: readers ignore `.head.json` and open the default manifest `${name}.manifest.json` directly.
 - Related knobs (optional): `server.clock`, `server.epsilonMs`.
 
-Config validation prints errors to stderr when invalid (never silently ignored). Use `npx vcdb validate-config` or check server startup logs.
+Config validation prints errors to stderr when invalid (never silently ignored). Use `npx {{NAME}} validate-config` or check server startup logs.
 
 Storage URIs are scheme-based:
 
@@ -66,6 +69,7 @@ Notes:
 - `server.cors`: `true` to allow all, or an object matching Hono's CORS options.
 - `server.embeddings.provider: "openai"` exposes POST `/embeddings` and `/v1/embeddings` (OpenAI-compatible). API key is read from `OPENAI_API_KEY` or `server.embeddings.apiKey`.
 - Optional `--port` or `-p` CLI flag overrides `server.port` when using `--serve`.
+- Config formats supported by loader: mjs, js, cjs, mts, cts, ts (discovery order). JSON is not supported.
 
 ### REST endpoints
 

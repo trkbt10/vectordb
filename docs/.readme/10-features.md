@@ -6,4 +6,3 @@
 - Storage backends: Node FS, Memory, OPFS, S3
 - Single, knex‑like `connect()` API to open or create
 - Tiny CLI for quick inspection, search, edit, rebuild
-

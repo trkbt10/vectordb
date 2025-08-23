@@ -1,18 +1,3 @@
-## Persistence Adapters
-
-Import per environment:
-
-- Node.js: `import { createNodeFileIO } from "vcdb/storage/node"`
-- Memory: `import { createMemoryFileIO } from "vcdb/storage/memory"`
-- OPFS (browser): `import { saveToOPFS, loadFromOPFS } from "vcdb/storage/opfs"`
-- S3: implement a `FileIO` using the AWS SDK (see example below)
-
-All adapters implement the same `FileIO` interface:
-
-```ts
-import type { FileIO } from "vcdb/storage/types";
-```
-
 ### Example: CRUSH + S3 (AWS SDK) + Lambda frontend
 
 This example shows how to split data segments across S3 using CRUSH (shards/replicas), while serving index and data I/O through simple Lambda endpoints that return presigned URLs.
@@ -20,8 +5,8 @@ This example shows how to split data segments across S3 using CRUSH (shards/repl
 Client (Node.js or server):
 
 ```ts
-import { connect } from "vcdb";
-import type { FileIO } from "vcdb/storage/types";
+import { connect } from "{{NAME}}";
+import type { FileIO } from "{{NAME}}/storage/types";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({ region: process.env.AWS_REGION });
@@ -34,13 +19,13 @@ function s3FileIOFor(prefix: string): FileIO {
       const u = new URL(prefix);
       return { Bucket: u.hostname, Key: `${u.pathname.replace(/^\//, "")}${key}` };
     }
-    return { Bucket: process.env.S3_BUCKET!, Key: `${prefix}${key}` };
+    return { Bucket: process.env.S3_BUCKET\!, Key: `${prefix}${key}` };
   }
   return {
     async read(key: string) {
       const { Bucket, Key } = parse(key);
       const res = await s3.send(new GetObjectCommand({ Bucket, Key }));
-      const buf = await res.Body!.transformToByteArray();
+      const buf = await res.Body\!.transformToByteArray();
       return new Uint8Array(buf);
     },
     async write(key: string, data: Uint8Array | ArrayBuffer) {

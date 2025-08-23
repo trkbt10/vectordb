@@ -1,8 +1,8 @@
 ## Quick Start (API)
 
 ```ts
-import { connect } from "vcdb";
-import { createNodeFileIO } from "vcdb/storage/node";
+import { connect } from "{{NAME}}";
+import { createNodeFileIO } from "{{NAME}}/storage/node";
 
 // Open existing by name ("db"); if missing, create then save
 const client = await connect<{ tag?: string }>({
@@ -23,4 +23,3 @@ console.log(hits);
 // Persist snapshot
 await client.index.saveState(client.state, { baseName: "db" });
 ```
-
