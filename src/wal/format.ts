@@ -214,7 +214,11 @@ export function verifyWal(u8: Uint8Array): {
   error?: Error;
   checksum?: { present: boolean; ok?: boolean; value?: number; computed?: number };
 } {
-  const res: { ok: boolean; error?: Error; checksum?: { present: boolean; ok?: boolean; value?: number; computed?: number } } = {
+  const res: {
+    ok: boolean;
+    error?: Error;
+    checksum?: { present: boolean; ok?: boolean; value?: number; computed?: number };
+  } = {
     ok: true,
   };
   try {

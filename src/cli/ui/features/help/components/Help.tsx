@@ -3,6 +3,7 @@
  */
 import React from "react";
 import { Box, Text } from "ink";
+import { DEFAULT_CONFIG_STEM } from "../../../../../config";
 import SelectInput from "ink-select-input";
 
 /** Display brief usage help and provide a Back action. */
@@ -16,7 +17,7 @@ export function Help({ onBack }: { onBack: () => void }) {
         <Text>• Navigate menus with arrows and Enter.</Text>
         <Text>• Shortcuts: h=Home, b=Back, ?=Help, q=Quit.</Text>
         <Text>• Database Explorer lists registry on the left and rows on the right.</Text>
-        <Text>• Use the Wizard to create a `vectordb.config.json` quickly.</Text>
+        <Text>• Use the Wizard to create a `{`${DEFAULT_CONFIG_STEM}.mjs`}` quickly.</Text>
         <Box marginTop={1}>
           <SelectInput items={[{ label: "Back", value: "back" }]} onSelect={() => onBack()} />
         </Box>

@@ -17,4 +17,3 @@ describe("coordination/clock", () => {
     expect(off.now()).toBeGreaterThanOrEqual(Date.now() + 49);
   });
 });
-

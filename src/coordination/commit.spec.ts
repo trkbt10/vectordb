@@ -20,4 +20,3 @@ describe("coordination/commit", () => {
     expect(Date.now()).toBeGreaterThan(commitTs + 4);
   });
 });
-

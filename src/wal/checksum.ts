@@ -11,7 +11,7 @@ export function crc32(u8: Uint8Array): number {
       c = (c >>> 1) ^ (0xedb88320 & mask);
     }
   }
-  return (~c) >>> 0;
+  return ~c >>> 0;
 }
 
 // Footer magic 'WCRC' in little-endian

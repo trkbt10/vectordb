@@ -10,7 +10,11 @@ import { createMemoryFileIO } from "../storage/memory";
 test("connect returns async client with WAL and methods work", async () => {
   type Meta = { tag?: string };
   const mem = createMemoryFileIO();
-  const client = await connect<Meta>({ storage: { index: mem, data: () => mem }, database: { dim: 2 }, index: { name: "wal.spec" } });
+  const client = await connect<Meta>({
+    storage: { index: mem, data: () => mem },
+    database: { dim: 2 },
+    index: { name: "wal.spec" },
+  });
 
   await client.upsert({ id: 1, vector: new Float32Array([1, 0]), meta: { tag: "a" } });
   await client.setMeta(1, { tag: "b" });

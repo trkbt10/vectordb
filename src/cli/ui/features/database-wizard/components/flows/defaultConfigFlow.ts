@@ -2,6 +2,7 @@
  * @file Default configuration FlowSchema for quick project setup.
  */
 import type { FlowSchema } from "../FlowWizard";
+import { DEFAULT_CONFIG_STEM } from "../../../../../config";
 
 export const defaultConfigFlow: FlowSchema = {
   title: "Config Wizard",
@@ -80,7 +81,7 @@ export const defaultConfigFlow: FlowSchema = {
         { type: "boolean", name: "includeAnn", label: "Include ANN in snapshot?" },
 
         { type: "group", label: "Output" },
-        { type: "text", name: "savePath", label: "Save Path", defaultValue: "./vectordb.config.json" },
+        { type: "text", name: "savePath", label: "Save Path", defaultValue: `./${DEFAULT_CONFIG_STEM}.mjs` },
       ],
       allowBack: false,
       defaultNext: "writeConfig",
@@ -88,19 +89,19 @@ export const defaultConfigFlow: FlowSchema = {
     writeConfig: {
       type: "write",
       id: "writeConfig",
-      pathFrom: (a) => String(a.savePath || "./vectordb.config.json"),
+      pathFrom: (a) => String(a.savePath || `./${DEFAULT_CONFIG_STEM}.mjs`),
       dataFrom: (a) => {
         const name = String(a.name || "db");
-        const storage = (() => {
-          const intent = String(a.intent || "local");
+        const intent = String(a.intent || "local");
+        const base = String(a.baseDir || ".vectordb");
+        const storageDecl = (() => {
           if (intent === "memory") {
-            return { type: "memory" as const };
+            return `index: 'mem:',\n    data: 'mem:'`;
           }
           if (intent === "browser") {
-            return { type: "opfs" as const };
+            return `index: 'opfs:',\n    data: 'opfs:'`;
           }
-          const base = String(a.baseDir || ".vectordb");
-          return { type: "node" as const, indexRoot: `${base}/index`, dataRoot: `${base}/data` };
+          return `index: 'file:${base}/index',\n    data: 'file:${base}/data'`;
         })();
         const databaseBase = {
           dim: Number(a.dim || 3) || 3,
@@ -119,7 +120,9 @@ export const defaultConfigFlow: FlowSchema = {
           pgs: Number(a.pgs || 64) || 64,
           segmented: Boolean(a.segmented ?? true),
         };
-        return { name, storage, database, index };
+        // Return JS ESM config content as a string
+        const js = `/** @file VectorDB executable config */\nimport { defineConfig } from 'vcdb/http-server';\n\nexport default defineConfig({\n  name: '${name}',\n  storage: {\n    ${storageDecl}\n  },\n  database: ${JSON.stringify(database)},\n  index: ${JSON.stringify(index)},\n  server: {\n    resultConsistency: true\n  }\n});\n`;
+        return js;
       },
     },
   },

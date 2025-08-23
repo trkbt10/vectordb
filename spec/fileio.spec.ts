@@ -24,12 +24,10 @@ describe("persist/FileIO path isolation", () => {
     await mkdir(outRoot, { recursive: true });
 
     // create small DB
-    const db = await connect<{ tag?: string }>(
-      {
-        storage: { index: createNodeFileIO(outRoot), data: createNodeFileIO(outRoot) },
-        database: { dim: 2, metric: "cosine", strategy: "bruteforce" },
-      },
-    );
+    const db = await connect<{ tag?: string }>({
+      storage: { index: createNodeFileIO(outRoot), data: createNodeFileIO(outRoot) },
+      database: { dim: 2, metric: "cosine", strategy: "bruteforce" },
+    });
     await db.set(1, { vector: new Float32Array([1, 0]), meta: { tag: "a" } });
     await db.set(2, { vector: new Float32Array([0, 1]), meta: { tag: "b" } });
     await db.set(3, { vector: new Float32Array([0.5, 0.5]), meta: null });

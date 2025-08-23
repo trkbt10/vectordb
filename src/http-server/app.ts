@@ -34,7 +34,7 @@ export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppCon
   const clock = cfg.server?.clock ?? systemClock;
   const epsilonMs = Math.max(0, cfg.server?.epsilonMs ?? 0);
   const lockProvider = cfg.server?.lock ?? createMemoryLock(clock);
-  const lockName = cfg.server?.lockName ?? (cfg.name ?? "db");
+  const lockName = cfg.server?.lockName ?? cfg.name ?? "db";
   const lockTtlMs = Math.max(1, cfg.server?.lockTtlMs ?? 30000);
 
   app.onError((err: Error & { status?: number }) => {
@@ -108,7 +108,9 @@ export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppCon
       const epoch = current?.epoch ?? 0;
       // Save with coordination parameters (excess property on variable avoids excess-prop check)
       const args: { baseName: string } & { [k: string]: unknown } = { baseName: base };
-      (args as { coord?: { clock?: typeof clock; epsilonMs?: number; lastCommittedTs?: number; epoch?: number } }).coord = {
+      (
+        args as { coord?: { clock?: typeof clock; epsilonMs?: number; lastCommittedTs?: number; epoch?: number } }
+      ).coord = {
         clock,
         epsilonMs,
         lastCommittedTs,
@@ -119,7 +121,11 @@ export function createApp(client: VectorDB<Record<string, unknown>>, cfg: AppCon
       try {
         const mbytes = await resolveIndexIO().read(`${base}.manifest.json`);
         const m = JSON.parse(new TextDecoder().decode(mbytes)) as { epoch?: number; commitTs?: number };
-        const next = { manifest: `${base}.manifest.json`, epoch: m.epoch ?? epoch, commitTs: m.commitTs ?? lastCommittedTs };
+        const next = {
+          manifest: `${base}.manifest.json`,
+          epoch: m.epoch ?? epoch,
+          commitTs: m.commitTs ?? lastCommittedTs,
+        };
         const cur2 = await readHead(base, { resolveIndexIO });
         const cas = tryUpdateHead(cur2, next);
         if (cas.ok) {

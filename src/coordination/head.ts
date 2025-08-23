@@ -24,4 +24,3 @@ export function tryUpdateHead(current: HeadEntry | null, next: HeadEntry): CasRe
 export function isReadableAt(head: HeadEntry, readTs: number): boolean {
   return head.commitTs <= readTs;
 }
-

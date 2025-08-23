@@ -64,13 +64,11 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
   it("search works even when index file is missing (triggers rebuild)", async () => {
     const indexFS = createRecordingIO();
     const dataFS = createRecordingIO();
-    const c = await connect<{ tag?: string }>(
-      {
-        storage: { index: indexFS.io, data: dataFS.io },
-        database: { dim: 3, metric: "cosine", strategy: "bruteforce" },
-        index: { shards: 2, pgs: 8, segmented: true, includeAnn: false },
-      },
-    );
+    const c = await connect<{ tag?: string }>({
+      storage: { index: indexFS.io, data: dataFS.io },
+      database: { dim: 3, metric: "cosine", strategy: "bruteforce" },
+      index: { shards: 2, pgs: 8, segmented: true, includeAnn: false },
+    });
     // insert a few rows
     await c.upsert(
       { id: 1, vector: makeVec(3, 1), meta: { tag: "a" } },
@@ -83,7 +81,10 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
     await indexFS.io.del?.("db.index");
 
     const c2 = await connect<{ tag?: string }>(
-      { storage: { index: indexFS.io, data: dataFS.io }, index: { name: "db", shards: 2, pgs: 8, segmented: true, includeAnn: false } },
+      {
+        storage: { index: indexFS.io, data: dataFS.io },
+        index: { name: "db", shards: 2, pgs: 8, segmented: true, includeAnn: false },
+      },
       { onMissing: async ({ index }) => index.openState({ baseName: "db" }) },
     );
     const hits = await c2.findMany(makeVec(3, 1), { k: 2 });
@@ -93,13 +94,11 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
   it("separated storages: index writes go to indexFS; data segments go to dataFS (HNSW)", async () => {
     const indexFS = createRecordingIO();
     const dataFS = createRecordingIO();
-    const clientB = await connect<{ tag?: string }>(
-      {
-        storage: { index: indexFS.io, data: dataFS.io },
-        database: { dim: 3, metric: "cosine", strategy: "hnsw" },
-        index: { shards: 2, pgs: 8, segmented: true, includeAnn: true },
-      },
-    );
+    const clientB = await connect<{ tag?: string }>({
+      storage: { index: indexFS.io, data: dataFS.io },
+      database: { dim: 3, metric: "cosine", strategy: "hnsw" },
+      index: { shards: 2, pgs: 8, segmented: true, includeAnn: true },
+    });
     const c = clientB;
     const rows = Array.from({ length: 50 }, (_, i) => ({
       id: i + 1,
@@ -121,7 +120,10 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
 
     // Open and query
     const c2 = await connect<{ tag?: string }>(
-      { storage: { index: indexFS.io, data: dataFS.io }, index: { name: "db", shards: 2, pgs: 8, segmented: true, includeAnn: true } },
+      {
+        storage: { index: indexFS.io, data: dataFS.io },
+        index: { name: "db", shards: 2, pgs: 8, segmented: true, includeAnn: true },
+      },
       { onMissing: async ({ index }) => index.openState({ baseName: "db" }) },
     );
     const out = await c2.findMany(makeVec(3, 2), { k: 3 });
@@ -136,16 +138,14 @@ describe("e2e/index-data separated storage and CRUSH placement", () => {
       "1": createRecordingIO(),
       "2": createRecordingIO(),
     };
-    const clientC = await connect<{ tag?: string }>(
-      {
-        storage: {
-          index: indexFS.io,
-          data: (key: string) => (dataTargets[key] ? dataTargets[key]!.io : dataTargets["0"].io),
-        },
-        database: { dim: 4, metric: "cosine", strategy: "bruteforce" },
-        index: { shards: 3, pgs: 12, segmented: true, includeAnn: false },
+    const clientC = await connect<{ tag?: string }>({
+      storage: {
+        index: indexFS.io,
+        data: (key: string) => (dataTargets[key] ? dataTargets[key]!.io : dataTargets["0"].io),
       },
-    );
+      database: { dim: 4, metric: "cosine", strategy: "bruteforce" },
+      index: { shards: 3, pgs: 12, segmented: true, includeAnn: false },
+    });
 
     const c = clientC;
     const rows = Array.from({ length: 200 }, (_, i) => ({

@@ -25,10 +25,7 @@ function targetForPg(pg: number, crush: CrushMap): string {
 /**
  *
  */
-export async function readManifest(
-  baseName: string,
-  opts: IndexIOCtx,
-): Promise<PlacementManifest | null> {
+export async function readManifest(baseName: string, opts: IndexIOCtx): Promise<PlacementManifest | null> {
   try {
     const u8 = await opts.resolveIndexIO().read(`${baseName}.manifest.json`);
     return JSON.parse(new TextDecoder().decode(u8)) as PlacementManifest;
@@ -40,11 +37,7 @@ export async function readManifest(
 /**
  *
  */
-export async function writeManifest(
-  baseName: string,
-  m: PlacementManifest,
-  opts: IndexIOCtx,
-): Promise<void> {
+export async function writeManifest(baseName: string, m: PlacementManifest, opts: IndexIOCtx): Promise<void> {
   const u8 = new TextEncoder().encode(JSON.stringify(m));
   await opts.resolveIndexIO().atomicWrite(`${baseName}.manifest.json`, u8);
 }

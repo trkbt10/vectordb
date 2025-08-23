@@ -5,6 +5,7 @@ import path from "node:path";
 import { readFile, writeFile, mkdir, readdir } from "node:fs/promises";
 import type { DatabaseRegistry } from "../../../../../types/registry";
 import type { DatabaseRegistryEntry } from "../../../../../types/registry";
+import { CONFIG_EXTS, DEFAULT_CONFIG_STEM } from "../../../../../config";
 
 /** Get default registry JSON path (project-local). */
 export function defaultRegistryPath(): string {
@@ -80,10 +81,11 @@ export async function discoverConfigs({
           if (!ent.isFile()) {
             return false;
           }
-          if (!lower.endsWith(".json")) {
+          const allowed = [...CONFIG_EXTS];
+          if (!allowed.some((s) => lower.endsWith(s))) {
             return false;
           }
-          if (lower === "vectordb.config.json") {
+          if (allowed.map((s) => `${DEFAULT_CONFIG_STEM}${s}`).includes(lower)) {
             return true;
           }
           return lower.includes("vectordb") ? lower.includes("config") : false;

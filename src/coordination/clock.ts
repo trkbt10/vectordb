@@ -16,4 +16,3 @@ export function fixedClock(ts: number): Clock {
 export function offsetClock(offsetMs: number): Clock {
   return { now: () => Date.now() + offsetMs };
 }
-

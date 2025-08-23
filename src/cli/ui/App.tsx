@@ -8,8 +8,7 @@ import { Home } from "./features/home/components/Home";
 import { DatabaseView } from "./features/database-viewer/components/DatabaseView";
 import { DefaultWizard } from "./features/database-wizard/components/DefaultWizard";
 import { Help } from "./features/help/components/Help";
-import { existsSync } from "node:fs";
-import path from "node:path";
+// no fs/path detection here; DatabaseView handles config discovery via Suspense
 import { FooterContext } from "./FooterContext";
 
 /**
@@ -17,7 +16,7 @@ import { FooterContext } from "./FooterContext";
  */
 export function App({ initialConfigPath }: { initialConfigPath?: string }) {
   return (
-    <NavigationProvider initialPath="/home">
+    <NavigationProvider initialPath="/database">
       <AppWithRoutes initialConfigPath={initialConfigPath} />
     </NavigationProvider>
   );
@@ -38,25 +37,19 @@ function AppWithRoutes({ initialConfigPath }: { initialConfigPath?: string }) {
     // Disable global shortcuts to avoid stealing focus from inputs
   });
 
+  const [detectedConfig] = React.useState<string | undefined>(initialConfigPath);
+
   const routes = [
     createRoute("/home", Home, {}),
     createRoute("/database", DatabaseView as React.ComponentType, {
       onExit: () => navigate("/home"),
-      configPath: initialConfigPath,
+      configPath: detectedConfig,
     }),
     createRoute("/wizard", DefaultWizard, { onDone: () => navigate("/database") }),
     createRoute("/help", Help, { onBack: () => goBack() }),
   ];
 
-  React.useEffect(() => {
-    if (initialConfigPath) {
-      navigate("/database");
-      return;
-    }
-    const p = path.resolve("vectordb.config.json");
-    const dest = existsSync(p) ? "/database" : "/wizard";
-    navigate(dest);
-  }, []);
+  // No async navigation here; DatabaseView handles discovery via Suspense.
 
   return (
     <FooterContext.Provider value={{ footer, setFooter }}>

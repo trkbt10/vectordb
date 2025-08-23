@@ -216,7 +216,11 @@ export function FlowWizard({
         const p = path.resolve(step.pathFrom(answers));
         const data = step.dataFrom(answers);
         await mkdir(path.dirname(p), { recursive: true });
-        await writeFile(p, JSON.stringify(data, null, 2), "utf8");
+        if (typeof data === "string") {
+          await writeFile(p, data, "utf8");
+        } else {
+          await writeFile(p, JSON.stringify(data, null, 2), "utf8");
+        }
         onSaved(p);
       } catch (e) {
         // surface error as a UI step

@@ -22,7 +22,7 @@ const toArrayBuffer = (data: Uint8Array): ArrayBuffer => {
 /**
  * Creates an encrypted FileIO middleware using Web Crypto API.
  * Uses AES-GCM encryption with 256-bit keys.
- * 
+ *
  * @param baseFileIO - The underlying FileIO implementation to wrap
  * @param encryptionKey - 32-byte encryption key (or string to derive key from)
  * @param options - Optional crypto implementation
@@ -31,68 +31,57 @@ const toArrayBuffer = (data: Uint8Array): ArrayBuffer => {
 export async function createEncryptedFileIO(
   baseFileIO: FileIO,
   encryptionKey: Uint8Array | string,
-  options: EncryptedFileIOOptions = {}
+  options: EncryptedFileIOOptions = {},
 ): Promise<FileIO> {
   const crypto = options.crypto || globalThis.crypto;
-  
+
   if (!crypto || !crypto.subtle) {
-    throw new Error('Web Crypto API is not available');
+    throw new Error("Web Crypto API is not available");
   }
 
   // Derive or import the key
   const cryptoKey = await (async () => {
-    if (typeof encryptionKey === 'string') {
+    if (typeof encryptionKey === "string") {
       // Derive key from string using PBKDF2
       const encoder = new TextEncoder();
-      const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(encryptionKey),
-        'PBKDF2',
-        false,
-        ['deriveBits', 'deriveKey']
-      );
+      const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(encryptionKey), "PBKDF2", false, [
+        "deriveBits",
+        "deriveKey",
+      ]);
 
       // Use a fixed salt for simplicity (in production, you might want to store this)
       const salt = new Uint8Array([
-        0x73, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f,
-        0x73, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f
+        0x73, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f, 0x73, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f,
       ]);
 
       return await crypto.subtle.deriveKey(
         {
-          name: 'PBKDF2',
+          name: "PBKDF2",
           salt,
           iterations: 100000,
-          hash: 'SHA-256'
+          hash: "SHA-256",
         },
         keyMaterial,
-        { name: 'AES-GCM', length: 256 },
+        { name: "AES-GCM", length: 256 },
         false,
-        ['encrypt', 'decrypt']
+        ["encrypt", "decrypt"],
       );
     }
     // Import raw key bytes
     if (encryptionKey.length !== 32) {
-      throw new Error('Encryption key must be 32 bytes for AES-256');
+      throw new Error("Encryption key must be 32 bytes for AES-256");
     }
-    return await crypto.subtle.importKey(
-      'raw',
-      toArrayBuffer(encryptionKey),
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
+    return await crypto.subtle.importKey("raw", toArrayBuffer(encryptionKey), { name: "AES-GCM", length: 256 }, false, [
+      "encrypt",
+      "decrypt",
+    ]);
   })();
 
   const encrypt = async (data: Uint8Array): Promise<Uint8Array> => {
     // Generate a random IV for each encryption
     const iv = crypto.getRandomValues(new Uint8Array(12));
 
-    const encryptedData = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      cryptoKey,
-      toArrayBuffer(data)
-    );
+    const encryptedData = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cryptoKey, toArrayBuffer(data));
 
     // Prepend IV to the encrypted data
     const result = new Uint8Array(iv.length + encryptedData.byteLength);
@@ -104,18 +93,14 @@ export async function createEncryptedFileIO(
 
   const decrypt = async (data: Uint8Array): Promise<Uint8Array> => {
     if (data.length < 12) {
-      throw new Error('Invalid encrypted data: too short');
+      throw new Error("Invalid encrypted data: too short");
     }
 
     // Extract IV from the beginning
     const iv = data.slice(0, 12);
     const encryptedData = data.slice(12);
 
-    const decryptedData = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      cryptoKey,
-      encryptedData
-    );
+    const decryptedData = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, cryptoKey, encryptedData);
 
     return new Uint8Array(decryptedData);
   };
@@ -149,7 +134,11 @@ export async function createEncryptedFileIO(
     await baseFileIO.atomicWrite(path, encryptedData);
   };
 
-  const del = baseFileIO.del ? async (path: string): Promise<void> => { await baseFileIO.del!(path); } : undefined;
+  const del = baseFileIO.del
+    ? async (path: string): Promise<void> => {
+        await baseFileIO.del!(path);
+      }
+    : undefined;
 
   return {
     read,

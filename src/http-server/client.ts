@@ -11,7 +11,9 @@ import { systemClock } from "../coordination/clock";
 export async function createClientFromConfig(config: AppConfig): Promise<VectorDB<Record<string, unknown>>> {
   const storage = config.storage;
   if (!storage) {
-    throw new Error("config.storage is required and must be a concrete StorageConfig (FileIOs). No implicit resolution.");
+    throw new Error(
+      "config.storage is required and must be a concrete StorageConfig (FileIOs). No implicit resolution.",
+    );
   }
   const index = config.index;
   const database = config.database;

@@ -6,6 +6,7 @@ import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
 import TextInput from "ink-text-input";
 import type { OpenInput } from "./types";
+import { DEFAULT_CONFIG_STEM } from "../../../../../config";
 
 /** DatabaseForm: collect either folder settings or a config file path. */
 export function DatabaseForm({ onSubmit, onExit }: { onSubmit: (input: OpenInput) => void; onExit: () => void }) {
@@ -13,7 +14,7 @@ export function DatabaseForm({ onSubmit, onExit }: { onSubmit: (input: OpenInput
   const [indexRoot, setIndexRoot] = useState(".vectordb");
   const [dataRoot, setDataRoot] = useState(".vectordb/data");
   const [name, setName] = useState("db");
-  const [configPath, setConfigPath] = useState("./vectordb.config.json");
+  const [configPath, setConfigPath] = useState(`./${DEFAULT_CONFIG_STEM}`);
 
   const items = [
     { label: "Open", value: "open" },

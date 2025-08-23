@@ -125,7 +125,12 @@ export function createDatabaseFromState<TMeta>(
       }),
     push: async (...rows: RowInput<TMeta>[]) =>
       await lock.runExclusive(async () => {
-        const recs: WalRecord[] = rows.map((r) => ({ type: "upsert", id: r.id, vector: r.vector, meta: r.meta ?? null }));
+        const recs: WalRecord[] = rows.map((r) => ({
+          type: "upsert",
+          id: r.id,
+          vector: r.vector,
+          meta: r.meta ?? null,
+        }));
         await opts.wal!.append(recs);
         const n = await base.push(...rows);
         await after(rows.length);
@@ -133,7 +138,12 @@ export function createDatabaseFromState<TMeta>(
       }),
     upsert: async (...rows: RowInput<TMeta>[]) =>
       await lock.runExclusive(async () => {
-        const recs: WalRecord[] = rows.map((r) => ({ type: "upsert", id: r.id, vector: r.vector, meta: r.meta ?? null }));
+        const recs: WalRecord[] = rows.map((r) => ({
+          type: "upsert",
+          id: r.id,
+          vector: r.vector,
+          meta: r.meta ?? null,
+        }));
         await opts.wal!.append(recs);
         const n = await base.upsert(...rows);
         await after(rows.length);

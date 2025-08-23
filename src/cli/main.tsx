@@ -6,7 +6,7 @@ import { render } from "ink";
 import { App } from "./ui/App";
 import path from "node:path";
 import { existsSync } from "node:fs";
-import fs from "node:fs/promises";
+import { resolveConfigPath, DEFAULT_CONFIG_STEM } from "../config";
 import { startServerFromFile } from "../http-server";
 
 // Minimal arg parsing for --config or -c (no let)
@@ -26,6 +26,7 @@ const configPath: string | undefined = (() => {
     console.error(`Config not found: ${p}`);
     process.exit(1);
   }
+  // Keep the raw path here; main() will validate/resolve to a supported executable config
   return p;
 })();
 
@@ -34,24 +35,29 @@ const portIdx = argv.findIndex((a) => a === "--port" || a === "-p");
 const portVal = portIdx >= 0 ? Number(argv[portIdx + 1]) : undefined;
 
 async function main() {
-  const cfgPath = configPath ?? path.resolve("vectordb.config.json");
+  // If a config was explicitly provided, validate and normalize it to a supported file first
+  const cfgPath: string | undefined = await (async () => {
+    if (!configPath) {
+      return undefined;
+    }
+    const resolved = await resolveConfigPath(configPath);
+    if (!resolved) {
+      console.error(`Config not found. Looked for ${configPath} with extensions .mjs, .js, .cjs, .mts, .cts, .ts`);
+      process.exit(1);
+    }
+    return resolved;
+  })();
+  const defaultPath = path.resolve(DEFAULT_CONFIG_STEM);
+  const effectivePath = cfgPath ?? defaultPath;
   if (!shouldServe) {
-    render(<App initialConfigPath={configPath} />);
+    render(<App initialConfigPath={cfgPath} />);
     return;
   }
   // Serve mode
-  if (portVal === undefined) {
-    await startServerFromFile(cfgPath);
-    return;
+  if (portVal !== undefined) {
+    console.warn(`--port override not supported for executable configs; set server.port in ${DEFAULT_CONFIG_STEM}*`);
   }
-  // Shallow override by reading, changing, then starting
-  const raw = await fs.readFile(cfgPath, "utf8");
-  const json = JSON.parse(raw);
-  json.server = { ...(json.server ?? {}), port: portVal };
-  const tmp = path.join(process.cwd(), ".tmp", `server.${Date.now()}.json`);
-  await fs.mkdir(path.dirname(tmp), { recursive: true });
-  await fs.writeFile(tmp, JSON.stringify(json, null, 2), "utf8");
-  await startServerFromFile(tmp);
+  await startServerFromFile(effectivePath);
 }
 
 main().catch((e) => {

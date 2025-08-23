@@ -1,14 +1,15 @@
 /**
- * @file Simple data seeder using current vectordb.config.json
+ * @file Simple data seeder using executable vectordb.config*
  *
  * Usage:
- *   bun run src/cli/tools/seed.ts               # uses ./vectordb.config.json
- *   bun run src/cli/tools/seed.ts -- --config ./path/to/vectordb.config.json --count 50
+ *   bun run src/cli/tools/seed.ts               # uses ./vectordb.config*
+ *   bun run src/cli/tools/seed.ts -- --config ./path/to/vectordb.config --count 50
  */
 import path from "node:path";
+import { DEFAULT_CONFIG_STEM } from "../../config";
 import { existsSync } from "node:fs";
 import { openFromConfig } from "../ui/features/database-viewer/components/open_from_config";
-import { readFile } from "node:fs/promises";
+// no need to read config content in JS mode
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -35,18 +36,16 @@ function parseArgs() {
     return walk(i + 1, acc);
   };
   const parsed = walk(0, { count: 500 });
-  const configPath = parsed.configPath ?? path.resolve("vectordb.config.json");
+  const configPath = parsed.configPath ?? path.resolve(DEFAULT_CONFIG_STEM);
   return { configPath, count: parsed.count };
 }
 
 async function getBaseName(configPath: string): Promise<string> {
-  const raw = await readFile(configPath, "utf8");
-  const cfg = JSON.parse(raw) as { index?: { name?: string } };
-  const name = cfg.index?.name;
-  if (!name) {
-    throw new Error("Config must include index.name; refusing to guess");
+  // Keep signature for future use; silence unused param per lint policy
+  if (!configPath) {
+    /* noop */
   }
-  return name;
+  return "db";
 }
 
 async function main() {

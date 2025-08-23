@@ -32,9 +32,11 @@ export async function saveIndexing<TMeta>(vl: VectorStoreState<TMeta>, opts: Sav
     segmentBytes: opts.segmentBytes,
   });
   // Coordination parameters (optional)
-  const coord = (opts as unknown as {
-    coord?: { lastCommittedTs?: number; epoch?: number; epsilonMs?: number; clock?: Clock };
-  }).coord;
+  const coord = (
+    opts as unknown as {
+      coord?: { lastCommittedTs?: number; epoch?: number; epsilonMs?: number; clock?: Clock };
+    }
+  ).coord;
   const clock = coord?.clock ?? systemClock;
   const epsilon = Math.max(0, coord?.epsilonMs ?? 0);
   const prepareTs = clock.now();
@@ -111,7 +113,8 @@ export async function openIndexing<TMeta = unknown>(opts: OpenIndexingOptions): 
   // Prefer manifest mapping selected via HEAD (bounded staleness), else default manifest
   const manifest = await (async () => {
     try {
-      const head = coord?.useHeadForReads === false ? null : await readHead(base, { resolveIndexIO: opts.resolveIndexIO });
+      const head =
+        coord?.useHeadForReads === false ? null : await readHead(base, { resolveIndexIO: opts.resolveIndexIO });
       const manifestPath = head && isReadableAt(head, readTs) ? head.manifest : `${base}.manifest.json`;
       const m = await opts.resolveIndexIO().read(manifestPath);
       return JSON.parse(new TextDecoder().decode(m)) as { segments: { name: string; targetKey: string }[] };

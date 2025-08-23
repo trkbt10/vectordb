@@ -126,7 +126,11 @@ export function createCompressedFileIO(baseFileIO: FileIO, options: CompressedFi
     await baseFileIO.atomicWrite(path, compressedData);
   };
 
-  const del = baseFileIO.del ? async (path: string): Promise<void> => { await baseFileIO.del!(path); } : undefined;
+  const del = baseFileIO.del
+    ? async (path: string): Promise<void> => {
+        await baseFileIO.del!(path);
+      }
+    : undefined;
 
   return {
     read,

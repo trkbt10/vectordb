@@ -4,18 +4,13 @@
 import { saveIndexing, openIndexing, rebuildIndexingFromData } from "../indexing/runtime/manager";
 import type { SaveIndexingOptions, IndexingBaseOptions, OpenIndexingOptions } from "../indexing/types";
 import type { FileIO } from "../storage/types";
+import type { ClientOptions, StorageConfig } from "../../config/types";
 import type { VectorStoreState } from "../types";
 import { planRebalance, applyRebalance, type MovePlan } from "../indexing/placement/rebalance";
 import type { Clock } from "../coordination/clock";
 
-export type ClientOptions = Partial<Pick<SaveIndexingOptions, "segmented" | "segmentBytes" | "includeAnn">> & {
-  shards?: number;
-  pgs?: number;
-  replicas?: number;
-};
-
 export type DataIOResolver = FileIO | ((targetKey: string) => FileIO);
-export type StorageConfig = { index: FileIO; data: DataIOResolver };
+export type { StorageConfig } from "../../config/types";
 
 /**
  * Compose persistence helpers for a client.
@@ -55,10 +50,7 @@ export function createIndexOps<TMeta>(
     ...(over ?? {}),
   });
   return {
-    async saveState(
-      state: VectorStoreState<TMeta>,
-      args: { baseName: string } & Partial<SaveIndexingOptions>,
-    ) {
+    async saveState(state: VectorStoreState<TMeta>, args: { baseName: string } & Partial<SaveIndexingOptions>) {
       const saveOpts = withSaveOptions(args) as SaveIndexingOptions & {
         coord?: { clock?: Clock; epsilonMs?: number; useHeadForReads?: boolean };
       };

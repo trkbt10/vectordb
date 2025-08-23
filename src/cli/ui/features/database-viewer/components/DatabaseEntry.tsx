@@ -1,9 +1,8 @@
 /**
  * @file Database entry: initial flow to open or create a config
  */
-import React, { useEffect, useState } from "react";
-import { access } from "node:fs/promises";
-import { constants as FS } from "node:fs";
+import React, { Suspense, useEffect, useState } from "react";
+import { defaultConfigResource } from "../../../../../config";
 import { Box, Text } from "ink";
 import { DatabaseForm } from "./DatabaseForm";
 import type { OpenInput } from "./types";
@@ -13,7 +12,16 @@ import type { FlowSchema } from "../../database-wizard/components/FlowWizard";
 
 type EntryStep = { id: "checking" } | { id: "menu" } | { id: "form" } | { id: "wizard" };
 
-const DEFAULT_CONFIG_PATH = "./vectordb.config.json";
+function AutoOpen({ onSubmit }: { onSubmit: (input: OpenInput) => void }) {
+  const res = defaultConfigResource();
+  const path = res.read();
+  useEffect(() => {
+    if (path) {
+      onSubmit({ kind: "config", path });
+    }
+  }, [path, onSubmit]);
+  return null;
+}
 
 /**
  * DatabaseEntry
@@ -27,36 +35,34 @@ export function DatabaseEntry({
   onExit: () => void;
   configFlow?: FlowSchema;
 }) {
-  const [step, setStep] = useState<EntryStep>({ id: "checking" });
+  const [step, setStep] = useState<EntryStep>({ id: "menu" });
 
-  useEffect(() => {
-    (async () => {
-      try {
-        await access(DEFAULT_CONFIG_PATH, FS.F_OK);
-        // Auto-open using the default config when present
-        onSubmit({ kind: "config", path: DEFAULT_CONFIG_PATH });
-      } catch {
-        setStep({ id: "menu" });
+  // Suspense gate for auto-open; if no config, it resolves to null and UI remains on menu
+  // Fallback provides a brief "Checking configuration..." message during initial probe.
+
+  const suspenseGate = (
+    <Suspense
+      fallback={
+        <Box>
+          <Text color="gray">Checking configuration...</Text>
+        </Box>
       }
-    })();
-  }, [onSubmit]);
-
-  if (step.id === "checking") {
-    return (
-      <Box>
-        <Text color="gray">Checking configuration...</Text>
-      </Box>
-    );
-  }
+    >
+      <AutoOpen onSubmit={onSubmit} />
+    </Suspense>
+  );
 
   if (step.id === "menu") {
     return (
-      <ModeSelector
-        canCreate={!!configFlow}
-        onChoose={(mode) =>
-          setStep(mode === "open" ? { id: "form" } : mode === "exit" ? (onExit(), { id: "menu" }) : { id: "wizard" })
-        }
-      />
+      <>
+        {suspenseGate}
+        <ModeSelector
+          canCreate={!!configFlow}
+          onChoose={(mode) =>
+            setStep(mode === "open" ? { id: "form" } : mode === "exit" ? (onExit(), { id: "menu" }) : { id: "wizard" })
+          }
+        />
+      </>
     );
   }
 

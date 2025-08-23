@@ -31,7 +31,7 @@ export async function putBulk(c: Context, { client }: RouteContext) {
     const vector = normalizeVector(vec);
     const meta = r?.meta ?? null;
     prepared.push({ id, vector, meta });
-    (await client.has(id) ? updatedIds : createdIds).push(id);
+    ((await client.has(id)) ? updatedIds : createdIds).push(id);
   }
   const count = await client.upsert(...prepared);
   return c.json({ ok: true, count, created: createdIds.length, updated: updatedIds.length, createdIds, updatedIds });

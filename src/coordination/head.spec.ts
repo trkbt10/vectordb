@@ -20,4 +20,3 @@ describe("coordination/head", () => {
     expect(isReadableAt(h, 250)).toBe(true);
   });
 });
-

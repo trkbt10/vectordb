@@ -95,14 +95,7 @@ export async function connect<TMeta extends Record<string, unknown>>(
   const rt = createWalRuntime(walIO, walName);
   const lk = lock ?? createAsyncLock();
   // Autosave policy: encapsulated in dedicated helper
-  const { afterWrite: autoAfterWrite } = createAutoSaveAfterWrite(
-    indexOperations,
-    state,
-    rt,
-    lk,
-    name,
-    autoSave,
-  );
+  const { afterWrite: autoAfterWrite } = createAutoSaveAfterWrite(indexOperations, state, rt, lk, name, autoSave);
   const wrapped = createDatabaseFromState<TMeta>(state, indexOperations, {
     wal: rt,
     lock: lk,

@@ -1,19 +1,21 @@
 /**
- * @file CLI tool: validate vectordb.config.json structure
+ * @file CLI tool: validate vectordb.config* structure (via loader + normalization)
  */
-import { validateConfigFile } from "../../http-server/config_validate";
+import { loadConfigModule, normalizeConfig, DEFAULT_CONFIG_STEM } from "../../config";
 
 async function main() {
   const args = process.argv.slice(2);
-  const file = args[0] ?? "vectordb.config.json";
-  const res = await validateConfigFile(file);
-  if (res.ok) {
-        console.log(`Config OK: ${res.path}`);
+  const file = args[0] ?? DEFAULT_CONFIG_STEM;
+  try {
+    const raw = await loadConfigModule(file);
+    await normalizeConfig(raw);
+    console.log(`Config OK: ${file}`);
     process.exit(0);
+  } catch (e) {
+    const msg = e && typeof e === "object" && "message" in e ? String((e as { message?: unknown }).message) : String(e);
+    console.error(`Invalid config at ${file}:\n- ${msg}`);
+    process.exit(1);
   }
-    console.error(`Invalid config at ${res.path}:\n- ${res.errors.join("\n- ")}`);
-  process.exit(1);
 }
 
 main();
-

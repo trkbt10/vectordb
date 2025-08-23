@@ -23,7 +23,6 @@ function isHeadEntry(x: unknown): x is HeadEntry {
   return true;
 }
 
-
 function classifyMissing(e: unknown): boolean {
   // Node fs error: code === 'ENOENT'; Memory IO error: message includes 'file not found'
   const msg = hasErrorMessage(e) ? String((e as { message: unknown }).message) : String(e);
@@ -31,9 +30,7 @@ function classifyMissing(e: unknown): boolean {
   return code === "ENOENT" || msg.toLowerCase().includes("file not found");
 }
 
-export type ReadHeadResult =
-  | { ok: true; head: HeadEntry }
-  | { ok: false; reason: "missing" | "invalid" | "io_error" };
+export type ReadHeadResult = { ok: true; head: HeadEntry } | { ok: false; reason: "missing" | "invalid" | "io_error" };
 
 /** Read HEAD with detailed error classification. */
 export async function readHeadEx(baseName: string, opts: IndexIOCtx): Promise<ReadHeadResult> {

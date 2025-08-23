@@ -29,7 +29,9 @@ test("WAL encode/apply upsert/remove works", () => {
 test("WAL encodes undefined meta as null (robustness)", () => {
   const db = createState<{ tag?: string }>({ dim: 2 });
   // upsert with undefined meta should be treated as null
-  const wal1 = encodeWal([{ type: "upsert", id: 2, vector: new Float32Array([0, 1]), meta: undefined as unknown as null }]);
+  const wal1 = encodeWal([
+    { type: "upsert", id: 2, vector: new Float32Array([0, 1]), meta: undefined as unknown as null },
+  ]);
   applyWal(db, wal1);
   expect(getMeta(db, 2)).toBeNull();
 

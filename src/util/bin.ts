@@ -28,7 +28,7 @@ export function toUint8(data: Uint8Array | ArrayBuffer): Uint8Array {
   return data instanceof Uint8Array ? data : new Uint8Array(data);
 }
 
-/** 
+/**
  * Helper to ensure Uint8Array is compatible with BufferSource type.
  * Simply returns the input as the APIs accept TypedArrays directly.
  * The type assertion is handled at the call site.

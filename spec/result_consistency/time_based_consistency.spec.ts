@@ -24,7 +24,13 @@ describe("result-consistency: time-based bounded staleness (HEAD vs default mani
     expect(pA.length).toBe(pB.length);
 
     const idxBytes = encodeIndexFile(
-      { metricCode: encodeMetric("cosine"), dim: 2, count: 1, strategyCode: encodeStrategy("bruteforce"), hasAnn: false },
+      {
+        metricCode: encodeMetric("cosine"),
+        dim: 2,
+        count: 1,
+        strategyCode: encodeStrategy("bruteforce"),
+        hasAnn: false,
+      },
       [{ id: 1, ptr: { segment: segName, offset: pA.offset, length: pA.length } }],
     );
     await indexIO.atomicWrite("db.index", idxBytes);
@@ -73,4 +79,3 @@ describe("result-consistency: time-based bounded staleness (HEAD vs default mani
     expect(vl2.store.metas[i2]).toEqual({ src: "A" });
   });
 });
-
