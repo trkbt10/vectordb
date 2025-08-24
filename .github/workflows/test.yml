@@ -18,11 +18,11 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile || bun install
       - name: Lint
-        run: npm run lint
+        run: bun run lint
       - name: Typecheck
-        run: npm run typecheck
+        run: bun run typecheck
       - name: Test (with coverage)
-        run: npm run test:cov
+        run: bun run test:cov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
