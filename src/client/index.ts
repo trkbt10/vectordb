@@ -13,7 +13,7 @@ import type { FileIO } from "../storage/types";
 import type { DatabaseOptions } from "../types";
 import { createState } from "../attr/state/create";
 import { createWalRuntime } from "../wal/index";
-import { createAutoSaveAfterWrite } from "./autosave";
+import { createAutoSaveAfterWrite, type AutoSaveOptions } from "./autosave";
 export type { VectorDB } from "./types";
 export type { ClientOptions };
 import type { Clock } from "../coordination/clock";
@@ -37,7 +37,7 @@ export type ConnectDeps = {
   index?: ClientOptions & { name?: string };
   wal?: { io: FileIO; name: string };
   lock?: AsyncLock;
-  autoSave?: { ops?: number; intervalMs?: number };
+  autoSave?: AutoSaveOptions;
   /** Server-injected defaults for clock/epsilon used by open/save */
   coordDefaultsForIndexing?: { clock?: Clock; epsilonMs?: number };
 };

@@ -5,8 +5,9 @@ import type { IndexOps } from "./indexing";
 import type { VectorStoreState } from "../types";
 import type { WalRuntime } from "../wal/index";
 import type { AsyncLock } from "../util/async_lock";
+import { createDebounced } from "../util/debounce";
 
-export type AutoSaveOptions = { ops?: number; intervalMs?: number } | undefined;
+export type AutoSaveOptions = { ops?: number; waitMs?: number; maxWaitMs?: number } | undefined;
 
 /**
  * Create an autosave hook that persists the current state to index storage.
@@ -20,13 +21,10 @@ export function createAutoSaveAfterWrite<TMeta>(
   baseName: string,
   opts: AutoSaveOptions,
 ): { afterWrite: (nOps: number) => Promise<void>; dispose: () => void } {
-  const policy = {
-    opCount: 0,
-    last: Date.now(),
-    timer: null as ReturnType<typeof setInterval> | null,
-  };
+  const policy = { opCount: 0 };
   const opsThreshold = Math.max(0, opts?.ops ?? 0);
-  const intervalMs = Math.max(0, opts?.intervalMs ?? 0);
+  const waitMs = Math.max(0, opts?.waitMs ?? 0);
+  const maxWait = Math.max(0, opts?.maxWaitMs ?? 0);
 
   const runSave = async () => {
     await lock.runExclusive(async () => {
@@ -35,32 +33,30 @@ export function createAutoSaveAfterWrite<TMeta>(
     });
   };
 
+  const debounced = createDebounced(async () => {
+    const hadOps = policy.opCount > 0;
+    policy.opCount = 0;
+    if (hadOps) {
+      await runSave();
+    }
+  }, waitMs, maxWait);
+
   const afterWrite = async (nOps: number) => {
     policy.opCount += nOps;
-    const now = Date.now();
     const needOps = opsThreshold > 0 ? policy.opCount >= opsThreshold : false;
-    const needTime = intervalMs > 0 ? now - policy.last >= intervalMs : false;
-    if (needOps || needTime) {
-      policy.opCount = 0;
-      policy.last = now;
-      await runSave();
+    if (needOps) {
+      await debounced.flush();
+      return;
+    }
+    if (waitMs > 0 || maxWait > 0) {
+      debounced.schedule();
     }
   };
 
-  if (intervalMs > 0) {
-    policy.timer = setInterval(async () => {
-      if (policy.opCount > 0 && Date.now() - policy.last >= intervalMs) {
-        policy.opCount = 0;
-        policy.last = Date.now();
-        await runSave();
-      }
-    }, intervalMs);
-  }
-
   const dispose = () => {
-    if (policy.timer) {
-      clearInterval(policy.timer);
-      policy.timer = null;
+    debounced.cancel();
+    if (policy.opCount > 0) {
+      void debounced.flush();
     }
   };
 
