@@ -32,7 +32,6 @@ npx vcdb          # run once without installing
 npm install -g vcdb
 vcdb              # launch the interactive CLI
 ```
-EOF < /dev/null
 
 ## Quick Start (API)
 

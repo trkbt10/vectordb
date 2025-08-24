@@ -16,4 +16,3 @@ npx {{NAME}}          # run once without installing
 npm install -g {{NAME}}
 {{NAME}}              # launch the interactive CLI
 ```
-EOF < /dev/null
