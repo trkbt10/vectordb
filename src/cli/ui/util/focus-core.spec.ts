@@ -7,12 +7,7 @@ import { FocusTree } from "./focus-core";
 describe("FocusTree", () => {
   it("cycles focus among siblings with Tab-like next/prev", () => {
     const ft = new FocusTree("search");
-    const cleanup = [
-      ft.register("search"),
-      ft.register("table"),
-      ft.register("pagination"),
-      ft.register("footer"),
-    ];
+    const cleanup = [ft.register("search"), ft.register("table"), ft.register("pagination"), ft.register("footer")];
     expect(ft.isFocused("search")).toBe(true);
     ft.nextSibling();
     expect(ft.isFocused("table")).toBe(true);
@@ -25,12 +20,7 @@ describe("FocusTree", () => {
 
   it("activates on selection and deactivates to parent with Esc", () => {
     const ft = new FocusTree("search");
-    const cleanup = [
-      ft.register("search"),
-      ft.register("table"),
-      ft.register("pagination"),
-      ft.register("footer"),
-    ];
+    const cleanup = [ft.register("search"), ft.register("table"), ft.register("pagination"), ft.register("footer")];
     ft.activate();
     expect(ft.isActive("search")).toBe(true);
     ft.deactivate();

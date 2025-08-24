@@ -44,8 +44,9 @@ describeCryptoTests("Encrypted FileIO", () => {
 
   test("throws when string key provided without PBKDF2 salt", async () => {
     const baseIO = createMemoryFileIO();
-    await expect(createEncryptedFileIO(baseIO, "pw-only"))
-      .rejects.toThrow("PBKDF2 salt must be provided in options.pbkdf2");
+    await expect(createEncryptedFileIO(baseIO, "pw-only")).rejects.toThrow(
+      "PBKDF2 salt must be provided in options.pbkdf2",
+    );
   });
 
   test("append operation", async () => {

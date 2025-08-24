@@ -38,4 +38,3 @@ describe("wal/verify + checksum", () => {
     expect(res.error).toBeTruthy();
   });
 });
-

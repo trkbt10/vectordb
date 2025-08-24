@@ -25,33 +25,33 @@ function isFileNotFoundError(error: unknown): boolean {
 }
 
 async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function retryOperation<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelay: number = 100
+  baseDelay: number = 100,
 ): Promise<T> {
   // eslint-disable-next-line no-restricted-syntax -- Required for retry loop state tracking
   let lastError: unknown;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
       lastError = error;
-      
+
       if (attempt === maxRetries || !isRetryableError(error)) {
         throw error;
       }
-      
+
       // Exponential backoff with jitter
       const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 50;
       await sleep(delay);
     }
   }
-  
+
   throw lastError;
 }
 
@@ -139,7 +139,7 @@ export function createNodeFileIO(baseDir: string): FileIO {
       const full = joinPath(baseDir, path);
       await ensureDir(full);
       const tmp = `${full}.tmp`;
-      
+
       try {
         await writeToTempFile(tmp, data);
         await retryOperation(() => rename(tmp, full));

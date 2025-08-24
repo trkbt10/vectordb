@@ -628,7 +628,7 @@ function ExplorerInner({
         return mainPanel;
       })()}
       {rowMenu}
-      {(showStats && client) && (
+      {showStats && client && (
         <StatsView
           ctx={{ name: registry[selected]?.name ?? "db", client, selectedStrategy, query: queryCfg }}
           onBack={() => setShowStats(false)}

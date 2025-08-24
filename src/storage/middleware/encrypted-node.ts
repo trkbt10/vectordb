@@ -17,7 +17,7 @@ import type { EncryptedFileIOOptions } from "./encrypted";
 export async function createEncryptedFileIO(
   baseFileIO: FileIO,
   encryptionKey: Uint8Array | string,
-  options: Omit<EncryptedFileIOOptions, 'crypto'> = {},
+  options: Omit<EncryptedFileIOOptions, "crypto"> = {},
 ): Promise<FileIO> {
   return createEncryptedFileIOBase(baseFileIO, encryptionKey, {
     crypto: webcrypto as Crypto,

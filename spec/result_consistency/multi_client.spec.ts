@@ -14,7 +14,7 @@ describe("result-consistency: multiple clients on shared WAL + storage", () => {
         database: { dim: 3, metric: "cosine", strategy: "bruteforce" },
         index: { name: "db", segmented: true },
         // Autosave disabled (no truncate); we test WAL replay behavior
-        autoSave: { ops: 0, intervalMs: 0 },
+        autoSave: { ops: 0 },
       });
 
     const c1 = await makeClient();

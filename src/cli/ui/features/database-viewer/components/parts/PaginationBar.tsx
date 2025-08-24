@@ -6,7 +6,17 @@ import { Box, Text } from "ink";
 import { useTheme } from "../../../../ThemeContext";
 
 /** Render a full-width page summary and navigation hints. */
-export function PaginationBar({ from, to, total, isFocused = false }: { from: number; to: number; total: number; isFocused?: boolean }) {
+export function PaginationBar({
+  from,
+  to,
+  total,
+  isFocused = false,
+}: {
+  from: number;
+  to: number;
+  total: number;
+  isFocused?: boolean;
+}) {
   const { theme } = useTheme();
   const left = `${from}-${to} of ${total}`;
   return (

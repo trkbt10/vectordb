@@ -2,19 +2,19 @@
 /* eslint-env node */
 /**
  * @file Documentation compiler - Generates README.md from modular documentation
- * 
+ *
  * This script compiles README.md from separate markdown files in docs/.readme/
- * 
+ *
  * Features:
  * - Concatenates numbered markdown files (00-*.md, 10-*.md, etc.)
  * - Template variable replacement from package.json and git
  * - .docignore support for excluding files
  * - Check mode for CI/lint validation
- * 
+ *
  * Usage:
  * - Compile: npm run doc:compile
  * - Check: npm run doc:compile -- --check (used in lint)
- * 
+ *
  * Template variables available:
  * - {{NAME}} - Package name from package.json
  * - {{VERSION}} - Package version
@@ -24,7 +24,7 @@
  * - {{HOMEPAGE}} - Package homepage
  * - {{REPOSITORY}} - Package repository
  * - {{GIT_ORIGIN}} - Git origin URL (converted to HTTPS)
- * 
+ *
  * File structure:
  * - docs/.readme/*.md - Source documentation files (must start with digit)
  * - docs/.readme/.docignore - Optional ignore patterns (supports * wildcard)

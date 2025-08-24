@@ -23,4 +23,3 @@ export function isFileIO(x: unknown): x is FileIO {
   }
   return true;
 }
-

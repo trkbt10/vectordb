@@ -39,7 +39,9 @@ const hostVal = hostIdx >= 0 ? String(argv[hostIdx + 1]) : undefined;
 
 async function main() {
   if (wantsHelp) {
-    console.log(`\nUsage: vcdb [command] [options]\n\nCommands:\n  serve                 Start HTTP server using config (required)\n\nOptions:\n  --config, -c <path>   Path to executable config (vectordb.config.*)\n  --port, -p <number>   Override server.port from config\n  --host, -H <host>     Override server.host from config\n  --help, -h            Show this help\n\nExamples:\n  vcdb                   # Launch interactive UI\n  vcdb serve             # Start server using vectordb.config.*\n  vcdb serve -c ./vectordb.config.mjs\n  vcdb serve -p 8787 -H 0.0.0.0\n`);
+    console.log(
+      `\nUsage: vcdb [command] [options]\n\nCommands:\n  serve                 Start HTTP server using config (required)\n\nOptions:\n  --config, -c <path>   Path to executable config (vectordb.config.*)\n  --port, -p <number>   Override server.port from config\n  --host, -H <host>     Override server.host from config\n  --help, -h            Show this help\n\nExamples:\n  vcdb                   # Launch interactive UI\n  vcdb serve             # Start server using vectordb.config.*\n  vcdb serve -c ./vectordb.config.mjs\n  vcdb serve -p 8787 -H 0.0.0.0\n`,
+    );
     return;
   }
   // If a config was explicitly provided, validate and normalize it to a supported file first

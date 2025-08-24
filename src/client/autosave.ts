@@ -33,13 +33,17 @@ export function createAutoSaveAfterWrite<TMeta>(
     });
   };
 
-  const debounced = createDebounced(async () => {
-    const hadOps = policy.opCount > 0;
-    policy.opCount = 0;
-    if (hadOps) {
-      await runSave();
-    }
-  }, waitMs, maxWait);
+  const debounced = createDebounced(
+    async () => {
+      const hadOps = policy.opCount > 0;
+      policy.opCount = 0;
+      if (hadOps) {
+        await runSave();
+      }
+    },
+    waitMs,
+    maxWait,
+  );
 
   const afterWrite = async (nOps: number) => {
     policy.opCount += nOps;

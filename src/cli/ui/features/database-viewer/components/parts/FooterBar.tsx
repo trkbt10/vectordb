@@ -50,9 +50,7 @@ function FooterBarBase({
   // Preserve original order while grouping for clearer separation
   const entries = actions.map((a, i) => [a, i] as const);
   const find = entries.filter(([a]) => a.value === "search");
-  const dbOps = entries.filter(
-    ([a]) => a.value !== "search" && a.value !== "pgup" && a.value !== "pgdn",
-  );
+  const dbOps = entries.filter(([a]) => a.value !== "search" && a.value !== "pgup" && a.value !== "pgdn");
 
   const Chip = ({ label, active }: { label: string; active: boolean }) => {
     const padWidth = 14;

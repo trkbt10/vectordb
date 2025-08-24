@@ -39,11 +39,7 @@ export function validateRawAppConfig(raw: unknown): void {
   if (!storageRaw || typeof storageRaw !== "object") {
     throw new Error("config.storage is required");
   }
-  if (
-    !isStorageConfigDirect(storageRaw) &&
-    !isStorageConfigRaw(storageRaw) &&
-    !isStorageConfigMixed(storageRaw)
-  ) {
+  if (!isStorageConfigDirect(storageRaw) && !isStorageConfigRaw(storageRaw) && !isStorageConfigMixed(storageRaw)) {
     throw new Error("storage must be FileIOs, URI strings, or a mix");
   }
 }

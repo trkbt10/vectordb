@@ -46,4 +46,3 @@ describe("wal/runtime", () => {
     expect(res).toEqual({ applied: 0 });
   });
 });
-

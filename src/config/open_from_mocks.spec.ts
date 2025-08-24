@@ -23,4 +23,3 @@ describe("open from __mocks__/config", () => {
     expect(res[0]?.id).toBe(2);
   });
 });
-

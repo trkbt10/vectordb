@@ -44,7 +44,10 @@ export class FocusTree {
     const parentId = this.nodes.get(id)?.parentId as MaybeId;
     this.nodes.delete(id);
     const list = this.kids.get(parentId) ?? [];
-    this.kids.set(parentId, list.filter((x) => x !== id));
+    this.kids.set(
+      parentId,
+      list.filter((x) => x !== id),
+    );
     if (this.focusId === id) {
       this.focusId = parentId;
     }

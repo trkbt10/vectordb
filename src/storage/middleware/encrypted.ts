@@ -13,7 +13,7 @@ export type EncryptedFileIOOptions = {
     // Iteration count; default 310000 per modern guidance.
     iterations?: number;
     // Hash algorithm for PBKDF2; default 'SHA-256'.
-    hash?: 'SHA-256' | 'SHA-384' | 'SHA-512';
+    hash?: "SHA-256" | "SHA-384" | "SHA-512";
   };
 };
 
@@ -53,9 +53,7 @@ export async function createEncryptedFileIO(
     if (typeof encryptionKey === "string") {
       // Derive key from string using PBKDF2
       if (!options.pbkdf2 || options.pbkdf2.salt === undefined) {
-        throw new Error(
-          "PBKDF2 salt must be provided in options.pbkdf2 when using a string encryptionKey",
-        );
+        throw new Error("PBKDF2 salt must be provided in options.pbkdf2 when using a string encryptionKey");
       }
       const encoder = new TextEncoder();
       const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(encryptionKey), "PBKDF2", false, [
@@ -64,16 +62,20 @@ export async function createEncryptedFileIO(
       ]);
 
       // Resolve salt bytes from options with proper ArrayBuffer backing
-      const saltBytes = new Uint8Array(toArrayBuffer((() => {
-        const s = options.pbkdf2!.salt;
-        if (typeof s === 'string') {
-          return new TextEncoder().encode(s);
-        }
-        return s;
-      })()));
+      const saltBytes = new Uint8Array(
+        toArrayBuffer(
+          (() => {
+            const s = options.pbkdf2!.salt;
+            if (typeof s === "string") {
+              return new TextEncoder().encode(s);
+            }
+            return s;
+          })(),
+        ),
+      );
 
       const iterations = options.pbkdf2?.iterations ?? 310_000;
-      const hash = options.pbkdf2?.hash ?? 'SHA-256';
+      const hash = options.pbkdf2?.hash ?? "SHA-256";
 
       return await crypto.subtle.deriveKey(
         {

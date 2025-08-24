@@ -62,13 +62,7 @@ describe("config discovery/load (shared)", () => {
     withTempDir(async (dir) => {
       await writeFile(
         path.join(dir, `${DEFAULT_CONFIG_STEM}.mjs`),
-        [
-          "export default {",
-          "  name: 'bad',",
-          "  storage: { index: 'mem:', data: { a: 1 } },",
-          "};",
-          "",
-        ].join(os.EOL),
+        ["export default {", "  name: 'bad',", "  storage: { index: 'mem:', data: { a: 1 } },", "};", ""].join(os.EOL),
         "utf8",
       );
       const loader = getConfigLoad(path.join(dir, DEFAULT_CONFIG_STEM));

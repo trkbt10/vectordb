@@ -12,7 +12,7 @@ export async function loadConfigModule(configPath?: string): Promise<unknown> {
   if (!resolved) {
     const stem = DEFAULT_CONFIG_STEM;
     throw new Error(
-      `Config not found. Looked for ${configPath ?? stem + '.*'} with extensions ${CONFIG_EXTS.join(', ')}`,
+      `Config not found. Looked for ${configPath ?? stem + ".*"} with extensions ${CONFIG_EXTS.join(", ")}`,
     );
   }
   const ext = path.extname(resolved).toLowerCase();

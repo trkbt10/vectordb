@@ -41,7 +41,10 @@ export function FocusProvider({ children, initialFocus }: { children: React.Reac
 
   const removeChild = (parent: MaybeId, id: FocusId) => {
     const list = kidsRef.current.get(parent) ?? [];
-    kidsRef.current.set(parent, list.filter((x) => x !== id));
+    kidsRef.current.set(
+      parent,
+      list.filter((x) => x !== id),
+    );
   };
 
   const register = (id: FocusId, parentId?: FocusId) => {

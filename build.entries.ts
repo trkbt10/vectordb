@@ -7,15 +7,15 @@
  *
  * Target types:
  * - "node": Can only run in Node.js environment
- * - "browser": Can only run in browser environment  
+ * - "browser": Can only run in browser environment
  * - "universal": Can run in both environments
- * 
+ *
  * Usage:
  * - Add new entries to the `entries` object below
  * - Specify appropriate targets for each entry
  * - Node.js dependency checker will automatically validate browser-only entries
  * - Vite will build all entries with proper externals
- * 
+ *
  * Adding a new entry:
  * ```typescript
  * "my-module/index": {
@@ -123,10 +123,52 @@ export const entries: EntryCatalog = {
     description: "Browser IndexedDB storage",
   },
 
+  // Additional storage helpers
+  "storage/cache": {
+    path: "src/storage/cache.ts",
+    targets: ["browser"],
+    description: "Cache API-based storage (Service Worker)",
+  },
+
+  "storage/guards": {
+    path: "src/storage/guards.ts",
+    targets: ["universal"],
+    description: "Runtime guards for FileIO",
+  },
+
   "storage/types": {
     path: "src/storage/types.ts",
     targets: ["universal"],
     description: "Storage type definitions",
+  },
+
+  // Config public surface
+  "config/index": {
+    path: "src/config/index.ts",
+    targets: ["node"],
+    description: "Config API surface and helpers",
+  },
+
+  // Presets (use-case specific)
+  "presets/config/browser-inmemory": {
+    path: "src/presets/config/browser-inmemory.ts",
+    targets: ["browser"],
+    description: "Config preset: in-memory via mem: URIs",
+  },
+  "presets/config/browser-localstorage": {
+    path: "src/presets/config/browser-localstorage.ts",
+    targets: ["browser"],
+    description: "Config preset: browser localStorage",
+  },
+  "presets/config/node-fs": {
+    path: "src/presets/config/node-fs.ts",
+    targets: ["node"],
+    description: "Config preset: Node.js filesystem",
+  },
+  "presets/config/node-inmemory": {
+    path: "src/presets/config/node-inmemory.ts",
+    targets: ["node"],
+    description: "Config preset: Node.js in-memory",
   },
 };
 

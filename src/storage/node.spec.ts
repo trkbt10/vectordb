@@ -34,10 +34,10 @@ describe("storage/node", () => {
 
       // Create a file that might cause rename conflicts
       await writeFile(joinPath(dir, testPath), "existing");
-      
+
       // This should succeed even with existing file
       await io.atomicWrite(testPath, testData);
-      
+
       const result = await io.read(testPath);
       expect(Array.from(result)).toEqual([1, 2, 3]);
     } finally {
@@ -49,16 +49,16 @@ describe("storage/node", () => {
     const dir = await mkdtemp(joinPath(tmpdir(), "vcdb-io-"));
     try {
       const io = createNodeFileIO(dir);
-      
+
       // Mock scenario where write succeeds but rename might fail
       const invalidPath = "invalid/\0/path.txt"; // Invalid filename
-      
+
       try {
         await io.atomicWrite(invalidPath, new Uint8Array([1, 2, 3]));
       } catch {
         // Expected to fail
       }
-      
+
       // Verify no tmp files are left behind
       // Note: This is a basic test - in real scenarios we'd need more sophisticated mocking
     } finally {
@@ -75,7 +75,7 @@ describe("storage/node", () => {
 
       // This should work with retry logic
       await io.atomicWrite(testPath, testData);
-      
+
       const result = await io.read(testPath);
       expect(Array.from(result)).toEqual([1, 2, 3]);
     } finally {
@@ -87,7 +87,7 @@ describe("storage/node", () => {
     const dir = await mkdtemp(joinPath(tmpdir(), "vcdb-io-"));
     try {
       const io = createNodeFileIO(dir);
-      
+
       // Deleting non-existent file should not throw
       await expect(io.del!("non-existent-file.txt")).resolves.not.toThrow();
     } finally {
@@ -99,12 +99,12 @@ describe("storage/node", () => {
     const dir = await mkdtemp(joinPath(tmpdir(), "vcdb-io-"));
     try {
       const io = createNodeFileIO(dir);
-      
+
       // Create a file and try to delete from read-only directory
       // Note: This test may not work on all systems due to permission handling differences
       const testFile = "test-file.txt";
       await io.write(testFile, new Uint8Array([1, 2, 3]));
-      
+
       // Verify file can be deleted normally
       await expect(io.del!(testFile)).resolves.not.toThrow();
     } finally {

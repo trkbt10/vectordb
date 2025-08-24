@@ -24,8 +24,27 @@ describe("config/resolver_io", () => {
   });
 
   it("mergeRegistry overlays providers by key without losing members", () => {
-    const r1 = { a: { indexFactory: () => ({ read: async () => new Uint8Array(), write: async () => {}, append: async () => {}, atomicWrite: async () => {} }) } };
-    const r2 = { a: { dataFactory: () => ({ read: async () => new Uint8Array(), write: async () => {}, append: async () => {}, atomicWrite: async () => {} }) }, b: {} };
+    const r1 = {
+      a: {
+        indexFactory: () => ({
+          read: async () => new Uint8Array(),
+          write: async () => {},
+          append: async () => {},
+          atomicWrite: async () => {},
+        }),
+      },
+    };
+    const r2 = {
+      a: {
+        dataFactory: () => ({
+          read: async () => new Uint8Array(),
+          write: async () => {},
+          append: async () => {},
+          atomicWrite: async () => {},
+        }),
+      },
+      b: {},
+    };
     const merged = mergeRegistry(r1, r2);
     expect(Object.keys(merged).sort()).toEqual(["a", "b"]);
     expect(typeof merged.a.indexFactory).toBe("function");
